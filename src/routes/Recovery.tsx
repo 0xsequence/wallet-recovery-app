@@ -1,9 +1,12 @@
-import { Box, Button, Card, Text } from '@0xsequence/design-system'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Box, Button, Card, Text, TextArea } from '@0xsequence/design-system'
 
 import sequenceLogo from '../assets/images/sequence-logo.svg'
 
 function Recovery() {
+  const [mnemonic, setMnemonic] = useState('')
+
   return (
     <Box background="backgroundPrimary" width="full" height="full" alignItems="center" justifyContent="center">
       <Box width="full" style={{ maxWidth: '800px' }}>
@@ -17,15 +20,25 @@ function Recovery() {
         </Box>
 
         <Box marginTop="16">
-          <Card flexDirection="column" gap="6">
+          <Box alignItems="center" justifyContent="center" flexDirection="column">
             <Text variant="medium" color="text100" textAlign="center">
               Enter your recovery phrase
             </Text>
 
-            <Text variant="normal" color="text100" marginBottom="4">
-              Input will be here
+            <Text variant="normal" color="text50" marginTop="4" textAlign="center">
+              This is the recovery phrase you create on sequence.app/settings/recovery
             </Text>
-          </Card>
+          </Box>
+
+          <Box marginTop="16">
+            <TextArea
+              name="mnemonic"
+              label="Recovery Phrase"
+              labelLocation="top"
+              value={mnemonic}
+              onChange={ev => setMnemonic(ev.target.value)}
+            />
+          </Box>
         </Box>
 
         <Box alignItems="center" justifyContent="center" flexDirection="column">
