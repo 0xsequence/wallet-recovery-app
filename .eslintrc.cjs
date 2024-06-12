@@ -16,26 +16,6 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-empty-interface': 'off',
 
-    'import/no-unresolved': 'off',
-    'import/no-named-as-default': 'off',
-    'import/order': [
-      'warn',
-      {
-        alphabetize: {
-          order: 'asc',
-          caseInsensitive: true
-        },
-        pathGroups: [
-          {
-            pattern: '~/**',
-            group: 'external',
-            position: 'after'
-          }
-        ],
-        'newlines-between': 'always'
-      }
-    ],
-
     'react/prop-types': 'off',
     'react/display-name': 'off',
     'react-hooks/exhaustive-deps': 'off',
