@@ -54,8 +54,6 @@ export class AuthStore {
   async signInWithRecoveryKey(recoveryKey: string) {
     const signerStore = this.store.get(SignerStore)
 
-    console.log('loginStore, loginWallet...')
-
     const recoverySigner = ethers.Wallet.fromMnemonic(recoveryKey)
     signerStore.setRecoverySigner(recoverySigner)
 
@@ -104,8 +102,10 @@ export class AuthStore {
           }
         ],
         threshold: DEFAULT_THRESHOLD,
-        selectWallet: (wallets: string[]) =>
-          new Promise(resolve => {
+        selectWallet: (wallets: string[]) => {
+          console.log('select wallet', wallets)
+
+          return new Promise(resolve => {
             if (wallets.length === 0) {
               return resolve(undefined)
             }
@@ -116,7 +116,8 @@ export class AuthStore {
 
             this.availableWallets.set(wallets)
             this.selectedWallet.subscribe(resolve)
-          }),
+          })
+        },
         onAccountAddress: address => this.accountAddress.set(normalizeAddress(address)),
         editConfigOnMigration: (config: commons.config.Config) => {
           // TODO: check if this is needed
