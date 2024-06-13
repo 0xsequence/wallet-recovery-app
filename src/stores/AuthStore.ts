@@ -1,11 +1,55 @@
 import { ethers } from 'ethers'
-import { Store } from '.'
-import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
+import { Session, SessionDumpV1, SessionDumpV2 } from '@0xsequence/auth'
+import { commons } from '@0xsequence/core'
+import { NetworkConfig } from '@0xsequence/network'
 
+import { Store, observable } from '.'
+import { LocalStore } from './LocalStore'
 import { SignerStore } from './SignerStore'
+import { TRACKER } from './TrackerStore'
+
+import { DEFAULT_THRESHOLD, SignerLevel } from '../constants/sessions'
+import { LocalStorageKey } from '../constants/storage'
+import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
+import { normalizeAddress } from '../utils/address'
+
+// TODO: temporary, remove/update once sessions work is done
+const serviceSettings = {
+  sequenceApiUrl: 'https://api.sequence.app',
+  sequenceApiChainId: 137,
+  sequenceMetadataUrl: 'https://metadata.sequence.app',
+  metadata: {
+    name: 'Sequence Wallet',
+    expiration: 60 * 60 * 24 * 30
+  }
+}
+
+// Test network config, will be replaced with a network store that allows modification
+const testNetworkConfig: NetworkConfig = {
+  name: 'Ethereum',
+  chainId: 1,
+  rpcUrl: 'https://eth.llamarpc.com'
+}
 
 export class AuthStore {
   constructor(private store: Store) {}
+
+  availableWallets = observable<string[]>([])
+
+  selectedWallet = observable<string | undefined>(undefined)
+
+  accountAddress = observable<string | undefined>(undefined)
+
+  private local = {
+    // configuration of the current logged in wallet
+    session: new LocalStore<SessionDumpV1 | SessionDumpV2>(LocalStorageKey.SESSION_DUMP),
+
+    // login key public address (aka the torus key)
+    loginKeyAddress: new LocalStore(LocalStorageKey.LOGIN_KEY_ADDRESS)
+
+    // TODO: check if needed
+    // v2MigrationNotice: new LocalStore<V2MigrationDetails>(LocalStorageKey.V2_MIGRATION_NOTICE)
+  }
 
   async signInWithRecoveryKey(recoveryKey: string) {
     const signerStore = this.store.get(SignerStore)
@@ -34,9 +78,9 @@ export class AuthStore {
 
       const session = await Session.open({
         settings: {
-          services: this.getServiceSettings(),
+          services: serviceSettings,
           contexts: SEQUENCE_CONTEXT,
-          networks: this.store.get(NetworkStore).networks.get(),
+          networks: [testNetworkConfig],
           tracker: TRACKER
         },
         orchestrator: signerStore,
@@ -62,14 +106,6 @@ export class AuthStore {
         threshold: DEFAULT_THRESHOLD,
         selectWallet: (wallets: string[]) =>
           new Promise(resolve => {
-            // Devmode can force the creation of a new wallet
-            // even if there are already wallets available
-            // NOTICE: Remove this when we native support creation of multiple wallets
-            const devmodeStore = this.store.get(DevmodeStore)
-            if (devmodeStore.forceCreateWallet.get()) {
-              return resolve(undefined)
-            }
-
             if (wallets.length === 0) {
               return resolve(undefined)
             }
@@ -83,16 +119,17 @@ export class AuthStore {
           }),
         onAccountAddress: address => this.accountAddress.set(normalizeAddress(address)),
         editConfigOnMigration: (config: commons.config.Config) => {
-          return this.migrateGuard(config)
+          // TODO: check if this is needed
+          // return this.migrateGuard(config)
+          return config
         },
         onMigration: async () => {
-          this.showV2MigrationNotice = true
+          // TODO: check if this is needed
+          // this.showV2MigrationNotice = true
 
           return true
         }
       })
-
-      this.store.get(ClientStore).injectSession(session)
 
       // Log authentication errors in case service is unreachable or down
       session.services?._initialAuthRequest.catch(console.error)
@@ -104,24 +141,20 @@ export class AuthStore {
 
       console.log('Opened session, saving wallet')
 
-      // analytics -- track the user session with wallet as seed
-      //
-      // NOTE: we will not use the user's wallet address in the analytics.
-      // as the address will be hashed in combination with their user-agent
-      analytics.identify(session.account.address)
-
+      // TODO: check if needed
       // IMPORTANT: Remove the migration notice
-      this.local.v2MigrationNotice.del()
+      // this.local.v2MigrationNotice.del()
 
       // Save session to local storage
       this.local.session.set(await session.dump())
 
-      await this.initWallet(recoverySigner)
+      // await this.initWallet(recoverySigner)
     } catch (error) {
-      Sentry.captureException(error)
-      console.warn('Error opening session', error)
-      this.store.get(AuthStore).setStage(AuthStageType.ERROR, error)
-      await this.resetWallet()
+      // TODO: check this part later
+      // Sentry.captureException(error)
+      // console.warn('Error opening session', error)
+      // this.store.get(AuthStore).setStage(AuthStageType.ERROR, error)
+      // await this.resetWallet()
     }
   }
 }
