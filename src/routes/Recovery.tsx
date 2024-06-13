@@ -2,9 +2,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Button, Card, Text, TextArea } from '@0xsequence/design-system'
 
+import { useStore } from '../stores'
+import { AuthStore } from '../stores/AuthStore'
+
 import sequenceLogo from '../assets/images/sequence-logo.svg'
 
 function Recovery() {
+  const authStore = useStore(AuthStore)
   const [mnemonic, setMnemonic] = useState('')
 
   return (
@@ -43,7 +47,17 @@ function Recovery() {
 
         <Box alignItems="center" justifyContent="center" flexDirection="column">
           <Box>
-            <Button variant="primary" size="lg" shape="square" label="Continue" width="full" marginTop="16" />
+            <Button
+              variant="primary"
+              size="lg"
+              shape="square"
+              label="Continue"
+              onClick={() => {
+                authStore.signInWithRecoveryKey(mnemonic)
+              }}
+              width="full"
+              marginTop="16"
+            />
           </Box>
           <Box>
             <Button

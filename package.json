@@ -29,6 +29,7 @@
     "@vanilla-extract/css": "^1.15.2",
     "ethers": "5.7.2",
     "framer-motion": "^11.2.10",
+    "idb": "^8.0.0",
     "micro-observables": "^1.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

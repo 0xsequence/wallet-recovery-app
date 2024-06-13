@@ -65,6 +65,9 @@ importers:
       framer-motion:
         specifier: ^11.2.10
         version: 11.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      idb:
+        specifier: ^8.0.0
+        version: 8.0.0
       micro-observables:
         specifier: ^1.7.2
         version: 1.7.2(react@18.3.1)
@@ -1737,6 +1740,9 @@ packages:
 
   idb@7.1.1:
     resolution: {integrity: sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==}
+
+  idb@8.0.0:
+    resolution: {integrity: sha512-l//qvlAKGmQO31Qn7xdzagVPPaHTxXx199MhrAFuVBTPqydcPYBWjkrbv4Y0ktB+GmWOiwHl237UUOrLmQxLvw==}
 
   ignore@5.3.1:
     resolution: {integrity: sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==}
@@ -4195,6 +4201,8 @@ snapshots:
       react-is: 16.13.1
 
   idb@7.1.1: {}
+
+  idb@8.0.0: {}
 
   ignore@5.3.1: {}
 
