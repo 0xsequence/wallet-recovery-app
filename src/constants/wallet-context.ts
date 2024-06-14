@@ -1,16 +1,4 @@
 import { commons } from '@0xsequence/core'
-import { ethers } from 'ethers'
-
-export const v1GuardURL = 'https://guard.sequence.app'
-export const v2GuardURL = 'https://guard.sequence.app'
-export const v1GuardAddress = '0x596aF90CecdBF9A768886E771178fd5561dD27Ab'
-export const v2GuardAddress = '0x761f5e29944D79d76656323F106CF2efBF5F09e9'
-export const v1GuardStubSignature =
-  '0x000100014e82f02f388a12b5f9d29eaf2452dd040c0ee5804b4e504b4dd64e396c6c781f2c7624195acba242dd825bfd25a290912e3c230841fd55c9a734c4de8d9899451b020101ffffffffffffffffffffffffffffffffffffffff03'
-export const v2GuardStubSignature =
-  '0x0200010000000003000000000000000000000001ffffffffffffffffffffffffffffffffffffffff0400004400014e82f02f388a12b5f9d29eaf2452dd040c0ee5804b4e504b4dd64e396c6c781f2c7624195acba242dd825bfd25a290912e3c230841fd55c9a734c4de8d9899451b0203'
-export const v1TestnetGuardAddress = '0x9999991Af3420dFa7cD874d5CB3445793bb5f691'
-export const v1TestnetGuardPK = '0x7c20cb09a5735d918c93f146eb720b22d6311789c3d804eed66daea19052c780'
 
 // Move this to Sequence.js, maybe create a new "releases" package
 const DEFAULT_CREATION_CODE = '0x603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3'
@@ -31,21 +19,6 @@ export const SEQUENCE_CONTEXT: commons.context.VersionedContext = {
     guestModule: '0xfea230Ee243f88BC698dD8f1aE93F8301B6cdfaE',
     walletCreationCode: DEFAULT_CREATION_CODE
   }
-}
-
-export const V1_TESTNET_GUARD = new ethers.Wallet(v1TestnetGuardPK)
-if (V1_TESTNET_GUARD.address !== v1TestnetGuardAddress) {
-  throw new Error('V1_TESTNET_GUARD address does not match v1TestnetGuardAddress()')
-}
-
-export const V1_GUARD_SERVICE = {
-  address: v1GuardAddress,
-  hostname: v1GuardURL
-}
-
-export const V2_GUARD_SERVICE = {
-  address: v2GuardAddress,
-  hostname: v2GuardURL
 }
 
 export const NETWORK_FEE_ADDRESSES = [
