@@ -13,6 +13,7 @@ import { DEFAULT_THRESHOLD, SignerLevel } from '../constants/sessions'
 import { LocalStorageKey } from '../constants/storage'
 import { SEQUENCE_CONTEXT, V1_GUARD_SERVICE, V1_TESTNET_GUARD, V2_GUARD_SERVICE } from '../constants/wallet-context'
 import { normalizeAddress } from '../utils/address'
+import { polygonRpcUrl } from '../constants/network'
 
 // TODO: temporary, remove/update once sessions work is done
 const serviceSettings = {
@@ -44,8 +45,8 @@ export const createDebugLocalRelayer = (provider: string | ethers.providers.Json
 const testNetworkConfig: NetworkConfig = {
   name: 'Polygon',
   chainId: 137,
-  rpcUrl: 'https://polygon.drpc.org',
-  relayer: createDebugLocalRelayer('https://polygon.drpc.org')
+  rpcUrl: polygonRpcUrl,
+  relayer: createDebugLocalRelayer(polygonRpcUrl)
 }
 
 export class AuthStore {

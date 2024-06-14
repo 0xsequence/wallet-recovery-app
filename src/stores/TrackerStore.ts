@@ -2,11 +2,12 @@ import { trackers } from '@0xsequence/sessions'
 import { ethers } from 'ethers'
 
 import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
+import { polygonRpcUrl } from '../constants/network'
 
 // TODO: temporary, remove/update once sessions work is done
 export const LOCAL_TRACKER = new trackers.DedupedTracker(
   new trackers.local.LocalConfigTracker(
-    new ethers.providers.StaticJsonRpcProvider('https://eth.llamarpc.com'),
+    new ethers.providers.StaticJsonRpcProvider(polygonRpcUrl),
     new trackers.stores.IndexedDBStore('local-tracker-v1.0.1')
   ),
   50
