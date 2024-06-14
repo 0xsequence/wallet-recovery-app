@@ -2,15 +2,16 @@ import { ethers } from 'ethers'
 
 import { NetworkConfig } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
+import { Orchestrator } from '@0xsequence/signhub'
 
 import { Store, observable } from '.'
 
-import { SignerStore } from './SignerStore'
 import { TRACKER } from './TrackerStore'
 
 import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
 import { normalizeAddress } from '../utils/address'
 import { Account } from '@0xsequence/account'
+import { prefixEIP191Message } from '../utils/signing'
 
 // THROWAWAY_RELAYER_PK is the private key to an account with some ETH on Rinkeby we can use for debugging.
 //
@@ -45,30 +46,28 @@ export class AuthStore {
   accountAddress = observable<string | undefined>(undefined)
 
   async signInWithRecoveryKey(recoveryKey: string) {
-    const signerStore = this.store.get(SignerStore)
-
     const recoverySigner = ethers.Wallet.fromMnemonic(recoveryKey)
-    signerStore.setRecoverySigner(recoverySigner)
 
     // TODO: add ability to pick a specific wallet
     const wallets = await TRACKER.walletsOfSigner({ signer: recoverySigner.address })
     const wallet = wallets[0]
 
+    const orchestrator = new Orchestrator([recoverySigner])
+
     const account = new Account({
       address: wallet.wallet,
       tracker: TRACKER,
       contexts: SEQUENCE_CONTEXT,
-      orchestrator: signerStore,
+      orchestrator: orchestrator,
       networks: [testNetworkConfig]
     })
 
     console.log('account', account.address)
 
     try {
-      const predigest = ethers.utils.toUtf8Bytes('message message')
-      console.log('digest', predigest)
-      console.log(await account.signMessage(predigest, 137))
-      console.log('asdasd')
+      // TODO: for testing, remove
+      const preparedMessage = prefixEIP191Message('message message')
+      console.log(await account.signMessage(preparedMessage, 137))
     } catch (error) {
       console.warn(error)
     }
