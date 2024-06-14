@@ -1,7 +1,8 @@
 import { ethers } from 'ethers'
 import { Session, SessionDumpV1, SessionDumpV2 } from '@0xsequence/auth'
-import { commons } from '@0xsequence/core'
+import { commons, universal } from '@0xsequence/core'
 import { NetworkConfig } from '@0xsequence/network'
+import { LocalRelayer } from '@0xsequence/relayer'
 
 import { Store, observable } from '.'
 import { LocalStore } from './LocalStore'
@@ -10,7 +11,7 @@ import { TRACKER } from './TrackerStore'
 
 import { DEFAULT_THRESHOLD, SignerLevel } from '../constants/sessions'
 import { LocalStorageKey } from '../constants/storage'
-import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
+import { SEQUENCE_CONTEXT, V1_GUARD_SERVICE, V1_TESTNET_GUARD, V2_GUARD_SERVICE } from '../constants/wallet-context'
 import { normalizeAddress } from '../utils/address'
 
 // TODO: temporary, remove/update once sessions work is done
@@ -24,11 +25,27 @@ const serviceSettings = {
   }
 }
 
+// THROWAWAY_RELAYER_PK is the private key to an account with some ETH on Rinkeby we can use for debugging.
+//
+// Public account address: 0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
+// Etherscan link: https://rinkeby.etherscan.io/address/0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
+const THROWAWAY_RELAYER_PK = '0xa9e1f06cb24d160e02bd6ea84d6ffd0b3457b53d1177382eee85f4d8013419b8'
+
+export const createDebugLocalRelayer = (provider: string | ethers.providers.JsonRpcProvider) => {
+  const signer = new ethers.Wallet(THROWAWAY_RELAYER_PK)
+  if (typeof provider === 'string') {
+    return new LocalRelayer(signer.connect(new ethers.providers.JsonRpcProvider(provider)))
+  } else {
+    return new LocalRelayer(signer.connect(provider))
+  }
+}
+
 // Test network config, will be replaced with a network store that allows modification
 const testNetworkConfig: NetworkConfig = {
-  name: 'Ethereum',
-  chainId: 1,
-  rpcUrl: 'https://eth.llamarpc.com'
+  name: 'Polygon',
+  chainId: 137,
+  rpcUrl: 'https://polygon.drpc.org',
+  relayer: createDebugLocalRelayer('https://polygon.drpc.org')
 }
 
 export class AuthStore {
@@ -111,6 +128,7 @@ export class AuthStore {
             }
 
             if (wallets.length === 1) {
+              console.log('resolve', wallets[0])
               return resolve(wallets[0])
             }
 
@@ -120,9 +138,7 @@ export class AuthStore {
         },
         onAccountAddress: address => this.accountAddress.set(normalizeAddress(address)),
         editConfigOnMigration: (config: commons.config.Config) => {
-          // TODO: check if this is needed
-          // return this.migrateGuard(config)
-          return config
+          return this.migrateGuard(config)
         },
         onMigration: async () => {
           // TODO: check if this is needed
@@ -131,6 +147,10 @@ export class AuthStore {
           return true
         }
       })
+
+      console.log('session?', session)
+
+      console.log('session.services?', session.services)
 
       // Log authentication errors in case service is unreachable or down
       session.services?._initialAuthRequest.catch(console.error)
@@ -151,11 +171,23 @@ export class AuthStore {
 
       // await this.initWallet(recoverySigner)
     } catch (error) {
-      // TODO: check this part later
-      // Sentry.captureException(error)
-      // console.warn('Error opening session', error)
+      // TODO: go over this again
+      console.warn('Error opening session', error)
       // this.store.get(AuthStore).setStage(AuthStageType.ERROR, error)
       // await this.resetWallet()
     }
+  }
+
+  migrateGuard = (config: commons.config.Config): commons.config.Config => {
+    const coder = universal.genericCoderFor(config.version)
+    return coder.config.editConfig(config, {
+      add: [
+        {
+          address: V2_GUARD_SERVICE.address,
+          weight: SignerLevel.GOLD
+        }
+      ],
+      remove: [V1_GUARD_SERVICE.address, V1_TESTNET_GUARD.address]
+    })
   }
 }

@@ -2,9 +2,9 @@ import { AuthMethod, GuardSigner, OwnershipProof } from '@0xsequence/guard'
 
 import { V2_GUARD_SERVICE } from '../constants/wallet-context'
 
-import { SignerStore } from './SignerStore'
-
 import { observable, Store } from './index'
+import { SignerStore } from './SignerStore'
+import { AuthStore } from './AuthStore'
 
 export class GuardStore {
   private v2GuardSigner = new GuardSigner(V2_GUARD_SERVICE.address, V2_GUARD_SERVICE.hostname)
@@ -13,10 +13,12 @@ export class GuardStore {
 
   constructor(private store: Store) {}
 
-  private async getOwnershipProof(accountAddress: string): Promise<OwnershipProof | undefined> {
+  private async getOwnershipProof(): Promise<OwnershipProof | undefined> {
     const signerStore = this.store.get(SignerStore)
+    const authStore = this.store.get(AuthStore)
 
-    const walletAddress = accountAddress
+    const walletAddress = authStore.accountAddress.get()
+
     const { signers } = signerStore
 
     if (walletAddress && signers.recoverySigner) {
@@ -26,18 +28,18 @@ export class GuardStore {
     return
   }
 
-  async getAuthMethods(accountAddress: string) {
+  async getAuthMethods() {
     const authMethods = this.authMethods.get()
 
     if (authMethods) {
       return authMethods
     }
 
-    return this.fetchAuthMethods(accountAddress)
+    return this.fetchAuthMethods()
   }
 
-  async fetchAuthMethods(accountAddress: string) {
-    const proof = await this.getOwnershipProof(accountAddress)
+  async fetchAuthMethods() {
+    const proof = await this.getOwnershipProof()
 
     if (proof) {
       try {

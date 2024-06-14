@@ -10,7 +10,6 @@ import { createKey, createSaltFromAddress, decrypt, encrypt, Encrypted } from '.
 import { getIndexedDB } from '../utils/indexeddb'
 import { LocalStorageKey } from '../constants/storage'
 
-import { AuthStore } from './AuthStore'
 import { GuardStore } from './GuardStore'
 
 // import { GuardStore } from './GuardStore'
@@ -32,7 +31,20 @@ export enum IndexedDBKey {
 }
 
 const getSignerType = async (signer: any) => {
-  return SignerType.RECOVERY
+  if (signer instanceof GuardSigner) {
+    return SignerType.GUARD
+  } else if (signer instanceof EncryptedSessionSigner) {
+    return SignerType.SESSION
+  } else if (signer instanceof signers.SignerWrapper) {
+    if ((await signer.getAddress()) === V1_TESTNET_GUARD.address) {
+      return SignerType.GUARD_TESTNET
+    } else {
+      return SignerType.RECOVERY
+    }
+  }
+
+  console.error('unknown signer type', signer)
+  throw new Error('unknown signer type')
 }
 
 const getSignerWeight = (signerAddress: any, config: commons.config.Config) => {
@@ -181,7 +193,7 @@ export class SignerStore implements SignatureOrchestrator {
             if (signer instanceof GuardSigner) {
               try {
                 const guardStore = this.store.get(GuardStore)
-                const { methods, active } = await guardStore.getAuthMethods(address)
+                const { methods, active } = await guardStore.getAuthMethods()
                 ready = methods.length === 0 || !active
               } catch (error) {
                 console.error('unable to fetch auth methods', error)
@@ -391,8 +403,7 @@ export class SignerStore implements SignatureOrchestrator {
 
     if (signer instanceof GuardSigner) {
       const guardStore = this.store.get(GuardStore)
-      // TODO: Make sure 'signerAddress' is the correct address to use here
-      const { methods, active } = await guardStore.fetchAuthMethods(signerAddress)
+      const { methods, active } = await guardStore.fetchAuthMethods()
 
       if (methods.includes(AuthMethod.TOTP) && active) {
         this.signWithGuard = async (totpCode?: string): Promise<void> => {
@@ -474,8 +485,7 @@ export class SignerStore implements SignatureOrchestrator {
 
     const guardStore = this.store.get(GuardStore)
 
-    // TODO make sure this is the correct address to use here
-    await guardStore.fetchAuthMethods(this.getAddress(this.signers.recoverySigner!))
+    await guardStore.fetchAuthMethods()
 
     return new Promise((resolve, reject) => this.requests.update(requests => [...requests, { ...args, status, resolve, reject }]))
   }
