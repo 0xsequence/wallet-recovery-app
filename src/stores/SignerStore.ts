@@ -1,18 +1,12 @@
 import { commons, universal } from '@0xsequence/core'
-import { AuthMethod, GuardSigner } from '@0xsequence/guard'
 import { isSignerStatusPending, Orchestrator, SignatureOrchestrator, signers, SignerState, Status } from '@0xsequence/signhub'
 import { BytesLike, Wallet } from 'ethers'
 
-// import { IndexedDBKey, LocalStorageKey } from '~/constants/storage'
-import { V1_GUARD_SERVICE, V1_TESTNET_GUARD, V2_GUARD_SERVICE } from '../constants/wallet-context'
 import { EncryptedSessionSigner } from '../signers/EncryptedSessionSigner'
 import { createKey, createSaltFromAddress, decrypt, encrypt, Encrypted } from '../utils/crypto'
 import { getIndexedDB } from '../utils/indexeddb'
 import { LocalStorageKey } from '../constants/storage'
 
-import { GuardStore } from './GuardStore'
-
-// import { GuardStore } from './GuardStore'
 import { LocalStore } from './LocalStore'
 
 import { observable, Store } from './index'
@@ -20,8 +14,6 @@ import { observable, Store } from './index'
 export const CANCELLED = Symbol('CANCELLED')
 
 export enum SignerType {
-  GUARD,
-  GUARD_TESTNET,
   SESSION,
   RECOVERY
 }
@@ -31,16 +23,10 @@ export enum IndexedDBKey {
 }
 
 const getSignerType = async (signer: any) => {
-  if (signer instanceof GuardSigner) {
-    return SignerType.GUARD
-  } else if (signer instanceof EncryptedSessionSigner) {
+  if (signer instanceof EncryptedSessionSigner) {
     return SignerType.SESSION
   } else if (signer instanceof signers.SignerWrapper) {
-    if ((await signer.getAddress()) === V1_TESTNET_GUARD.address) {
-      return SignerType.GUARD_TESTNET
-    } else {
-      return SignerType.RECOVERY
-    }
+    return SignerType.RECOVERY
   }
 
   console.error('unknown signer type', signer)
@@ -55,9 +41,6 @@ const getSignerWeight = (signerAddress: any, config: commons.config.Config) => {
 }
 
 interface Signers {
-  guardSignerV1: GuardSigner
-  guardSignerV2: GuardSigner
-  testnetGuardSignerV1: signers.SignerWrapper
   sessionSigner?: EncryptedSessionSigner
   recoverySigner?: signers.SignerWrapper
 }
@@ -77,9 +60,7 @@ interface SignRequest {
 export enum SigningMode {
   NONE,
   MANAGER,
-  GUARD_TOTP,
-  RECOVERY_CODE,
-  PASSWORDLESS
+  RECOVERY_CODE
 }
 
 interface SignerMetadata {
@@ -92,18 +73,7 @@ interface SignerMetadata {
 }
 
 export class SignerStore implements SignatureOrchestrator {
-  signers: Signers = {
-    // Use GuardSigner for testnet and mainnet
-    //
-    // TODO: with new 0xsequence/stack/guard, we can use the same GUARD_SERVICE,
-    // and it will automatically sign for the correct authChain (mainnet/testnet).
-    // However, it does not make our wallet addresses universal because the local signer
-    // will be different. So for now, we can keep this code below, but one day it will change
-    guardSignerV1: new GuardSigner(V1_GUARD_SERVICE.address, V1_GUARD_SERVICE.hostname),
-    guardSignerV2: new GuardSigner(V2_GUARD_SERVICE.address, V2_GUARD_SERVICE.hostname),
-
-    testnetGuardSignerV1: new signers.SignerWrapper(V1_TESTNET_GUARD)
-  }
+  signers: Signers = {}
 
   signerAddresses = new Map<signers.SapientSigner, string>()
 
@@ -119,7 +89,7 @@ export class SignerStore implements SignatureOrchestrator {
     return undefined
   }
 
-  mode = observable<SigningMode>(SigningMode.NONE)
+  mode = observable<SigningMode>(SigningMode.RECOVERY_CODE)
 
   requests = observable<SignRequest[]>([])
   signerMetadata = observable<SignerMetadata[]>([])
@@ -144,18 +114,12 @@ export class SignerStore implements SignatureOrchestrator {
     signerMetadata.reduce((total, { status, weight }) => total + (status === 'signed' ? weight : 0), 0)
   )
 
-  signWithGuard?: (totpCode?: string) => Promise<void>
-
   private local = {
     // XXX: legacy device/session private key - this will be removed in the future after accounts are migrated
     sessionKey: new LocalStore(LocalStorageKey.SESSION_KEY)
   }
 
   constructor(private store: Store) {
-    this.setAddress(this.signers.guardSignerV1, V1_GUARD_SERVICE.address)
-    this.setAddress(this.signers.guardSignerV2, V2_GUARD_SERVICE.address)
-    this.setAddress(this.signers.testnetGuardSignerV1, V1_TESTNET_GUARD.address)
-
     this.requests.subscribe(async requests => {
       if (requests.length === 0) {
         this.signerMetadata.set([])
@@ -174,10 +138,7 @@ export class SignerStore implements SignatureOrchestrator {
       const signerMetadata: SignerMetadata[] = await Promise.all(
         [
           ...(this.signers.sessionSigner ? [this.signers.sessionSigner] : []),
-          ...(this.signers.recoverySigner ? [this.signers.recoverySigner] : []),
-          this.signers.guardSignerV2,
-          this.signers.guardSignerV1,
-          this.signers.testnetGuardSignerV1
+          ...(this.signers.recoverySigner ? [this.signers.recoverySigner] : [])
         ]
           .filter(signer => getSignerWeight(this.getAddress(signer), metadata.config) !== 0)
           .map(async signer => {
@@ -185,26 +146,15 @@ export class SignerStore implements SignatureOrchestrator {
             const weight = getSignerWeight(address, metadata.config)
             const type = await getSignerType(signer)
 
-            const enabled =
-              type !== SignerType.GUARD ||
-              requests.every(({ status }) => Object.values(status.signers).some(({ state }) => state === SignerState.SIGNED))
-
-            let ready = true
-            if (signer instanceof GuardSigner) {
-              try {
-                const guardStore = this.store.get(GuardStore)
-                const { methods, active } = await guardStore.getAuthMethods()
-                ready = methods.length === 0 || !active
-              } catch (error) {
-                console.error('unable to fetch auth methods', error)
-              }
-            }
+            const enabled = requests.every(({ status }) =>
+              Object.values(status.signers).some(({ state }) => state === SignerState.SIGNED)
+            )
 
             const signed = requests.every(
               ({ status: { signers } }) => address in signers && !isSignerStatusPending(signers[address])
             )
 
-            return { address, weight, type, enabled, ready, status: signed ? 'signed' : 'unsigned' }
+            return { address, weight, type, enabled, ready: true, status: signed ? 'signed' : 'unsigned' }
           })
       )
 
@@ -213,40 +163,31 @@ export class SignerStore implements SignatureOrchestrator {
       }
     })
 
-    this.signerMetadata.subscribe(signerMetadata => {
-      if (signerMetadata.length === 0) {
-        this.mode.set(SigningMode.NONE)
-        return
-      }
+    // this.signerMetadata.subscribe(signerMetadata => {
+    //   if (signerMetadata.length === 0) {
+    //     this.mode.set(SigningMode.NONE)
+    //     return
+    //   }
 
-      if (this.weight.get() >= this.threshold.get()) {
-        this.mode.set(SigningMode.NONE)
-        return
-      }
+    //   if (this.weight.get() >= this.threshold.get()) {
+    //     this.mode.set(SigningMode.NONE)
+    //     return
+    //   }
 
-      const readySigner = signerMetadata.find(({ enabled, ready, status }) => enabled && ready && status === 'unsigned')
-      if (readySigner) {
-        this.promptSigner(readySigner.address)
-        return
-      }
+    //   const readySigner = signerMetadata.find(({ enabled, ready, status }) => enabled && ready && status === 'unsigned')
+    //   if (readySigner) {
+    //     this.promptSigner(readySigner.address)
+    //     return
+    //   }
 
-      const interactiveGuard = signerMetadata.find(
-        ({ type, enabled, ready, status }) => type === SignerType.GUARD && enabled && !ready && status === 'unsigned'
-      )
-      if (interactiveGuard) {
-        this.promptSigner(interactiveGuard.address)
-        return
-      }
-
-      this.mode.set(SigningMode.MANAGER)
-    })
+    //   this.mode.set(SigningMode.MANAGER)
+    // })
   }
 
   reset(reason?: any) {
     const requests = this.requests.get()
     this.requests.set([])
     requests.forEach(({ reject }) => reject(reason))
-    this.signWithGuard = undefined
   }
 
   setRecoverySigner(signer: Wallet) {
@@ -401,43 +342,6 @@ export class SignerStore implements SignatureOrchestrator {
       })
     }
 
-    if (signer instanceof GuardSigner) {
-      const guardStore = this.store.get(GuardStore)
-      const { methods, active } = await guardStore.fetchAuthMethods()
-
-      if (methods.includes(AuthMethod.TOTP) && active) {
-        this.signWithGuard = async (totpCode?: string): Promise<void> => {
-          const requests = this.requests
-            .get()
-            .filter(
-              ({ status: { signers } }) => !(signerAddress in signers) || signers[signerAddress].state === SignerState.INITIAL
-            )
-
-          const request = requests.shift()
-          if (!request) {
-            return
-          }
-
-          // request one signature from the guard using the entered totp code
-          const signature = await signer.sign(request.message, { ...request.metadata, guardTotpCode: totpCode })
-          commitSignatures([request], [signature])
-
-          // if the first request succeeded, then 2fa should be briefly
-          // deactivated and the remaining requests should be fulfilled
-          await Promise.all(
-            requests.map(async request => {
-              const signature = signer.sign(request.message, request.metadata)
-              request.status.signers[signerAddress] = { state: SignerState.SIGNING, request: signature }
-              commitSignatures([request], [await signature])
-            })
-          )
-        }
-
-        this.mode.set(SigningMode.GUARD_TOTP)
-        return
-      }
-    }
-
     await Promise.all(
       this.requests
         .get()
@@ -471,9 +375,6 @@ export class SignerStore implements SignatureOrchestrator {
       ended: false,
       message,
       signers: {
-        [this.getAddress(this.signers.guardSignerV1)]: { state: SignerState.INITIAL },
-        [this.getAddress(this.signers.guardSignerV2)]: { state: SignerState.INITIAL },
-        [this.getAddress(this.signers.testnetGuardSignerV1)]: { state: SignerState.INITIAL },
         ...(this.signers.sessionSigner
           ? { [this.getAddress(this.signers.sessionSigner)]: { state: SignerState.INITIAL } }
           : undefined),
@@ -482,10 +383,6 @@ export class SignerStore implements SignatureOrchestrator {
           : undefined)
       }
     }
-
-    const guardStore = this.store.get(GuardStore)
-
-    await guardStore.fetchAuthMethods()
 
     return new Promise((resolve, reject) => this.requests.update(requests => [...requests, { ...args, status, resolve, reject }]))
   }

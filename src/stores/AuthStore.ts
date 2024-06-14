@@ -106,14 +106,6 @@ export class AuthStore {
             weight: SignerLevel.SILVER
           },
           {
-            address: await signerStore.signers.guardSignerV2.getAddress(),
-            weight: SignerLevel.GOLD
-          },
-          // {
-          //   address: await signerStore.signers.loginSigner.getAddress(),
-          //   weight: SignerLevel.GOLD
-          // },
-          {
             address: recoverySigner.address,
             weight: SignerLevel.RECOVERY
           }
@@ -138,15 +130,18 @@ export class AuthStore {
         },
         onAccountAddress: address => this.accountAddress.set(normalizeAddress(address)),
         editConfigOnMigration: (config: commons.config.Config) => {
+          console.log('editConfigOnMigration')
           return this.migrateGuard(config)
         },
         onMigration: async () => {
           // TODO: check if this is needed
           // this.showV2MigrationNotice = true
-
+          console.log('onMigration')
           return true
         }
       })
+
+      console.log('adsasdasd')
 
       console.log('session?', session)
 
