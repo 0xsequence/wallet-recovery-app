@@ -39,6 +39,8 @@ const testNetworkConfig: NetworkConfig = {
 export class AuthStore {
   constructor(private store: Store) {}
 
+  account: Account | undefined
+
   availableWallets = observable<string[]>([])
 
   selectedWallet = observable<string | undefined>(undefined)
@@ -54,22 +56,29 @@ export class AuthStore {
 
     const orchestrator = new Orchestrator([recoverySigner])
 
-    const account = new Account({
-      address: wallet.wallet,
-      tracker: TRACKER,
-      contexts: SEQUENCE_CONTEXT,
-      orchestrator: orchestrator,
-      networks: [testNetworkConfig]
-    })
-
-    console.log('account', account.address)
-
     try {
-      // TODO: for testing, remove
-      const preparedMessage = prefixEIP191Message('message message')
-      console.log(await account.signMessage(preparedMessage, 137))
+      const account = new Account({
+        address: wallet.wallet,
+        tracker: TRACKER,
+        contexts: SEQUENCE_CONTEXT,
+        orchestrator: orchestrator,
+        networks: [testNetworkConfig]
+      })
+
+      this.account = account
+      console.log('address', account.address)
+      this.accountAddress.set(account.address)
+      console.log('account', this.accountAddress.get())
     } catch (error) {
       console.warn(error)
     }
+
+    // try {
+    //   // TODO: for testing, remove
+    //   const preparedMessage = prefixEIP191Message('message message')
+    //   console.log(await account.signMessage(preparedMessage, 137))
+    // } catch (error) {
+    //   console.warn(error)
+    // }
   }
 }

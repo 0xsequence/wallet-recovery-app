@@ -1,9 +1,25 @@
+import { useEffect } from 'react'
+import { Link, redirect, useNavigate } from 'react-router-dom'
 import { Box, Button, Card, Text } from '@0xsequence/design-system'
-import { Link } from 'react-router-dom'
 
 import sequenceLogo from '../assets/images/sequence-logo.svg'
 
+import { useObservable, useStore } from '../stores'
+import { AuthStore } from '../stores/AuthStore'
+
 function Landing() {
+  const navigate = useNavigate()
+
+  const authStore = useStore(AuthStore)
+  const accountAddress = useObservable(authStore.accountAddress)
+
+  useEffect(() => {
+    if (accountAddress) {
+      console.log('asdasdasd')
+      navigate('/wallet')
+    }
+  }, [accountAddress])
+
   return (
     <Box background="backgroundPrimary" width="full" height="full" alignItems="center" justifyContent="center">
       <Box width="full" style={{ maxWidth: '800px' }}>
