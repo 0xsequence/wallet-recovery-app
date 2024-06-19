@@ -22,7 +22,7 @@ function Recovery() {
   }, [accountAddress])
 
   return (
-    <Box background="backgroundPrimary" width="full" height="full" alignItems="center" justifyContent="center">
+    <Box background="backgroundPrimary" width="full" height="full" paddingX="8" alignItems="center" justifyContent="center">
       <Box width="full" style={{ maxWidth: '800px' }}>
         <Box padding="6" marginTop="16">
           <Box flexDirection="column" alignItems="center" justifyContent="center" gap="6">
@@ -63,7 +63,7 @@ function Recovery() {
               shape="square"
               label="Continue"
               onClick={() => {
-                authStore.signInWithRecoveryKey(mnemonic)
+                authStore.signInWithRecoveryMnemonic(mnemonic)
               }}
               width="full"
               marginTop="16"

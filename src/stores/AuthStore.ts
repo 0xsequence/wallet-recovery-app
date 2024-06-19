@@ -10,8 +10,13 @@ import { TRACKER } from './TrackerStore'
 
 import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
 import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
-import { normalizeAddress } from '../utils/address'
-import { prefixEIP191Message } from '../utils/signing'
+import { IndexedDBKey } from '../constants/storage'
+
+import { Encrypted, createKey, createSaltFromAddress, decrypt, encrypt } from '../utils/crypto'
+import { clearIndexedDB, getIndexedDB } from '../utils/indexeddb'
+
+// import { normalizeAddress } from '../utils/address'
+// import { prefixEIP191Message } from '../utils/signing'
 
 // TODO: remove once network work is done
 const polygonRpcUrl = DEFAULT_PUBLIC_RPC_LIST.get(137)!
@@ -40,7 +45,9 @@ const testNetworkConfig: NetworkConfig = {
 }
 
 export class AuthStore {
-  constructor(private store: Store) {}
+  constructor(private store: Store) {
+    this.loadAccount()
+  }
 
   account: Account | undefined
 
@@ -50,8 +57,8 @@ export class AuthStore {
 
   accountAddress = observable<string | undefined>(undefined)
 
-  async signInWithRecoveryKey(recoveryKey: string) {
-    const recoverySigner = ethers.Wallet.fromMnemonic(recoveryKey)
+  async signInWithRecoveryMnemonic(mnemonic: string) {
+    const recoverySigner = ethers.Wallet.fromMnemonic(mnemonic)
 
     // TODO: add ability to pick a specific wallet
     const wallets = await TRACKER.walletsOfSigner({ signer: recoverySigner.address })
@@ -68,8 +75,9 @@ export class AuthStore {
         networks: [testNetworkConfig]
       })
 
+      await this.encryptRecoveryMnemonic(mnemonic, account.address)
+
       this.account = account
-      console.log('address', account.address)
       this.accountAddress.set(account.address)
       console.log('account', this.accountAddress.get())
     } catch (error) {
@@ -83,5 +91,45 @@ export class AuthStore {
     // } catch (error) {
     //   console.warn(error)
     // }
+  }
+
+  async loadAccount() {
+    const mnemonic = await this.decryptRecoveryMnemonic()
+    console.log('mnemonic', mnemonic)
+    if (mnemonic) {
+      this.signInWithRecoveryMnemonic(mnemonic)
+    }
+  }
+
+  async encryptRecoveryMnemonic(mnemonic: string, address: string) {
+    // Create cryptoKey for encrypting sensitive data
+    const key = await createKey()
+
+    // Encrypt private key
+    const encrypted = await encrypt(key, mnemonic)
+    encrypted.salt = createSaltFromAddress(address)
+
+    // Store encrypted data in indexed db
+    const db = await getIndexedDB(IndexedDBKey.SECURITY)
+    await db.put(IndexedDBKey.SECURITY, key, 'key')
+    await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
+  }
+
+  async decryptRecoveryMnemonic() {
+    const db = await getIndexedDB(IndexedDBKey.SECURITY)
+    const key = await db.get(IndexedDBKey.SECURITY, 'key')
+    const encrypted: Encrypted = await db.get(IndexedDBKey.SECURITY, 'mnemonic')
+
+    if (encrypted) {
+      return decrypt(key, encrypted)
+    }
+
+    return undefined
+  }
+
+  logout() {
+    this.account = undefined
+    this.accountAddress.set(undefined)
+    clearIndexedDB(IndexedDBKey.SECURITY)
   }
 }

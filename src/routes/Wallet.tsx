@@ -26,7 +26,7 @@ function Wallet() {
           <Button label="Settings" variant="text" />
         </Box>
       </Box>
-      <Box width="full" style={{ maxWidth: '800px' }}>
+      <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
         <Card alignItems="center" flexDirection="column" padding="6" marginTop="16">
           <Text variant="large" color="text80" marginBottom="4">
             Your recovered wallet address
