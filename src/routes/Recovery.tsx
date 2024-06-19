@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, redirect, useNavigate } from 'react-router-dom'
-import { Box, Button, Card, Text, TextArea } from '@0xsequence/design-system'
+import { Link, useNavigate } from 'react-router-dom'
+import { Box, Button, Text, TextArea } from '@0xsequence/design-system'
 
 import { useObservable, useStore } from '../stores'
 import { AuthStore } from '../stores/AuthStore'

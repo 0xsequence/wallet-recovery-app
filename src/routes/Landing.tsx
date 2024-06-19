@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, redirect, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Box, Button, Card, Text } from '@0xsequence/design-system'
 
 import sequenceLogo from '../assets/images/sequence-logo.svg'

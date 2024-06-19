@@ -1,5 +1,4 @@
 import { Box, Button, Card, Text } from '@0xsequence/design-system'
-import { Link } from 'react-router-dom'
 
 import { useObservable, useStore } from '../stores'
 import { AuthStore } from '../stores/AuthStore'

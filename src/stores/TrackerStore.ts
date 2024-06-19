@@ -2,7 +2,10 @@ import { trackers } from '@0xsequence/sessions'
 import { ethers } from 'ethers'
 
 import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
-import { polygonRpcUrl } from '../constants/network'
+import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
+
+// TODO: remove once network work is done
+const polygonRpcUrl = DEFAULT_PUBLIC_RPC_LIST.get(137)
 
 // TODO: temporary, remove/update once sessions work is done
 export const LOCAL_TRACKER = new trackers.DedupedTracker(

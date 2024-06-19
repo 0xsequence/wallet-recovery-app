@@ -1,17 +1,20 @@
 import { ethers } from 'ethers'
-
 import { NetworkConfig } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { Orchestrator } from '@0xsequence/signhub'
+import { Account } from '@0xsequence/account'
 
 import { Store, observable } from '.'
 
 import { TRACKER } from './TrackerStore'
 
 import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
+import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
 import { normalizeAddress } from '../utils/address'
-import { Account } from '@0xsequence/account'
 import { prefixEIP191Message } from '../utils/signing'
+
+// TODO: remove once network work is done
+const polygonRpcUrl = DEFAULT_PUBLIC_RPC_LIST.get(137)!
 
 // THROWAWAY_RELAYER_PK is the private key to an account with some ETH on Rinkeby we can use for debugging.
 //
@@ -32,8 +35,8 @@ export const createDebugLocalRelayer = (provider: string | ethers.providers.Json
 const testNetworkConfig: NetworkConfig = {
   name: 'Polygon',
   chainId: 137,
-  rpcUrl: 'https://polygon.drpc.org',
-  relayer: createDebugLocalRelayer('https://polygon.drpc.org')
+  rpcUrl: polygonRpcUrl,
+  relayer: createDebugLocalRelayer(polygonRpcUrl)
 }
 
 export class AuthStore {
