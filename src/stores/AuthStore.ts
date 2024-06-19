@@ -79,7 +79,6 @@ export class AuthStore {
 
       this.account = account
       this.accountAddress.set(account.address)
-      console.log('account', this.accountAddress.get())
     } catch (error) {
       console.warn(error)
     }
@@ -95,7 +94,7 @@ export class AuthStore {
 
   async loadAccount() {
     const mnemonic = await this.decryptRecoveryMnemonic()
-    console.log('mnemonic', mnemonic)
+
     if (mnemonic) {
       this.signInWithRecoveryMnemonic(mnemonic)
     }

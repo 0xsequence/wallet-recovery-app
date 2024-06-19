@@ -15,7 +15,6 @@ function Landing() {
 
   useEffect(() => {
     if (accountAddress) {
-      console.log('asdasdasd')
       navigate('/wallet')
     }
   }, [accountAddress])
