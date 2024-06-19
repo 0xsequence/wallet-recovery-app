@@ -1,48 +1,19 @@
 import { ethers } from 'ethers'
-import { NetworkConfig } from '@0xsequence/network'
-import { LocalRelayer } from '@0xsequence/relayer'
 import { Orchestrator } from '@0xsequence/signhub'
 import { Account } from '@0xsequence/account'
 
 import { Store, observable } from '.'
-
-import { TRACKER } from './TrackerStore'
+import { NetworkStore } from './NetworkStore'
 
 import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
-import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
 import { IndexedDBKey } from '../constants/storage'
 
 import { Encrypted, createKey, createSaltFromAddress, decrypt, encrypt } from '../utils/crypto'
 import { clearIndexedDB, getIndexedDB } from '../utils/indexeddb'
+import { TRACKER } from '../utils/tracker'
 
 // import { normalizeAddress } from '../utils/address'
 // import { prefixEIP191Message } from '../utils/signing'
-
-// TODO: remove once network work is done
-const polygonRpcUrl = DEFAULT_PUBLIC_RPC_LIST.get(137)!
-
-// THROWAWAY_RELAYER_PK is the private key to an account with some ETH on Rinkeby we can use for debugging.
-//
-// Public account address: 0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
-// Etherscan link: https://rinkeby.etherscan.io/address/0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
-const THROWAWAY_RELAYER_PK = '0xa9e1f06cb24d160e02bd6ea84d6ffd0b3457b53d1177382eee85f4d8013419b8'
-
-export const createDebugLocalRelayer = (provider: string | ethers.providers.JsonRpcProvider) => {
-  const signer = new ethers.Wallet(THROWAWAY_RELAYER_PK)
-  if (typeof provider === 'string') {
-    return new LocalRelayer(signer.connect(new ethers.providers.JsonRpcProvider(provider)))
-  } else {
-    return new LocalRelayer(signer.connect(provider))
-  }
-}
-
-// Test network config, will be replaced with a network store that allows modification
-const testNetworkConfig: NetworkConfig = {
-  name: 'Polygon',
-  chainId: 137,
-  rpcUrl: polygonRpcUrl,
-  relayer: createDebugLocalRelayer(polygonRpcUrl)
-}
 
 export class AuthStore {
   constructor(private store: Store) {
@@ -66,13 +37,16 @@ export class AuthStore {
 
     const orchestrator = new Orchestrator([recoverySigner])
 
+    const networkStore = this.store.get(NetworkStore)
+    const networks = networkStore.networks.get()
+
     try {
       const account = new Account({
         address: wallet.wallet,
         tracker: TRACKER,
         contexts: SEQUENCE_CONTEXT,
         orchestrator: orchestrator,
-        networks: [testNetworkConfig]
+        networks: networks
       })
 
       await this.encryptRecoveryMnemonic(mnemonic, account.address)
