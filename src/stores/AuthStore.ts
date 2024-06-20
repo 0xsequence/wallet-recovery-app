@@ -31,8 +31,8 @@ export class AuthStore {
   async signInWithRecoveryMnemonic(mnemonic: string) {
     const recoverySigner = ethers.Wallet.fromMnemonic(mnemonic)
 
-    // TODO: add ability to pick a specific wallet
     const wallets = await TRACKER.walletsOfSigner({ signer: recoverySigner.address })
+
     const wallet = wallets[0]
 
     const orchestrator = new Orchestrator([recoverySigner])
