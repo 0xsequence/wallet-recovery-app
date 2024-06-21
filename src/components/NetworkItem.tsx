@@ -3,7 +3,7 @@ import { NetworkConfig } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useStore } from '../stores'
-import { NetworkStore } from '../stores/NetworkStore'
+import { NetworkStore, createDebugLocalRelayer } from '../stores/NetworkStore'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)
@@ -71,6 +71,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
                   const updated = network
                   updated.rpcUrl = rpcUrl
                   updated.blockExplorer = { rootUrl: blockExplorerUrl }
+                  updated.relayer = createDebugLocalRelayer(rpcUrl)
                   networkStore.editNetwork(updated)
                 }}
               />

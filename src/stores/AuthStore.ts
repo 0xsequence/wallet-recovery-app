@@ -18,6 +18,14 @@ import { TRACKER } from '../utils/tracker'
 export class AuthStore {
   constructor(private store: Store) {
     this.loadAccount()
+
+    // Update Account when networks change
+    const networkStore = this.store.get(NetworkStore)
+    networkStore.networks.subscribe(_ => {
+      if (this.account) {
+        this.loadAccount()
+      }
+    })
   }
 
   account: Account | undefined

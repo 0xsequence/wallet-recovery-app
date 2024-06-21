@@ -47,6 +47,7 @@ export class NetworkStore {
       const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
 
       if (userEdit) {
+        userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
         updatedNetworkConfigs.push(userEdit)
         continue
       }
