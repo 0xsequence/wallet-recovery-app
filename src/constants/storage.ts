@@ -1,6 +1,6 @@
 export enum LocalStorageKey {
-  LOGIN_KEY_ADDRESS = '@sequence.loginKeyAddr',
-  SESSION_DUMP = '@sequence.session.dump'
+  NETWORKS_USER_EDITS = '@sequence-recovery.networks-user-edits',
+  NETWORKS_USER_ADDITIONS = '@sequence-recovery.networks-user-additions'
 }
 
 export enum IndexedDBKey {

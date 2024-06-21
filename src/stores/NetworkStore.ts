@@ -5,6 +5,8 @@ import { ethers } from 'ethers'
 import { Store, observable } from '.'
 
 import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
+import { LocalStore } from './LocalStore'
+import { LocalStorageKey } from '../constants/storage'
 
 // THROWAWAY_RELAYER_PK is the private key to an account with some ETH on Rinkeby we can use for debugging.
 //
@@ -24,11 +26,30 @@ export const createDebugLocalRelayer = (provider: string | ethers.providers.Json
 export class NetworkStore {
   networks = observable<NetworkConfig[]>([])
 
+  editedNetworkChainIds = observable<number[]>([])
+
+  private local = {
+    networksUserEdits: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_EDITS)
+  }
+
   constructor(private store: Store) {
+    this.prepareNetworks()
+  }
+
+  private async prepareNetworks() {
     const updatedNetworkConfigs: NetworkConfig[] = []
+
+    const userEdits = this.local.networksUserEdits.get()
 
     for (const [key, value] of Object.entries(networks)) {
       const updatedNetworkConfig = value as NetworkConfig
+
+      const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
+
+      if (userEdit) {
+        updatedNetworkConfigs.push(userEdit)
+        continue
+      }
 
       const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))
 
@@ -44,6 +65,36 @@ export class NetworkStore {
       }
     }
 
+    this.editedNetworkChainIds.set(userEdits?.map(n => n.chainId) ?? [])
+
     this.networks.set(updatedNetworkConfigs)
+  }
+
+  editNetwork(network: NetworkConfig) {
+    const userEdits = this.local.networksUserEdits.get()
+
+    if (userEdits) {
+      if (userEdits.some(n => n.chainId === network.chainId)) {
+        const update = userEdits.map(n => (n.chainId !== network.chainId ? n : network))
+        this.local.networksUserEdits.set(update)
+      } else {
+        userEdits.push(network)
+        this.local.networksUserEdits.set(userEdits)
+      }
+    } else {
+      this.local.networksUserEdits.set([network])
+    }
+
+    this.prepareNetworks()
+  }
+
+  resetNetworkEdit(chainId: number) {
+    const userEdits = this.local.networksUserEdits.get()
+
+    const filtered = userEdits?.filter(n => n.chainId !== chainId)
+
+    this.local.networksUserEdits.set(filtered)
+
+    this.prepareNetworks()
   }
 }

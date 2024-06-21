@@ -1,9 +1,10 @@
-import { Box, Button, Card, TabsContent, TabsHeader, TabsRoot, Text, TextInput } from '@0xsequence/design-system'
+import { Box, TabsContent, TabsHeader, TabsRoot, Text } from '@0xsequence/design-system'
 
 import { useObservable, useStore } from '../stores'
 import { NetworkStore } from '../stores/NetworkStore'
 import { useState } from 'react'
 import { NetworkType } from '@0xsequence/network'
+import NetworkItem from './NetworkItem'
 
 function Networks() {
   const networkStore = useStore(NetworkStore)
@@ -31,7 +32,10 @@ function Networks() {
       </Box>
 
       <Box width="full" marginTop="4" paddingBottom="4">
-        <TabsRoot value={selectedNetworkType} onValueChange={value => setSelectedNetworkType(value as NetworkType)}>
+        <TabsRoot
+          value={selectedNetworkType}
+          onValueChange={value => setSelectedNetworkType(value as NetworkType)}
+        >
           <Box marginBottom="10">
             <TabsHeader
               value={selectedNetworkType}
@@ -45,19 +49,7 @@ function Networks() {
           <TabsContent value={NetworkType.MAINNET}>
             <Box flexDirection="column" gap="2">
               {mainnets.map((network, i) => (
-                <Box key={i}>
-                  <Text variant="normal" color="text100">
-                    {network.name}
-                  </Text>
-                  <TextInput
-                    label="RPC URL"
-                    labelLocation="top"
-                    name="indexer"
-                    spellCheck={false}
-                    value={network.rpcUrl}
-                    // onChange={ev => setIndexerUrl(ev.target.value)}
-                  />
-                </Box>
+                <NetworkItem key={i} network={network} />
               ))}
             </Box>
           </TabsContent>
@@ -65,19 +57,7 @@ function Networks() {
           <TabsContent value={NetworkType.TESTNET}>
             <Box flexDirection="column" gap="2">
               {testnets.map((network, i) => (
-                <Box key={i}>
-                  <Text variant="normal" color="text100">
-                    {network.name}
-                  </Text>
-                  <TextInput
-                    label="RPC URL"
-                    labelLocation="top"
-                    name="indexer"
-                    spellCheck={false}
-                    value={network.rpcUrl}
-                    // onChange={ev => setIndexerUrl(ev.target.value)}
-                  />
-                </Box>
+                <NetworkItem key={i} network={network} />
               ))}
             </Box>
           </TabsContent>
