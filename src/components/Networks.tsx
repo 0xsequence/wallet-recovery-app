@@ -1,4 +1,13 @@
-import { Box, TabsContent, TabsHeader, TabsRoot, Text } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Divider,
+  TabsContent,
+  TabsHeader,
+  TabsRoot,
+  Text,
+  TextInput
+} from '@0xsequence/design-system'
 
 import { useObservable, useStore } from '../stores'
 import { NetworkStore } from '../stores/NetworkStore'
@@ -14,6 +23,8 @@ function Networks() {
   const testnets = networks.filter(network => network.type === NetworkType.TESTNET)
 
   const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkType>(NetworkType.MAINNET)
+
+  const [isAddNetworkActive, setIsAddNetworkActive] = useState(false)
 
   return (
     <Box
@@ -48,9 +59,49 @@ function Networks() {
 
           <TabsContent value={NetworkType.MAINNET}>
             <Box flexDirection="column" gap="2">
-              {mainnets.map((network, i) => (
-                <NetworkItem key={i} network={network} />
-              ))}
+              <Box width="full" flexDirection="column" alignItems="flex-end" marginY="4">
+                <Button
+                  label="Add network"
+                  variant="primary"
+                  size="md"
+                  shape="square"
+                  onClick={() => {
+                    setIsAddNetworkActive(true)
+                  }}
+                />
+                <>
+                  {isAddNetworkActive && (
+                    <Box flexDirection="column" width="full" marginTop="4" gap="4">
+                      <TextInput width="full" label="Chain ID" labelLocation="left" name="chainId" />
+                      <TextInput width="full" label="Network Name" labelLocation="left" name="networkName" />
+                      <TextInput width="full" label="RPC URL" labelLocation="left" name="rpcUrl" />
+                      <TextInput width="full" label="Block explorer URL" labelLocation="left" name="rpcUrl" />
+                      <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
+                        <Button
+                          label="Cancel"
+                          variant="text"
+                          size="md"
+                          shape="square"
+                          onClick={() => setIsAddNetworkActive(false)}
+                        />
+                        <Button
+                          label="Add"
+                          variant="primary"
+                          size="md"
+                          shape="square"
+                          onClick={() => setIsAddNetworkActive(false)}
+                        />
+                      </Box>
+                      <Divider />
+                    </Box>
+                  )}
+                </>
+              </Box>
+              <>
+                {mainnets.map((network, i) => (
+                  <NetworkItem key={i} network={network} />
+                ))}
+              </>
             </Box>
           </TabsContent>
 
