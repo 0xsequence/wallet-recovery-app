@@ -28,15 +28,17 @@ export class AuthStore {
     })
   }
 
-  account: Account | undefined
+  isLoadingAccount = observable(true)
 
-  availableWallets = observable<string[]>([])
+  account: Account | undefined
 
   selectedWallet = observable<string | undefined>(undefined)
 
   accountAddress = observable<string | undefined>(undefined)
 
   async signInWithRecoveryMnemonic(mnemonic: string) {
+    this.isLoadingAccount.set(true)
+
     const recoverySigner = ethers.Wallet.fromMnemonic(mnemonic)
 
     const wallets = await TRACKER.walletsOfSigner({ signer: recoverySigner.address })
@@ -65,6 +67,8 @@ export class AuthStore {
       console.warn(error)
     }
 
+    this.isLoadingAccount.set(false)
+
     // try {
     //   // TODO: for testing, remove
     //   const preparedMessage = prefixEIP191Message('message message')
@@ -79,6 +83,10 @@ export class AuthStore {
 
     if (mnemonic) {
       this.signInWithRecoveryMnemonic(mnemonic)
+    } else {
+      setTimeout(() => {
+        this.isLoadingAccount.set(false)
+      }, 200)
     }
   }
 

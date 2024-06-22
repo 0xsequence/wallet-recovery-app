@@ -14,9 +14,9 @@ export const AppRouter = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={hasAccount ? <Landing /> : <Navigate replace to="/wallet" />} />
-        <Route path="recovery" element={hasAccount ? <Recovery /> : <Navigate replace to="/wallet" />} />
-        <Route path="wallet" element={<Wallet />} />
+        <Route path="/" element={!hasAccount ? <Landing /> : <Navigate replace to="/wallet" />} />
+        <Route path="recovery" element={!hasAccount ? <Recovery /> : <Navigate replace to="/wallet" />} />
+        <Route path="wallet" element={hasAccount ? <Wallet /> : <Navigate replace to="/" />} />
       </Routes>
     </Router>
   )

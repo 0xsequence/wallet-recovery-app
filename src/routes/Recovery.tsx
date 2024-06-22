@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Box, Button, Text, TextArea } from '@0xsequence/design-system'
+import { Box, Button, Card, Spinner, Text, TextArea } from '@0xsequence/design-system'
 
-import { useStore } from '../stores'
+import { useObservable, useStore } from '../stores'
 import { AuthStore } from '../stores/AuthStore'
 
 import sequenceLogo from '../assets/images/sequence-logo.svg'
@@ -10,6 +10,8 @@ import sequenceLogo from '../assets/images/sequence-logo.svg'
 function Recovery() {
   const authStore = useStore(AuthStore)
   const [mnemonic, setMnemonic] = useState('')
+
+  const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
   return (
     <Box
@@ -23,14 +25,14 @@ function Recovery() {
       <Box width="full" style={{ maxWidth: '800px' }}>
         <Box padding="6" marginTop="16">
           <Box flexDirection="column" alignItems="center" justifyContent="center" gap="6">
-            <img src={sequenceLogo} alt="Sequence Logo" width="100" />
+            <img src={sequenceLogo} alt="Sequence Logo" style={{ width: '100px', height: '100px' }} />
             <Text variant="large" color="text100" textAlign="center">
               Sequence <br /> Wallet Recovery
             </Text>
           </Box>
         </Box>
 
-        <Box marginTop="16">
+        <Box marginTop="12">
           <Box alignItems="center" justifyContent="center" flexDirection="column">
             <Text variant="medium" color="text100" textAlign="center">
               Enter your recovery phrase
@@ -41,7 +43,7 @@ function Recovery() {
             </Text>
           </Box>
 
-          <Box marginTop="16">
+          <Box marginTop="12">
             <TextArea
               name="mnemonic"
               label="Recovery Phrase"
@@ -53,31 +55,42 @@ function Recovery() {
         </Box>
 
         <Box alignItems="center" justifyContent="center" flexDirection="column">
-          <Box>
-            <Button
-              variant="primary"
-              size="lg"
-              shape="square"
-              label="Continue"
-              onClick={() => {
-                authStore.signInWithRecoveryMnemonic(mnemonic)
-              }}
-              width="full"
-              marginTop="16"
-            />
-          </Box>
-          <Box>
-            <Button
-              as={Link}
-              to="/"
-              variant="text"
-              size="lg"
-              shape="square"
-              label="Go back to start"
-              width="full"
-              marginTop="6"
-            />
-          </Box>
+          {isLoadingAccount && (
+            <Box marginTop="16" alignItems="center" justifyContent="center">
+              <Card width="16" alignItems="center" justifyContent="center">
+                <Spinner size="lg" />
+              </Card>
+            </Box>
+          )}
+          {!isLoadingAccount && (
+            <>
+              <Box>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  shape="square"
+                  label="Continue"
+                  onClick={() => {
+                    authStore.signInWithRecoveryMnemonic(mnemonic)
+                  }}
+                  width="full"
+                  marginTop="16"
+                />
+              </Box>
+              <Box>
+                <Button
+                  as={Link}
+                  to="/"
+                  variant="text"
+                  size="lg"
+                  shape="square"
+                  label="Go back to start"
+                  width="full"
+                  marginTop="6"
+                />
+              </Box>
+            </>
+          )}
         </Box>
       </Box>
     </Box>
