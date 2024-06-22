@@ -1,20 +1,23 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 
 import Landing from './Landing'
 import Recovery from './Recovery'
 import Wallet from './Wallet'
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Landing />
-  },
-  {
-    path: 'recovery',
-    element: <Recovery />
-  },
-  {
-    path: 'wallet',
-    element: <Wallet />
-  }
-])
+import { useObservable, useStore } from '../stores'
+import { AuthStore } from '../stores/AuthStore'
+
+export const AppRouter = () => {
+  const authStore = useStore(AuthStore)
+  const hasAccount = useObservable(authStore.accountAddress)
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={hasAccount ? <Landing /> : <Navigate replace to="/wallet" />} />
+        <Route path="recovery" element={hasAccount ? <Recovery /> : <Navigate replace to="/wallet" />} />
+        <Route path="wallet" element={<Wallet />} />
+      </Routes>
+    </Router>
+  )
+}

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Box,
   Button,
@@ -8,11 +9,11 @@ import {
   Text,
   TextInput
 } from '@0xsequence/design-system'
+import { NetworkType } from '@0xsequence/network'
 
 import { useObservable, useStore } from '../stores'
 import { NetworkStore } from '../stores/NetworkStore'
-import { useState } from 'react'
-import { NetworkType } from '@0xsequence/network'
+
 import NetworkItem from './NetworkItem'
 
 function Networks() {

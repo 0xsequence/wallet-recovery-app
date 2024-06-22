@@ -1,26 +1,18 @@
-import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Box, Button, Card, Text } from '@0xsequence/design-system'
 
 import sequenceLogo from '../assets/images/sequence-logo.svg'
 
-import { useObservable, useStore } from '../stores'
-import { AuthStore } from '../stores/AuthStore'
-
 function Landing() {
-  const navigate = useNavigate()
-
-  const authStore = useStore(AuthStore)
-  const accountAddress = useObservable(authStore.accountAddress)
-
-  useEffect(() => {
-    if (accountAddress) {
-      navigate('/wallet')
-    }
-  }, [accountAddress])
-
   return (
-    <Box background="backgroundPrimary" width="full" height="full" paddingX="8" alignItems="center" justifyContent="center">
+    <Box
+      background="backgroundPrimary"
+      width="full"
+      height="full"
+      paddingX="8"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Box width="full" style={{ maxWidth: '800px' }}>
         <Box padding="6" marginTop="16">
           <Box flexDirection="column" alignItems="center" justifyContent="center" gap="6">
@@ -38,12 +30,13 @@ function Landing() {
             </Text>
 
             <Text variant="normal" color="text100" marginBottom="4">
-              At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque
-              corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa
-              qui officia deserunt mollitia animi, id est laborum et dolorum fuga. At vero eos et accusamus et iusto odio
-              dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias
-              excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id
-              est laborum et dolorum fuga.
+              At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum
+              deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non
+              provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et
+              dolorum fuga. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
+              praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint
+              occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi,
+              id est laborum et dolorum fuga.
             </Text>
           </Card>
         </Box>

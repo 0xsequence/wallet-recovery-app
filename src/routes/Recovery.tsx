@@ -1,28 +1,25 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Box, Button, Text, TextArea } from '@0xsequence/design-system'
 
-import { useObservable, useStore } from '../stores'
+import { useStore } from '../stores'
 import { AuthStore } from '../stores/AuthStore'
 
 import sequenceLogo from '../assets/images/sequence-logo.svg'
 
 function Recovery() {
-  const navigate = useNavigate()
-
   const authStore = useStore(AuthStore)
   const [mnemonic, setMnemonic] = useState('')
 
-  const accountAddress = useObservable(authStore.accountAddress)
-
-  useEffect(() => {
-    if (accountAddress) {
-      navigate('/wallet')
-    }
-  }, [accountAddress])
-
   return (
-    <Box background="backgroundPrimary" width="full" height="full" paddingX="8" alignItems="center" justifyContent="center">
+    <Box
+      background="backgroundPrimary"
+      width="full"
+      height="full"
+      paddingX="8"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Box width="full" style={{ maxWidth: '800px' }}>
         <Box padding="6" marginTop="16">
           <Box flexDirection="column" alignItems="center" justifyContent="center" gap="6">
