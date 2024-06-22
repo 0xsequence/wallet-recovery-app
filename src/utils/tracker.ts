@@ -1,8 +1,8 @@
 import { trackers } from '@0xsequence/sessions'
 import { ethers } from 'ethers'
 
-import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
-import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
+import { DEFAULT_PUBLIC_RPC_LIST } from '~/constants/network'
+import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 
 // TODO: remove once network work is done, this should use rpc from NetworkStore.networks
 const polygonRpcUrl = DEFAULT_PUBLIC_RPC_LIST.get(137)

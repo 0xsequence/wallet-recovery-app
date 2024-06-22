@@ -1,11 +1,12 @@
-import { useState } from 'react'
 import { Box, Button, Card, Modal, Text } from '@0xsequence/design-system'
+import { useState } from 'react'
 
-import { useObservable, useStore } from '../stores'
-import { AuthStore } from '../stores/AuthStore'
+import { useObservable, useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
 
-import sequenceLogo from '../assets/images/sequence-logo.svg'
-import Networks from '../components/Networks'
+import Networks from '~/components/Networks'
+
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Wallet() {
   const authStore = useStore(AuthStore)
@@ -26,10 +27,22 @@ function Wallet() {
         alignItems="center"
         justifyContent="center"
       >
-        <Box flexDirection="row" width="full" background="backgroundMuted" paddingX="8" paddingY="4" alignItems="center">
+        <Box
+          flexDirection="row"
+          width="full"
+          background="backgroundMuted"
+          paddingX="8"
+          paddingY="4"
+          alignItems="center"
+        >
           <img src={sequenceLogo} alt="Sequence Logo" width="40" />
           <Box marginLeft="auto">
-            <Button label="Networks" variant="text" marginRight="8" onClick={() => setIsNetworkModalOpen(true)} />
+            <Button
+              label="Networks"
+              variant="text"
+              marginRight="8"
+              onClick={() => setIsNetworkModalOpen(true)}
+            />
             <Button label="Settings" variant="text" />
           </Box>
         </Box>

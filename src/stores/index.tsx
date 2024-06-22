@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react'
+import { ReactNode, createContext, useContext } from 'react'
 
 type StoreConstructor<T> = new (store: Store) => T
 
@@ -12,11 +12,8 @@ type StoreConstructor<T> = new (store: Store) => T
     const walletStore = await this.store.getAsync<WalletStore>(import('./WalletStore'), 'WalletStore')
 */
 
-export type ImportStore<T, K extends keyof T> = T extends Record<K, infer S>
-  ? S extends new (...args: any[]) => infer R
-    ? R
-    : never
-  : never
+export type ImportStore<T, K extends keyof T> =
+  T extends Record<K, infer S> ? (S extends new (...args: any[]) => infer R ? R : never) : never
 
 export class Store {
   stores: { [key: string]: any } = {}
@@ -80,4 +77,10 @@ export function useRootStore() {
   return store
 }
 
-export { Observable, observable, useObservable, useMemoizedObservable, useComputedObservable } from 'micro-observables'
+export {
+  Observable,
+  observable,
+  useObservable,
+  useMemoizedObservable,
+  useComputedObservable
+} from 'micro-observables'

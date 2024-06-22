@@ -1,9 +1,10 @@
+import { Box, Button, Card, Spinner, Text } from '@0xsequence/design-system'
 import { Link } from 'react-router-dom'
-import { Box, Button, Card, Image, Spinner, Text } from '@0xsequence/design-system'
 
-import sequenceLogo from '../assets/images/sequence-logo.svg'
-import { useObservable, useStore } from '../stores'
-import { AuthStore } from '../stores/AuthStore'
+import { useObservable, useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
+
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Landing() {
   const authStore = useStore(AuthStore)

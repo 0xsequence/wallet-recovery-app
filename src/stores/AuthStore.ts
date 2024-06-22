@@ -1,19 +1,19 @@
-import { ethers } from 'ethers'
-import { Orchestrator } from '@0xsequence/signhub'
 import { Account } from '@0xsequence/account'
+import { Orchestrator } from '@0xsequence/signhub'
+import { ethers } from 'ethers'
+
+import { Encrypted, createKey, createSaltFromAddress, decrypt, encrypt } from '~/utils/crypto'
+import { clearIndexedDB, getIndexedDB } from '~/utils/indexeddb'
+import { TRACKER } from '~/utils/tracker'
+
+import { IndexedDBKey } from '~/constants/storage'
+import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 
 import { Store, observable } from '.'
 import { NetworkStore } from './NetworkStore'
 
-import { SEQUENCE_CONTEXT } from '../constants/wallet-context'
-import { IndexedDBKey } from '../constants/storage'
-
-import { Encrypted, createKey, createSaltFromAddress, decrypt, encrypt } from '../utils/crypto'
-import { clearIndexedDB, getIndexedDB } from '../utils/indexeddb'
-import { TRACKER } from '../utils/tracker'
-
-// import { normalizeAddress } from '../utils/address'
-// import { prefixEIP191Message } from '../utils/signing'
+// import { normalizeAddress } from '~/utils/address'
+// import { prefixEIP191Message } from '~/utils/signing'
 
 export class AuthStore {
   constructor(private store: Store) {

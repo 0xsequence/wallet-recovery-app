@@ -21,7 +21,10 @@ export const createKeyFromPassword = async (password: string, salt: Uint8Array) 
   const encoder = new TextEncoder()
   const encodedPassword = encoder.encode(password)
 
-  const passwordKey = await window.crypto.subtle.importKey('raw', encodedPassword, 'PBKDF2', false, ['deriveBits', 'deriveKey'])
+  const passwordKey = await window.crypto.subtle.importKey('raw', encodedPassword, 'PBKDF2', false, [
+    'deriveBits',
+    'deriveKey'
+  ])
 
   const derivedKey = await window.crypto.subtle.deriveKey(
     {

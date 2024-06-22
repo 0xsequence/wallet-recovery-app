@@ -1,13 +1,14 @@
+import { ThemeProvider } from '@0xsequence/design-system'
+import '@0xsequence/design-system/styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ThemeProvider } from '@0xsequence/design-system'
 
-import './css/reset.css'
-import '@0xsequence/design-system/styles.css'
-import './css/global.css'
+import { StoreProvider, createStore } from '~/stores/index.tsx'
 
-import { AppRouter } from './routes/index.tsx'
-import { StoreProvider, createStore } from './stores/index.tsx'
+import { AppRouter } from '~/routes/index.tsx'
+
+import '~/css/global.css'
+import '~/css/reset.css'
 
 const store = createStore()
 

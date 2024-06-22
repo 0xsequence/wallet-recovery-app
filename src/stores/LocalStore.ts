@@ -4,7 +4,10 @@ export class LocalStore<T extends Object = string, K extends T | undefined = und
   private _observable: WritableObservable<T | K> | undefined = undefined
   readonly key: string
 
-  constructor(key: string, public def?: K) {
+  constructor(
+    key: string,
+    public def?: K
+  ) {
     this.key = key
   }
 
@@ -39,7 +42,9 @@ export class LocalStore<T extends Object = string, K extends T | undefined = und
   }
 
   set(val: T | K) {
-    val !== undefined ? window.localStorage.setItem(this.key, JSON.stringify(val)) : window.localStorage.removeItem(this.key)
+    val !== undefined
+      ? window.localStorage.setItem(this.key, JSON.stringify(val))
+      : window.localStorage.removeItem(this.key)
     this._observable?.set(val)
   }
 

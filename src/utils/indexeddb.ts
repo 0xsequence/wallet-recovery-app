@@ -1,6 +1,6 @@
 import * as idb from 'idb'
 
-import { IndexedDBKey } from '../constants/storage'
+import { IndexedDBKey } from '~/constants/storage'
 
 const DB_NAME = '@sequence-recovery'
 const DB_VERSION = 1

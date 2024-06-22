@@ -1,11 +1,11 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 
+import { useObservable, useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
+
 import Landing from './Landing'
 import Recovery from './Recovery'
 import Wallet from './Wallet'
-
-import { useObservable, useStore } from '../stores'
-import { AuthStore } from '../stores/AuthStore'
 
 export const AppRouter = () => {
   const authStore = useStore(AuthStore)

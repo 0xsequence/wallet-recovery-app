@@ -2,8 +2,8 @@ import { Box, Button, Divider, Text, TextInput } from '@0xsequence/design-system
 import { NetworkConfig } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
-import { useStore } from '../stores'
-import { NetworkStore, createDebugLocalRelayer } from '../stores/NetworkStore'
+import { useStore } from '~/stores'
+import { NetworkStore, createDebugLocalRelayer } from '~/stores/NetworkStore'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)

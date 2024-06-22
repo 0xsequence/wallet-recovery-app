@@ -2,11 +2,11 @@ import { NetworkConfig, networks } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers } from 'ethers'
 
-import { Store, observable } from '.'
+import { DEFAULT_PUBLIC_RPC_LIST } from '~/constants/network'
+import { LocalStorageKey } from '~/constants/storage'
 
-import { DEFAULT_PUBLIC_RPC_LIST } from '../constants/network'
+import { Store, observable } from '.'
 import { LocalStore } from './LocalStore'
-import { LocalStorageKey } from '../constants/storage'
 
 // THROWAWAY_RELAYER_PK is the private key to an account with some ETH on Rinkeby we can use for debugging.
 //

@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 
-import { NATIVE_TOKEN_ADDRESS, ZERO_ADDRESS } from '../constants/address'
+import { NATIVE_TOKEN_ADDRESS, ZERO_ADDRESS } from '~/constants/address'
 
 export const isAddress = (address: string): boolean => {
   try {
@@ -14,7 +14,11 @@ export const isAddress = (address: string): boolean => {
 }
 
 export const isNativeTokenAddress = (address: string) => {
-  return address === '0x0' || compareAddress(address, ZERO_ADDRESS) || compareAddress(address, NATIVE_TOKEN_ADDRESS)
+  return (
+    address === '0x0' ||
+    compareAddress(address, ZERO_ADDRESS) ||
+    compareAddress(address, NATIVE_TOKEN_ADDRESS)
+  )
 }
 
 export const normalizeAddress = ethers.utils.getAddress

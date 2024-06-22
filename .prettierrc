@@ -5,5 +5,25 @@
   "singleQuote": true,
   "trailingComma": "none",
   "arrowParens": "avoid",
-  "printWidth": 110
+  "printWidth": 110,
+  "importOrder": [
+    "^~/utils/(.*)$",
+    "^~/models/(.*)$",
+    "^~/constants/(.*)$",
+    "^~/locales/(.*)$",
+    "^~/styles/(.*)$",
+    "^~/types/(.*)$",
+    "^~/rpc/(.*)$",
+    "^~/hooks/(.*)$",
+    "^~/stores",
+    "^~/stores/(.*)$",
+    "^~/routes/(.*)$",
+    "^~/components/(.*)$",
+    "^~/assets/(.*)$",
+    "^~/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }

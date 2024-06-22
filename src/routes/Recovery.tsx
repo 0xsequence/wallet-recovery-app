@@ -1,11 +1,11 @@
+import { Box, Button, Card, Spinner, Text, TextArea } from '@0xsequence/design-system'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Box, Button, Card, Spinner, Text, TextArea } from '@0xsequence/design-system'
 
-import { useObservable, useStore } from '../stores'
-import { AuthStore } from '../stores/AuthStore'
+import { useObservable, useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
 
-import sequenceLogo from '../assets/images/sequence-logo.svg'
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)

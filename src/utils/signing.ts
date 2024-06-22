@@ -11,5 +11,9 @@ const messageToBytes = (message: BytesLike): Uint8Array => {
 export const prefixEIP191Message = (message: BytesLike): Uint8Array => {
   const messageBytes = messageToBytes(message)
   const eip191prefix = ethers.utils.toUtf8Bytes('\x19Ethereum Signed Message:\n')
-  return ethers.utils.concat([eip191prefix, ethers.utils.toUtf8Bytes(String(messageBytes.length)), messageBytes])
+  return ethers.utils.concat([
+    eip191prefix,
+    ethers.utils.toUtf8Bytes(String(messageBytes.length)),
+    messageBytes
+  ])
 }
