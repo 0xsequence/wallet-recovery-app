@@ -14,13 +14,19 @@ import { useState } from 'react'
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 
+import AddNetwork from './AddNetwork'
 import NetworkItem from './NetworkItem'
 
-function Networks() {
+export default function Networks() {
   const networkStore = useStore(NetworkStore)
 
   const networks = useObservable(networkStore.networks)
   const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
+
+  const userAdditions = useObservable(networkStore.userAdditionNetworkChainIds)
+  // Move user additions to top
+  const sortedMainnets = mainnets.sort((a, _) => (userAdditions.includes(a.chainId) ? -1 : 1))
+
   const testnets = networks.filter(network => network.type === NetworkType.TESTNET)
 
   const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkType>(NetworkType.MAINNET)
@@ -70,36 +76,10 @@ function Networks() {
                     setIsAddNetworkActive(true)
                   }}
                 />
-                <>
-                  {isAddNetworkActive && (
-                    <Box flexDirection="column" width="full" marginTop="4" gap="4">
-                      <TextInput width="full" label="Chain ID" labelLocation="left" name="chainId" />
-                      <TextInput width="full" label="Network Name" labelLocation="left" name="networkName" />
-                      <TextInput width="full" label="RPC URL" labelLocation="left" name="rpcUrl" />
-                      <TextInput width="full" label="Block explorer URL" labelLocation="left" name="rpcUrl" />
-                      <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
-                        <Button
-                          label="Cancel"
-                          variant="text"
-                          size="md"
-                          shape="square"
-                          onClick={() => setIsAddNetworkActive(false)}
-                        />
-                        <Button
-                          label="Add"
-                          variant="primary"
-                          size="md"
-                          shape="square"
-                          onClick={() => setIsAddNetworkActive(false)}
-                        />
-                      </Box>
-                      <Divider />
-                    </Box>
-                  )}
-                </>
+                {isAddNetworkActive && <AddNetwork onClose={() => setIsAddNetworkActive(false)} />}
               </Box>
               <>
-                {mainnets.map((network, i) => (
+                {sortedMainnets.map((network, i) => (
                   <NetworkItem key={i} network={network} />
                 ))}
               </>
@@ -118,5 +98,3 @@ function Networks() {
     </Box>
   )
 }
-
-export default Networks

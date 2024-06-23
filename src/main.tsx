@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@0xsequence/design-system'
+import { ThemeProvider, ToastProvider } from '@0xsequence/design-system'
 import '@0xsequence/design-system/styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -16,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <StoreProvider store={store}>
       <ThemeProvider theme="dark">
-        <AppRouter />
+        <ToastProvider>
+          <AppRouter />
+        </ToastProvider>
       </ThemeProvider>
     </StoreProvider>
   </React.StrictMode>

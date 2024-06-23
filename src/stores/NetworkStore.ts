@@ -27,9 +27,11 @@ export class NetworkStore {
   networks = observable<NetworkConfig[]>([])
 
   editedNetworkChainIds = observable<number[]>([])
+  userAdditionNetworkChainIds = observable<number[]>([])
 
   private local = {
-    networksUserEdits: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_EDITS)
+    networksUserEdits: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_EDITS),
+    networksUserAdditions: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_ADDITIONS)
   }
 
   constructor(private store: Store) {
@@ -66,24 +68,28 @@ export class NetworkStore {
       }
     }
 
-    this.editedNetworkChainIds.set(userEdits?.map(n => n.chainId) ?? [])
+    this.local.networksUserAdditions.get()?.forEach(network => {
+      console.log('Adding network', network)
+      network.relayer = createDebugLocalRelayer(network.rpcUrl)
+      updatedNetworkConfigs.push(network)
+    })
 
+    this.editedNetworkChainIds.set(userEdits?.map(n => n.chainId) ?? [])
+    this.userAdditionNetworkChainIds.set(this.local.networksUserAdditions.get()?.map(n => n.chainId) ?? [])
+
+    console.log('Updated networks', JSON.stringify(updatedNetworkConfigs, null, 2))
     this.networks.set(updatedNetworkConfigs)
   }
 
   editNetwork(network: NetworkConfig) {
-    const userEdits = this.local.networksUserEdits.get()
+    const userEdits = this.local.networksUserEdits.get() ?? []
 
-    if (userEdits) {
-      if (userEdits.some(n => n.chainId === network.chainId)) {
-        const update = userEdits.map(n => (n.chainId !== network.chainId ? n : network))
-        this.local.networksUserEdits.set(update)
-      } else {
-        userEdits.push(network)
-        this.local.networksUserEdits.set(userEdits)
-      }
+    if (userEdits.some(n => n.chainId === network.chainId)) {
+      const update = userEdits.map(n => (n.chainId !== network.chainId ? n : network))
+      this.local.networksUserEdits.set(update)
     } else {
-      this.local.networksUserEdits.set([network])
+      userEdits.push(network)
+      this.local.networksUserEdits.set(userEdits)
     }
 
     this.prepareNetworks()
@@ -95,6 +101,31 @@ export class NetworkStore {
     const filtered = userEdits?.filter(n => n.chainId !== chainId)
 
     this.local.networksUserEdits.set(filtered)
+
+    this.prepareNetworks()
+  }
+
+  async addNetwork(network: NetworkConfig) {
+    const userNetworks = this.local.networksUserAdditions.get() ?? []
+
+    const alreadyExists = this.networks.get().some(n => n.chainId === network.chainId)
+
+    if (alreadyExists) {
+      throw new Error(`Network with chainId ${network.chainId} already exists`)
+    }
+
+    userNetworks.push(network)
+    this.local.networksUserAdditions.set(userNetworks)
+
+    this.prepareNetworks()
+  }
+
+  removeNetwork(chainId: number) {
+    const userNetworks = this.local.networksUserAdditions.get()
+
+    const filtered = userNetworks?.filter(n => n.chainId !== chainId)
+
+    this.local.networksUserAdditions.set(filtered)
 
     this.prepareNetworks()
   }

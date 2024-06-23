@@ -2,11 +2,14 @@ import { Box, Button, Divider, Text, TextInput } from '@0xsequence/design-system
 import { NetworkConfig } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { NetworkStore, createDebugLocalRelayer } from '~/stores/NetworkStore'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)
+
+  const userAdditions = useObservable(networkStore.userAdditionNetworkChainIds)
+  const isUserAddition = userAdditions.includes(network.chainId)
 
   useEffect(() => {
     if (rpcUrl !== network.rpcUrl || blockExplorerUrl !== network.blockExplorer?.rootUrl) {
@@ -32,6 +35,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
         labelLocation="left"
         name="rpcUrl"
         spellCheck={false}
+        disabled={isUserAddition}
         value={rpcUrl}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setRpcUrl(ev.target.value)
@@ -42,12 +46,27 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
         labelLocation="left"
         name="blockExplorerUrl"
         spellCheck={false}
+        disabled={isUserAddition}
         value={blockExplorerUrl}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setBlockExplorerUrl(ev.target.value)
         }}
       />
-      {(hasPendingChanges || hasPreviousEdit) && (
+      {isUserAddition && (
+        <Box marginTop="4" alignItems="center" justifyContent="flex-end" gap="5">
+          <Text variant="small" color="text50">
+            Added by you
+          </Text>
+          <Button
+            label="Remove"
+            variant="danger"
+            size="md"
+            shape="square"
+            onClick={() => networkStore.removeNetwork(network.chainId)}
+          />
+        </Box>
+      )}
+      {(hasPendingChanges || hasPreviousEdit) && !isUserAddition && (
         <Box marginTop="4" justifyContent="flex-end" gap="3">
           <>
             {hasPreviousEdit && (
