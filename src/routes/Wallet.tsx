@@ -1,5 +1,4 @@
-import { Box, Button, Card, Modal, Text } from '@0xsequence/design-system'
-import { ethers } from 'ethers'
+import { Box, Button, Card, Modal, Spinner, Text } from '@0xsequence/design-system'
 import { useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -7,6 +6,7 @@ import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
 
 import Networks from '~/components/Networks'
+import TokenBalanceItem from '~/components/TokenBalanceItem'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -16,6 +16,9 @@ function Wallet() {
 
   const tokenStore = useStore(TokenStore)
   const balances = useObservable(tokenStore.balances)
+  const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
+
+  console.log('balances', balances)
 
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const handleNetworkModalClose = () => {
@@ -65,10 +68,13 @@ function Wallet() {
               Coins
             </Text>
             <Box flexDirection="column" gap="4">
+              {isFetchingBalances && (
+                <Box marginTop="4" alignItems="center" justifyContent="center">
+                  <Spinner size="lg" />
+                </Box>
+              )}
               {balances.map(balance => (
-                <Text key={balance.contractAddress} variant="small" color="text100">
-                  {ethers.utils.formatEther(balance.balance)}
-                </Text>
+                <TokenBalanceItem key={balance.contractAddress + balance.chainId} tokenBalance={balance} />
               ))}
             </Box>
           </Box>

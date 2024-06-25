@@ -1,5 +1,5 @@
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
-import { NetworkConfig } from '@0xsequence/network'
+import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ethers } from 'ethers'
 
 import { subscribeImmediately } from '~/utils/observable'
@@ -11,6 +11,8 @@ import { AuthStore } from './AuthStore'
 import { NetworkStore } from './NetworkStore'
 
 export class TokenStore {
+  isFetchingBalances = observable(false)
+
   balances = observable<TokenBalance[]>([])
 
   constructor(private store: Store) {
@@ -26,28 +28,41 @@ export class TokenStore {
   }
 
   private async loadBalances(account: string, networks: NetworkConfig[]) {
-    networks.forEach(async network => {
-      if (!network.rpcUrl) {
-        console.warn(`No RPC URL found for network ${network.name}`)
-        return
-      }
-      const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
-      const balance = await provider.getBalance(account)
-      console.log('Balance', balance.toString(), network.name)
-      const update = this.balances.get()
-      update.push({
-        contractType: ContractType.NATIVE,
-        contractAddress: NATIVE_TOKEN_ADDRESS,
-        tokenID: ethers.constants.AddressZero,
-        accountAddress: account,
-        balance: balance.toString(),
-        chainId: network.chainId,
-        blockHash: ethers.constants.HashZero, // TODO: prob not needed?
-        blockNumber: 0 // TODO: prob not needed?
+    const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
+    const update = this.balances.get()
 
-        // contractInfo: ({ })
-        // tokenMetadata?: TokenMetadata;
+    this.isFetchingBalances.set(true)
+
+    await Promise.allSettled(
+      mainnets.map(async network => {
+        if (!network.rpcUrl) {
+          console.warn(`No RPC URL found for network ${network.name}`)
+          return
+        }
+        const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+        try {
+          const balance = await provider.getBalance(account)
+
+          update.push({
+            contractType: ContractType.NATIVE,
+            contractAddress: NATIVE_TOKEN_ADDRESS,
+            tokenID: '',
+            accountAddress: account,
+            balance: balance.toString(),
+            chainId: network.chainId,
+            blockHash: ethers.constants.HashZero, // TODO: prob not needed?
+            blockNumber: 0 // TODO: prob not needed?
+
+            // contractInfo: ({ })
+            // tokenMetadata?: TokenMetadata;
+          })
+        } catch (err) {
+          console.error(err)
+        }
       })
-    })
+    )
+
+    this.balances.set(update)
+    this.isFetchingBalances.set(false)
   }
 }
