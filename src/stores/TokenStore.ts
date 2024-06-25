@@ -1,10 +1,9 @@
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
-import { NetworkConfig, NetworkType } from '@0xsequence/network'
+import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
 import { ethers } from 'ethers'
 
+import { getNativeTokenInfo } from '~/utils/network'
 import { subscribeImmediately } from '~/utils/observable'
-
-import { NATIVE_TOKEN_ADDRESS } from '~/constants/address'
 
 import { Store, observable } from '.'
 import { AuthStore } from './AuthStore'
@@ -45,15 +44,14 @@ export class TokenStore {
 
           update.push({
             contractType: ContractType.NATIVE,
-            contractAddress: NATIVE_TOKEN_ADDRESS,
+            contractAddress: ethers.constants.AddressZero,
             tokenID: '',
             accountAddress: account,
             balance: balance.toString(),
             chainId: network.chainId,
             blockHash: ethers.constants.HashZero, // TODO: prob not needed?
-            blockNumber: 0 // TODO: prob not needed?
-
-            // contractInfo: ({ })
+            blockNumber: 0, // TODO: prob not needed?
+            contractInfo: getNativeTokenInfo(getChainId(network.chainId))
             // tokenMetadata?: TokenMetadata;
           })
         } catch (err) {

@@ -63,7 +63,7 @@ function Wallet() {
               {accountAddress}
             </Text>
           </Card>
-          <Box alignItems="flex-start" justifyContent="flex-start" marginTop="8">
+          <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
               Coins
             </Text>
