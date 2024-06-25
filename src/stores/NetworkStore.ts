@@ -77,7 +77,6 @@ export class NetworkStore {
     this.editedNetworkChainIds.set(userEdits?.map(n => n.chainId) ?? [])
     this.userAdditionNetworkChainIds.set(this.local.networksUserAdditions.get()?.map(n => n.chainId) ?? [])
 
-    console.log('Updated networks', JSON.stringify(updatedNetworkConfigs, null, 2))
     this.networks.set(updatedNetworkConfigs)
   }
 
