@@ -1,7 +1,8 @@
-import { Box, Button, Card, Modal, Spinner, Text } from '@0xsequence/design-system'
-import { useState } from 'react'
+import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
+import { TokenBalance } from '@0xsequence/indexer'
+import { useMemo, useState } from 'react'
 
-import { useObservable, useStore } from '~/stores'
+import { useMemoizedObservable, useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
 
@@ -18,7 +19,14 @@ function Wallet() {
   const balances = useObservable(tokenStore.balances)
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
 
-  console.log('balances', balances)
+  const [filterZeroBalances, setFilterZeroBalances] = useState(true)
+  const filteredBalance = useMemo(() => {
+    if (filterZeroBalances) {
+      return balances.filter(balance => balance.balance !== '0')
+    } else {
+      return balances
+    }
+  }, [balances, filterZeroBalances, isFetchingBalances])
 
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const handleNetworkModalClose = () => {
@@ -64,18 +72,41 @@ function Wallet() {
             </Text>
           </Card>
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
-            <Text variant="large" color="text80" marginBottom="4">
-              Coins
-            </Text>
-            <Box flexDirection="column" gap="4">
+            <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
+              <Text variant="large" color="text80">
+                Coins
+              </Text>
+
+              <Box marginLeft="auto">
+                <Switch
+                  label="Filter zero balances"
+                  checked={filterZeroBalances}
+                  onCheckedChange={setFilterZeroBalances}
+                />
+              </Box>
+            </Box>
+
+            <Box width="full" flexDirection="column" gap="4" marginBottom="8">
               {isFetchingBalances && (
                 <Box marginTop="4" alignItems="center" justifyContent="center">
                   <Spinner size="lg" />
                 </Box>
               )}
-              {balances.map(balance => (
+              {(filterZeroBalances ? filteredBalance : balances).map(balance => (
                 <TokenBalanceItem key={balance.contractAddress + balance.chainId} tokenBalance={balance} />
               ))}
+            </Box>
+            <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
+              <Button
+                label="Import token"
+                leftIcon={AddIcon}
+                variant="primary"
+                size="md"
+                shape="square"
+                onClick={() => {
+                  // TODO: add token
+                }}
+              />
             </Box>
           </Box>
           <Box alignItems="flex-start" justifyContent="flex-start" marginTop="8">

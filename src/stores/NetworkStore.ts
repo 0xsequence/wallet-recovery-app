@@ -69,7 +69,6 @@ export class NetworkStore {
     }
 
     this.local.networksUserAdditions.get()?.forEach(network => {
-      console.log('Adding network', network)
       network.relayer = createDebugLocalRelayer(network.rpcUrl)
       updatedNetworkConfigs.push(network)
     })
