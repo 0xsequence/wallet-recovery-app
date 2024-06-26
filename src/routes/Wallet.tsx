@@ -93,14 +93,14 @@ function Wallet() {
             </Box>
 
             <Box width="full" flexDirection="column" gap="4" marginBottom="8">
+              {(filterZeroBalances ? filteredBalance : balances).map(balance => (
+                <TokenBalanceItem key={balance.contractAddress + balance.chainId} tokenBalance={balance} />
+              ))}
               {isFetchingBalances && (
                 <Box marginTop="4" alignItems="center" justifyContent="center">
                   <Spinner size="lg" />
                 </Box>
               )}
-              {(filterZeroBalances ? filteredBalance : balances).map(balance => (
-                <TokenBalanceItem key={balance.contractAddress + balance.chainId} tokenBalance={balance} />
-              ))}
             </Box>
             {isImportTokenViewOpen && <AddToken onClose={handleImportTokenViewClose} />}
             {!isImportTokenViewOpen && (

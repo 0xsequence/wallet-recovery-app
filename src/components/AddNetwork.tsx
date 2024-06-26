@@ -16,7 +16,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
   const [blockExplorerUrl, setBlockExplorerUrl] = useState<string | undefined>()
 
   const handleAdd = async () => {
-    // TODO: add validation
+    // TODO: add form validation
     if (chainId && networkName && rpcUrl && blockExplorerUrl) {
       await networkStore.addNetwork({
         chainId: Number(chainId),

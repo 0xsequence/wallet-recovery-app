@@ -13,14 +13,22 @@ import { AuthStore } from './AuthStore'
 import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 
-type UserAddedToken = {
+export type UserAddedToken = {
   chainId: number
   address: string
   contractType: ContractType
+  decimals: number
+  symbol: string
+}
+
+export type UserAddedTokenInitialInfo = {
+  symbol: string
+  decimals: number
 }
 
 export class TokenStore {
   isFetchingBalances = observable(false)
+  isFetchingTokenInfo = observable(false)
 
   balances = observable<TokenBalance[]>([])
 
@@ -103,18 +111,10 @@ export class TokenStore {
       return
     }
 
-    console.log(networkForToken.rpcUrl)
-
     const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
     try {
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
       const balance = await erc20.balanceOf(account)
-
-      // TODO: move getting decimals and symbol to where tokens are added in first place
-      const decimals = await erc20.decimals()
-      console.log(decimals)
-      const symbol = await erc20.symbol()
-      console.log(symbol)
 
       const updatedBalances = this.balances.get()
 
@@ -130,9 +130,9 @@ export class TokenStore {
         contractInfo: {
           address: token.address,
           chainId: token.chainId,
-          decimals: decimals,
-          name: symbol,
-          symbol: symbol,
+          decimals: token.decimals,
+          name: token.symbol,
+          symbol: token.symbol,
           type: 'ERC20',
           logoURI: '',
           deployed: true,
@@ -177,6 +177,48 @@ export class TokenStore {
       this.isFetchingBalances.set(true)
       await this.loadUserAddedTokenBalance(accountAddress, token)
       this.isFetchingBalances.set(false)
+    }
+  }
+
+  async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
+    const networkForToken = this.store
+      .get(NetworkStore)
+      .networks.get()
+      .find(network => network.chainId === chainId)
+
+    if (!networkForToken) {
+      console.warn(`No network found for chainId ${chainId}`)
+      throw new Error(`No network found for chainId ${chainId}`)
+    }
+
+    if (!networkForToken.rpcUrl) {
+      console.warn(`No RPC URL found for network ${networkForToken.name}`)
+      throw new Error(`No RPC URL found for network ${networkForToken.name}`)
+    }
+
+    this.isFetchingTokenInfo.set(true)
+
+    const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
+
+    try {
+      const erc20 = new ethers.Contract(address, ERC20_ABI, provider)
+
+      const decimals = await erc20.decimals()
+      const symbol = await erc20.symbol()
+
+      this.isFetchingTokenInfo.set(false)
+
+      if (decimals && symbol) {
+        return {
+          decimals,
+          symbol
+        }
+      } else {
+        throw new Error(`Could not get decimals and symbol for token at ${address}`)
+      }
+    } catch (err) {
+      console.error(err)
+      throw new Error(`Error getting token info ${JSON.stringify(err)}`)
     }
   }
 }

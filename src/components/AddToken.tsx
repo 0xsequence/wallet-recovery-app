@@ -1,11 +1,11 @@
-import { Box, Button, Card, Select, Text, TextInput, useToast } from '@0xsequence/design-system'
+import { Box, Button, Card, Select, Spinner, Text, TextInput, useToast } from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
-import { TokenStore } from '~/stores/TokenStore'
+import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 
 export default function AddToken({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
@@ -13,11 +13,24 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
   const mainnetNetworks = networks.filter(network => network.type === NetworkType.MAINNET)
 
   const tokenStore = useStore(TokenStore)
+  const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
 
   const toast = useToast()
 
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig | undefined>()
   const [tokenAddress, setTokenAddress] = useState<string | undefined>()
+
+  const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
+
+  useEffect(() => {
+    if (selectedNetwork && tokenAddress) {
+      tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
+        setTokenInfo(tokenInfo)
+      })
+    } else {
+      setTokenInfo(undefined)
+    }
+  }, [selectedNetwork, tokenAddress])
 
   const selectOptions = mainnetNetworks.map(network => ({
     label: network.title,
@@ -25,12 +38,14 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
   }))
 
   const handleAdd = async () => {
-    // TODO: add validation
-    if (selectedNetwork && tokenAddress) {
+    // TODO: add form validation
+    if (selectedNetwork && tokenAddress && tokenInfo) {
       await tokenStore.addToken({
         chainId: selectedNetwork.chainId,
         address: tokenAddress,
-        contractType: ContractType.ERC20
+        contractType: ContractType.ERC20,
+        symbol: tokenInfo.symbol,
+        decimals: tokenInfo.decimals
       })
       toast({
         variant: 'success',
@@ -58,7 +73,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
     >
       <Box>
         <Text variant="medium" color="text80">
-          Import Token
+          Import ERC20 Token
         </Text>
       </Box>
       <Box flexDirection="column" width="full" marginTop="4" gap="4">
@@ -81,6 +96,34 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
           }}
         />
 
+        {isFetchingTokenInfo && (
+          <Box marginTop="4" alignItems="center" justifyContent="center">
+            <Spinner size="lg" />
+          </Box>
+        )}
+
+        {tokenInfo && (
+          <>
+            <TextInput
+              width="full"
+              label="Token Symbol"
+              labelLocation="left"
+              name="tokenSymbol"
+              value={tokenInfo?.symbol}
+              disabled
+            />
+
+            <TextInput
+              width="full"
+              label="Token Decimals"
+              labelLocation="left"
+              name="tokenDecimals"
+              value={tokenInfo?.decimals}
+              disabled
+            />
+          </>
+        )}
+
         <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
           <Button
             label="Cancel"
@@ -92,7 +135,14 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
               onClose()
             }}
           />
-          <Button label="Add" variant="primary" size="md" shape="square" onClick={handleAdd} />
+          <Button
+            label="Add"
+            disabled={tokenInfo === undefined}
+            variant="primary"
+            size="md"
+            shape="square"
+            onClick={handleAdd}
+          />
         </Box>
       </Box>
     </Card>
