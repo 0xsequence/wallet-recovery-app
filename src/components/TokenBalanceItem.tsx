@@ -7,7 +7,10 @@ import { truncateNumber } from '~/utils/bignumber'
 import NetworkTag from './NetworkTag'
 
 export default function TokenBalanceItem({ tokenBalance }: { tokenBalance: TokenBalance }) {
-  const formattedBalance = ethers.utils.formatEther(tokenBalance.balance)
+  const formattedBalance = ethers.utils.formatUnits(
+    tokenBalance.balance,
+    tokenBalance.contractInfo?.decimals ?? 18
+  )
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
 
   return (

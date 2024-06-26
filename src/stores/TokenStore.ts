@@ -5,6 +5,7 @@ import { ethers } from 'ethers'
 import { getNativeTokenInfo } from '~/utils/network'
 import { subscribeImmediately } from '~/utils/observable'
 
+import { ERC20_ABI } from '~/constants/abi'
 import { LocalStorageKey } from '~/constants/storage'
 
 import { Store, observable } from '.'
@@ -72,6 +73,16 @@ export class TokenStore {
       })
     )
 
+    const userTokens = this.local.userAddedTokens.get() ?? []
+
+    if (userTokens.length > 0) {
+      await Promise.allSettled(
+        userTokens.map(async token => {
+          await this.loadUserAddedTokenBalance(account, token)
+        })
+      )
+    }
+
     this.balances.set(update)
     this.isFetchingBalances.set(false)
   }
@@ -92,11 +103,22 @@ export class TokenStore {
       return
     }
 
+    console.log(networkForToken.rpcUrl)
+
     const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
     try {
-      const balance = await provider.getBalance(account)
+      const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
+      const balance = await erc20.balanceOf(account)
 
-      this.balances.get().push({
+      // TODO: move getting decimals and symbol to where tokens are added in first place
+      const decimals = await erc20.decimals()
+      console.log(decimals)
+      const symbol = await erc20.symbol()
+      console.log(symbol)
+
+      const updatedBalances = this.balances.get()
+
+      updatedBalances.push({
         contractType: token.contractType,
         contractAddress: token.address,
         tokenID: '',
@@ -105,8 +127,31 @@ export class TokenStore {
         chainId: token.chainId,
         blockHash: ethers.constants.HashZero,
         blockNumber: 0,
-        contractInfo: getNativeTokenInfo(getChainId(token.chainId))
+        contractInfo: {
+          address: token.address,
+          chainId: token.chainId,
+          decimals: decimals,
+          name: symbol,
+          symbol: symbol,
+          type: 'ERC20',
+          logoURI: '',
+          deployed: true,
+          bytecodeHash: '',
+          extensions: {
+            link: '',
+            description: '',
+            ogImage: '',
+            originAddress: '',
+            originChainId: 0,
+            blacklist: false,
+            verified: true,
+            verifiedBy: 'User'
+          },
+          updatedAt: '0'
+        }
       })
+
+      this.balances.set(updatedBalances)
     } catch (err) {
       console.error(err)
     }
@@ -129,7 +174,9 @@ export class TokenStore {
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
     if (accountAddress) {
-      this.loadUserAddedTokenBalance(accountAddress, token)
+      this.isFetchingBalances.set(true)
+      await this.loadUserAddedTokenBalance(accountAddress, token)
+      this.isFetchingBalances.set(false)
     }
   }
 }
