@@ -11,6 +11,7 @@ import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 
 import { Store, observable } from '.'
 import { NetworkStore } from './NetworkStore'
+import { TokenStore } from './TokenStore'
 
 // import { normalizeAddress } from '~/utils/address'
 // import { prefixEIP191Message } from '~/utils/signing'
@@ -31,8 +32,6 @@ export class AuthStore {
   isLoadingAccount = observable(true)
 
   account: Account | undefined
-
-  selectedWallet = observable<string | undefined>(undefined)
 
   accountAddress = observable<string | undefined>(undefined)
 
@@ -120,5 +119,10 @@ export class AuthStore {
     this.account = undefined
     this.accountAddress.set(undefined)
     clearIndexedDB(IndexedDBKey.SECURITY)
+
+    const networkStore = this.store.get(NetworkStore)
+    const tokenStore = this.store.get(TokenStore)
+    networkStore.clear()
+    tokenStore.clear()
   }
 }

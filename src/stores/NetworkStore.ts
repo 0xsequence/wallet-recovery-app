@@ -127,4 +127,13 @@ export class NetworkStore {
 
     this.prepareNetworks()
   }
+
+  clear() {
+    this.local.networksUserAdditions.set([])
+    this.local.networksUserEdits.set([])
+
+    this.networks.set([])
+    this.editedNetworkChainIds.set([])
+    this.userAdditionNetworkChainIds.set([])
+  }
 }

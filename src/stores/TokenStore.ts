@@ -221,4 +221,12 @@ export class TokenStore {
       throw new Error(`Error getting token info ${JSON.stringify(err)}`)
     }
   }
+
+  clear() {
+    this.local.userAddedTokens.set([])
+
+    this.isFetchingBalances.set(false)
+    this.isFetchingTokenInfo.set(false)
+    this.balances.set([])
+  }
 }

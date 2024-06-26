@@ -8,6 +8,7 @@ import { TokenStore } from '~/stores/TokenStore'
 
 import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
+import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import TokenBalanceItem from '~/components/TokenBalanceItem'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
@@ -65,7 +66,8 @@ function Wallet() {
               marginRight="8"
               onClick={() => setIsNetworkModalOpen(true)}
             />
-            <Button label="Settings" variant="text" />
+
+            <SettingsDropdownMenu />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
