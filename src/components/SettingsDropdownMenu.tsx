@@ -8,12 +8,16 @@ import {
   DropdownMenuTrigger,
   Text
 } from '@0xsequence/design-system'
+import { useNavigate } from 'react-router-dom'
 
 import { useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
 export default function SettingsDropdownMenu() {
   const authStore = useStore(AuthStore)
+
+  const navigate = useNavigate()
+
   return (
     <DropdownMenuRoot>
       <Button as={DropdownMenuTrigger} label="Settings" variant="text" />
@@ -36,6 +40,7 @@ export default function SettingsDropdownMenu() {
               padding="1"
               onClick={() => {
                 authStore.logout()
+                navigate('/')
               }}
             >
               <Text variant="normal" fontWeight="bold">

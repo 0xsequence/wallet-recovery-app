@@ -1,8 +1,7 @@
 import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
-import { TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
-import { useMemoizedObservable, useObservable, useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
 

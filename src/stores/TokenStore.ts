@@ -34,12 +34,11 @@ export class TokenStore {
 
   constructor(private store: Store) {
     const networkStore = this.store.get(NetworkStore)
-    const authStore = this.store.get(AuthStore)
 
-    subscribeImmediately(authStore.accountAddress, address => {
-      if (address) {
-        const networks = networkStore.networks.get()
-        this.loadBalances(address, networks)
+    subscribeImmediately(networkStore.networks, networks => {
+      const accountAddress = this.store.get(AuthStore).accountAddress.get()
+      if (accountAddress && networks.length > 0) {
+        this.loadBalances(accountAddress, networks)
       }
     })
   }

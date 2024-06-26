@@ -29,6 +29,8 @@ export class NetworkStore {
   editedNetworkChainIds = observable<number[]>([])
   userAdditionNetworkChainIds = observable<number[]>([])
 
+  accountLoaded = observable<boolean>(false)
+
   private local = {
     networksUserEdits: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_EDITS),
     networksUserAdditions: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_ADDITIONS)
@@ -36,6 +38,12 @@ export class NetworkStore {
 
   constructor(private store: Store) {
     this.prepareNetworks()
+
+    this.accountLoaded.subscribe(loaded => {
+      if (loaded && this.networks.get().length === 0) {
+        this.prepareNetworks()
+      }
+    })
   }
 
   private async prepareNetworks() {
@@ -139,5 +147,6 @@ export class NetworkStore {
     this.networks.set([])
     this.editedNetworkChainIds.set([])
     this.userAdditionNetworkChainIds.set([])
+    this.accountLoaded.set(false)
   }
 }

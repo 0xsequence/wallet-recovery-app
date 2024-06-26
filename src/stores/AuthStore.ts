@@ -27,6 +27,14 @@ export class AuthStore {
         this.loadAccount()
       }
     })
+
+    // Set account in network store to handle subsequent login after a logout
+    this.accountAddress.subscribe(address => {
+      if (address) {
+        const networkStore = this.store.get(NetworkStore)
+        networkStore.accountLoaded.set(true)
+      }
+    })
   }
 
   isLoadingAccount = observable(true)
