@@ -34,9 +34,9 @@ function Wallet() {
     setIsNetworkModalOpen(false)
   }
 
-  const [isImportTokenModalOpen, setIsImportTokenModalOpen] = useState(false)
-  const handleImportTokenModalClose = () => {
-    setIsImportTokenModalOpen(false)
+  const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
+  const handleImportTokenViewClose = () => {
+    setIsImportTokenViewOpen(false)
   }
 
   return (
@@ -102,18 +102,21 @@ function Wallet() {
                 <TokenBalanceItem key={balance.contractAddress + balance.chainId} tokenBalance={balance} />
               ))}
             </Box>
-            <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
-              <Button
-                label="Import token"
-                leftIcon={AddIcon}
-                variant="primary"
-                size="md"
-                shape="square"
-                onClick={() => {
-                  setIsImportTokenModalOpen(true)
-                }}
-              />
-            </Box>
+            {isImportTokenViewOpen && <AddToken onClose={handleImportTokenViewClose} />}
+            {!isImportTokenViewOpen && (
+              <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
+                <Button
+                  label="Import token"
+                  leftIcon={AddIcon}
+                  variant="primary"
+                  size="md"
+                  shape="square"
+                  onClick={() => {
+                    setIsImportTokenViewOpen(true)
+                  }}
+                />
+              </Box>
+            )}
           </Box>
           <Box alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
@@ -125,11 +128,6 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal onClose={handleNetworkModalClose}>
           <Networks />
-        </Modal>
-      )}
-      {isImportTokenModalOpen && (
-        <Modal onClose={handleImportTokenModalClose}>
-          <AddToken onClose={handleImportTokenModalClose} />
         </Modal>
       )}
     </>

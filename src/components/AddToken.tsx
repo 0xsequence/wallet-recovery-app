@@ -1,4 +1,4 @@
-import { Box, Button, Select, TextInput, useToast } from '@0xsequence/design-system'
+import { Box, Button, Select, Text, TextInput, useToast } from '@0xsequence/design-system'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useState } from 'react'
 
@@ -30,51 +30,68 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Box flexDirection="column" width="full" marginTop="4" gap="4">
-      <Select name="Token Network" options={selectOptions} />
-      <TextInput
-        width="full"
-        label="Token Address"
-        labelLocation="left"
-        name="tokenAddress"
-        value={tokenAddress}
-        onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-          setTokenAddress(ev.target.value)
-        }}
-      />
+    <Box
+      flexDirection="column"
+      paddingY="4"
+      paddingX="8"
+      background="backgroundSecondary"
+      borderRadius="md"
+      width="full"
+      height="full"
+      alignItems="center"
+    >
+      <Box>
+        <Text variant="large" color="text80">
+          Import Token
+        </Text>
+      </Box>
+      <Box flexDirection="column" width="full" marginTop="4" gap="4">
+        <Select name="Token Network" label="Token Network" labelLocation="left" options={selectOptions} />
 
-      <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
-        <Button
-          label="Cancel"
-          variant="text"
-          size="md"
-          shape="square"
-          onClick={() => {
-            resetInputs()
-            onClose()
+        <TextInput
+          width="full"
+          label="Token Address"
+          labelLocation="left"
+          name="tokenAddress"
+          value={tokenAddress}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+            setTokenAddress(ev.target.value)
           }}
         />
-        <Button
-          label="Add"
-          variant="primary"
-          size="md"
-          shape="square"
-          onClick={async () => {
-            // try {
-            //   await handleAdd()
-            //   toast({
-            //     variant: 'success',
-            //     title: 'Network added',
-            //     description: `You can now use ${networkName} network`
-            //   })
-            //   resetInputs()
-            //   onClose()
-            // } catch (err: any) {
-            //   toast({ variant: 'error', title: 'Could not add network', description: err.message })
-            //   console.error(err)
-            // }
-          }}
-        />
+
+        <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
+          <Button
+            label="Cancel"
+            variant="text"
+            size="md"
+            shape="square"
+            onClick={() => {
+              resetInputs()
+              onClose()
+            }}
+          />
+          <Button
+            label="Add"
+            variant="primary"
+            size="md"
+            shape="square"
+            onClick={async () => {
+              // try {
+              //   await handleAdd()
+              //   toast({
+              //     variant: 'success',
+              //     title: 'Network added',
+              //     description: `You can now use ${networkName} network`
+              //   })
+              //   resetInputs()
+              //   onClose()
+              // } catch (err: any) {
+              //   toast({ variant: 'error', title: 'Could not add network', description: err.message })
+              //   console.error(err)
+              // }
+            }}
+          />
+        </Box>
       </Box>
     </Box>
   )
