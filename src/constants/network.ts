@@ -26,3 +26,6 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
   [2730, 'https://xr-sepolia-testnet.rpc.caldera.xyz/http'],
   [40, 'https://mainnet-asia.telos.net/evm']
 ])
+
+// These are either old testnets or local hardhat networks
+export const IGNORED_CHAIN_IDS = new Set([3, 4, 5, 42, 69, 420, 80001, 84531, 421613, 31337, 31338])

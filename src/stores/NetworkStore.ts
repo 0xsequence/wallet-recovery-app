@@ -2,7 +2,7 @@ import { NetworkConfig, networks } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers } from 'ethers'
 
-import { DEFAULT_PUBLIC_RPC_LIST } from '~/constants/network'
+import { DEFAULT_PUBLIC_RPC_LIST, IGNORED_CHAIN_IDS } from '~/constants/network'
 import { LocalStorageKey } from '~/constants/storage'
 
 import { Store, observable } from '.'
@@ -44,6 +44,10 @@ export class NetworkStore {
     const userEdits = this.local.networksUserEdits.get()
 
     for (const [key, value] of Object.entries(networks)) {
+      if (IGNORED_CHAIN_IDS.has(Number(key))) {
+        continue
+      }
+
       const updatedNetworkConfig = value as NetworkConfig
 
       const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
