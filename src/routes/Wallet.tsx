@@ -6,6 +6,7 @@ import { useMemoizedObservable, useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
 
+import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
 import TokenBalanceItem from '~/components/TokenBalanceItem'
 
@@ -31,6 +32,11 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const handleNetworkModalClose = () => {
     setIsNetworkModalOpen(false)
+  }
+
+  const [isImportTokenModalOpen, setIsImportTokenModalOpen] = useState(false)
+  const handleImportTokenModalClose = () => {
+    setIsImportTokenModalOpen(false)
   }
 
   return (
@@ -104,7 +110,7 @@ function Wallet() {
                 size="md"
                 shape="square"
                 onClick={() => {
-                  // TODO: add token
+                  setIsImportTokenModalOpen(true)
                 }}
               />
             </Box>
@@ -119,6 +125,11 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal onClose={handleNetworkModalClose}>
           <Networks />
+        </Modal>
+      )}
+      {isImportTokenModalOpen && (
+        <Modal onClose={handleImportTokenModalClose}>
+          <AddToken onClose={handleImportTokenModalClose} />
         </Modal>
       )}
     </>
