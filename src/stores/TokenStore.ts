@@ -32,6 +32,8 @@ export class TokenStore {
 
   balances = observable<TokenBalance[]>([])
 
+  userAddedTokens = observable<UserAddedToken[]>([])
+
   constructor(private store: Store) {
     const networkStore = this.store.get(NetworkStore)
 
@@ -49,7 +51,7 @@ export class TokenStore {
 
   private async loadBalances(account: string, networks: NetworkConfig[]) {
     const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
-    const update = this.balances.get()
+    const update: TokenBalance[] = []
 
     this.isFetchingBalances.set(true)
 
@@ -81,6 +83,8 @@ export class TokenStore {
     )
 
     const userTokens = this.local.userAddedTokens.get() ?? []
+
+    this.userAddedTokens.set(userTokens)
 
     if (userTokens.length > 0) {
       await Promise.allSettled(
@@ -169,6 +173,7 @@ export class TokenStore {
 
     userAddedTokens.push(token)
     this.local.userAddedTokens.set(userAddedTokens)
+    this.userAddedTokens.set(userAddedTokens)
 
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
@@ -177,6 +182,22 @@ export class TokenStore {
       await this.loadUserAddedTokenBalance(accountAddress, token)
       this.isFetchingBalances.set(false)
     }
+  }
+
+  async removeToken(token: UserAddedToken) {
+    const userAddedTokens = this.local.userAddedTokens.get()
+
+    const filtered =
+      userAddedTokens?.filter(t => !(t.chainId === token.chainId && t.address === token.address)) ?? []
+
+    this.local.userAddedTokens.set(filtered)
+    this.userAddedTokens.set(filtered)
+
+    const filteredBalances = this.balances
+      .get()
+      .filter(b => !(b.chainId === token.chainId && b.contractAddress === token.address))
+
+    this.balances.set(filteredBalances)
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {

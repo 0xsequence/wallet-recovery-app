@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
-export default function SettingsDropdownMenu() {
+export default function SettingsDropdownMenu({ onTokenListClick }: { onTokenListClick: () => void }) {
   const authStore = useStore(AuthStore)
 
   const navigate = useNavigate()
@@ -24,7 +24,7 @@ export default function SettingsDropdownMenu() {
       <DropdownMenuContent side="bottom" align="end" sideOffset={20}>
         <Box marginTop="2">
           <DropdownMenuItem>
-            <Box padding="1">
+            <Box padding="1" onClick={onTokenListClick}>
               <Text variant="normal" fontWeight="bold">
                 Token List
               </Text>

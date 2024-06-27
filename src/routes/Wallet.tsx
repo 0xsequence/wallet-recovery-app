@@ -9,6 +9,7 @@ import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import TokenBalanceItem from '~/components/TokenBalanceItem'
+import TokenList from '~/components/TokenList'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -32,6 +33,11 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const handleNetworkModalClose = () => {
     setIsNetworkModalOpen(false)
+  }
+
+  const [isTokenListModalOpen, setIsTokenListModalOpen] = useState(false)
+  const handleTokenListModalClose = () => {
+    setIsTokenListModalOpen(false)
   }
 
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
@@ -66,7 +72,7 @@ function Wallet() {
               onClick={() => setIsNetworkModalOpen(true)}
             />
 
-            <SettingsDropdownMenu />
+            <SettingsDropdownMenu onTokenListClick={() => setIsTokenListModalOpen(true)} />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
@@ -129,6 +135,11 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal onClose={handleNetworkModalClose}>
           <Networks />
+        </Modal>
+      )}
+      {isTokenListModalOpen && (
+        <Modal onClose={handleTokenListModalClose}>
+          <TokenList />
         </Modal>
       )}
     </>

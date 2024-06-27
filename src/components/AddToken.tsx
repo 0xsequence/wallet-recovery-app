@@ -22,6 +22,8 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
 
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
 
+  const [isAddingToken, setIsAddingToken] = useState(false)
+
   useEffect(() => {
     if (selectedNetwork && tokenAddress) {
       tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
@@ -40,6 +42,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
   const handleAdd = async () => {
     // TODO: add form validation
     if (selectedNetwork && tokenAddress && tokenInfo) {
+      setIsAddingToken(true)
       await tokenStore.addToken({
         chainId: selectedNetwork.chainId,
         address: tokenAddress,
@@ -47,6 +50,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
         symbol: tokenInfo.symbol,
         decimals: tokenInfo.decimals
       })
+      setIsAddingToken(false)
       toast({
         variant: 'success',
         title: 'Token added'
@@ -70,6 +74,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
       width="full"
       height="full"
       alignItems="center"
+      disabled={isAddingToken}
     >
       <Box>
         <Text variant="medium" color="text80">
@@ -130,6 +135,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
             variant="text"
             size="md"
             shape="square"
+            disabled={isAddingToken}
             onClick={() => {
               resetInputs()
               onClose()
@@ -137,7 +143,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
           />
           <Button
             label="Add"
-            disabled={tokenInfo === undefined}
+            disabled={tokenInfo === undefined || isAddingToken}
             variant="primary"
             size="md"
             shape="square"
