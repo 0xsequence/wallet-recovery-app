@@ -81,9 +81,9 @@ export class TokenStore {
         }
       })
     )
+    this.balances.set(update)
 
     const userTokens = this.local.userAddedTokens.get() ?? []
-
     this.userAddedTokens.set(userTokens)
 
     if (userTokens.length > 0) {
@@ -94,7 +94,6 @@ export class TokenStore {
       )
     }
 
-    this.balances.set(update)
     this.isFetchingBalances.set(false)
   }
 
