@@ -1,6 +1,8 @@
 import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
 import { useMemo, useState } from 'react'
 
+import { useSyncProviders } from '~/hooks/useSyncProviders'
+
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
@@ -14,6 +16,10 @@ import TokenList from '~/components/TokenList'
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Wallet() {
+  const providers = useSyncProviders()
+
+  console.log(providers)
+
   const authStore = useStore(AuthStore)
   const accountAddress = useObservable(authStore.accountAddress)
 
