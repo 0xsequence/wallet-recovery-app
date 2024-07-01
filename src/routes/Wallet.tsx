@@ -6,6 +6,7 @@ import { useSyncProviders } from '~/hooks/useSyncProviders'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
+import { WalletStore } from '~/stores/WalletStore'
 
 import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
@@ -16,9 +17,7 @@ import TokenList from '~/components/TokenList'
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Wallet() {
-  const providers = useSyncProviders()
-
-  console.log(providers)
+  // const providers = useSyncProviders()
 
   const authStore = useStore(AuthStore)
   const accountAddress = useObservable(authStore.accountAddress)
@@ -26,6 +25,8 @@ function Wallet() {
   const tokenStore = useStore(TokenStore)
   const balances = useObservable(tokenStore.balances)
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
+
+  const walletStore = useStore(WalletStore)
 
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
   const filteredBalance = useMemo(() => {
@@ -103,6 +104,21 @@ function Wallet() {
                   onCheckedChange={setFilterZeroBalances}
                 />
               </Box>
+            </Box>
+
+            <Box>
+              <Button
+                label="Send test"
+                variant="primary"
+                size="md"
+                shape="square"
+                onClick={() => {
+                  const tokenWithBalance = balances.find(balance => balance.balance !== '0')
+                  if (tokenWithBalance) {
+                    walletStore.sendERC20Transaction(tokenWithBalance, '0.00012')
+                  }
+                }}
+              />
             </Box>
 
             <Box width="full" flexDirection="column" gap="4" marginBottom="8">
