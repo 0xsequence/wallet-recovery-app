@@ -1,4 +1,5 @@
 import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
+import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 import { useMemo, useState } from 'react'
 
@@ -60,29 +61,44 @@ function Wallet() {
     setIsSelectProviderModalOpen(false)
   }
 
+  const [pendingSendERC20, setPendingSendERC20] = useState<TokenBalance | undefined>(undefined)
+
+  const handleSendERC20 = async (tokenBalance: TokenBalance) => {
+    if (walletStore.selectedExternalProvider.get() === undefined) {
+      setPendingSendERC20(tokenBalance)
+      setIsSelectProviderModalOpen(true)
+    }
+  }
+
   const continueTransaction = async () => {
     if (!walletStore.selectedExternalProvider.get()) {
       return
     }
-    const tokenWithBalance = balances.find(balance => balance.balance !== '0')
-    if (tokenWithBalance) {
-      const response = await walletStore.sendERC20Transaction(tokenWithBalance, '0.002')
 
-      console.log('response', response)
-
-      // TODO: add providerForChainId method to NetworkStore
-      const networks = networkStore.networks.get()
-      const network = networks.find(n => n.chainId === tokenWithBalance.chainId)
-      if (!network) {
-        throw new Error(`No network found for chainId ${tokenWithBalance.chainId}`)
-      }
-
-      const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
-
-      const receipt = await getTransactionReceipt(provider, response.hash)
-
-      console.log('receipt', receipt)
+    if (!pendingSendERC20) {
+      return
     }
+
+    // TODO: add modal for setting amount and confirm
+    const response = await walletStore.sendERC20Transaction(pendingSendERC20, '0.002')
+
+    console.log('response', response)
+
+    // TODO: add providerForChainId method to NetworkStore
+    const networks = networkStore.networks.get()
+    const network = networks.find(n => n.chainId === pendingSendERC20.chainId)
+    if (!network) {
+      throw new Error(`No network found for chainId ${pendingSendERC20.chainId}`)
+    }
+
+    const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+
+    const receipt = await getTransactionReceipt(provider, response.hash)
+
+    tokenStore.updateTokenBalance(pendingSendERC20)
+    setPendingSendERC20(undefined)
+
+    console.log('receipt', receipt)
   }
 
   return (
@@ -139,23 +155,13 @@ function Wallet() {
               </Box>
             </Box>
 
-            <Box>
-              <Button
-                label="Send test"
-                variant="primary"
-                size="md"
-                shape="square"
-                onClick={() => {
-                  if (walletStore.selectedExternalProvider.get() === undefined) {
-                    setIsSelectProviderModalOpen(true)
-                  }
-                }}
-              />
-            </Box>
-
             <Box width="full" flexDirection="column" gap="4" marginBottom="8">
               {(filterZeroBalances ? filteredBalance : balances).map(balance => (
-                <TokenBalanceItem key={balance.contractAddress + balance.chainId} tokenBalance={balance} />
+                <TokenBalanceItem
+                  key={balance.contractAddress + balance.chainId}
+                  tokenBalance={balance}
+                  onSendClick={() => handleSendERC20(balance)}
+                />
               ))}
               {isFetchingBalances && (
                 <Box marginTop="4" alignItems="center" justifyContent="center">

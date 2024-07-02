@@ -7,6 +7,7 @@ export default function NetworkTag({ chainId }: { chainId: number }) {
     <Box
       background="backgroundMuted"
       width="fit"
+      height="fit"
       borderRadius="sm"
       paddingTop="1"
       paddingBottom="2"

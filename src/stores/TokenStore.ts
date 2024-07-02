@@ -97,7 +97,7 @@ export class TokenStore {
     this.isFetchingBalances.set(false)
   }
 
-  private async loadUserAddedTokenBalance(account: string, token: UserAddedToken) {
+  private async loadUserAddedTokenBalance(accountAddress: string, token: UserAddedToken) {
     const networkForToken = this.store
       .get(NetworkStore)
       .networks.get()
@@ -116,7 +116,7 @@ export class TokenStore {
     const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
     try {
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
-      const balance = await erc20.balanceOf(account)
+      const balance = await erc20.balanceOf(accountAddress)
 
       const updatedBalances = this.balances.get()
 
@@ -124,7 +124,7 @@ export class TokenStore {
         contractType: token.contractType,
         contractAddress: token.address,
         tokenID: '',
-        accountAddress: account,
+        accountAddress: accountAddress,
         balance: balance.toString(),
         chainId: token.chainId,
         blockHash: ethers.constants.HashZero,
@@ -157,6 +157,55 @@ export class TokenStore {
     } catch (err) {
       console.error(err)
     }
+  }
+
+  // TODO: refactor this part so it can be reused in load
+  async updateTokenBalance(tokenBalance: TokenBalance) {
+    this.isFetchingBalances.set(true)
+
+    const network = this.store
+      .get(NetworkStore)
+      .networks.get()
+      .find(network => network.chainId === tokenBalance.chainId)
+
+    if (!network) {
+      console.warn(`No network found for chainId ${tokenBalance.chainId}`)
+      return
+    }
+
+    const accountAddress = this.store.get(AuthStore).accountAddress.get()
+
+    if (!accountAddress) {
+      console.warn(`No account found`)
+      return
+    }
+
+    const update = this.balances.get()
+
+    const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+
+    try {
+      let balance: ethers.BigNumber
+
+      if (tokenBalance.contractType === ContractType.NATIVE) {
+        balance = await provider.getBalance(accountAddress)
+      } else {
+        const erc20 = new ethers.Contract(tokenBalance.contractAddress, ERC20_ABI, provider)
+        balance = await erc20.balanceOf(accountAddress)
+      }
+
+      update.map(b => {
+        if (b.contractAddress === tokenBalance.contractAddress && b.chainId === tokenBalance.chainId) {
+          b.balance = balance.toString()
+        }
+      })
+
+      this.balances.set(update)
+    } catch (err) {
+      console.error(err)
+    }
+
+    this.isFetchingBalances.set(false)
   }
 
   async addToken(token: UserAddedToken) {
