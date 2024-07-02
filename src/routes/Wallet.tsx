@@ -1,8 +1,12 @@
 import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
+import { ethers } from 'ethers'
 import { useMemo, useState } from 'react'
+
+import { getTransactionReceipt } from '~/utils/receipt'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
+import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
@@ -24,6 +28,8 @@ function Wallet() {
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
 
   const walletStore = useStore(WalletStore)
+
+  const networkStore = useStore(NetworkStore)
 
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
   const filteredBalance = useMemo(() => {
@@ -60,7 +66,22 @@ function Wallet() {
     }
     const tokenWithBalance = balances.find(balance => balance.balance !== '0')
     if (tokenWithBalance) {
-      walletStore.sendERC20Transaction(tokenWithBalance, '0.00012')
+      const response = await walletStore.sendERC20Transaction(tokenWithBalance, '0.002')
+
+      console.log('response', response)
+
+      // TODO: add providerForChainId method to NetworkStore
+      const networks = networkStore.networks.get()
+      const network = networks.find(n => n.chainId === tokenWithBalance.chainId)
+      if (!network) {
+        throw new Error(`No network found for chainId ${tokenWithBalance.chainId}`)
+      }
+
+      const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+
+      const receipt = await getTransactionReceipt(provider, response.hash)
+
+      console.log('receipt', receipt)
     }
   }
 

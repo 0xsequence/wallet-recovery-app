@@ -10,11 +10,11 @@ export default function SelectProvider({
   const providers = useSyncProviders()
 
   return (
-    <Box flexDirection="column" gap="2" paddingX="16" paddingY="4" marginBottom="8" alignItems="center">
+    <Box flexDirection="column" gap="2" paddingX="16" paddingY="4" marginBottom="4" alignItems="center">
       <Text variant="large" color="text100">
         Select an external wallet to send transactions
       </Text>
-      <Box flexDirection="column" gap="2" padding="8">
+      <Box flexDirection="column" gap="4" padding="8">
         {providers.map(provider => (
           <Card
             key={provider.info.uuid}
