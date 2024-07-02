@@ -1,8 +1,6 @@
 import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
 import { useMemo, useState } from 'react'
 
-import { useSyncProviders } from '~/hooks/useSyncProviders'
-
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { TokenStore } from '~/stores/TokenStore'
@@ -10,6 +8,7 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
+import SelectProvider from '~/components/SelectProvider'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import TokenBalanceItem from '~/components/TokenBalanceItem'
 import TokenList from '~/components/TokenList'
@@ -17,8 +16,6 @@ import TokenList from '~/components/TokenList'
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Wallet() {
-  // const providers = useSyncProviders()
-
   const authStore = useStore(AuthStore)
   const accountAddress = useObservable(authStore.accountAddress)
 
@@ -50,6 +47,21 @@ function Wallet() {
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
   const handleImportTokenViewClose = () => {
     setIsImportTokenViewOpen(false)
+  }
+
+  const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
+  const handleSelectProviderModalClose = () => {
+    setIsSelectProviderModalOpen(false)
+  }
+
+  const continueTransaction = async () => {
+    if (!walletStore.selectedExternalProvider.get()) {
+      return
+    }
+    const tokenWithBalance = balances.find(balance => balance.balance !== '0')
+    if (tokenWithBalance) {
+      walletStore.sendERC20Transaction(tokenWithBalance, '0.00012')
+    }
   }
 
   return (
@@ -113,9 +125,8 @@ function Wallet() {
                 size="md"
                 shape="square"
                 onClick={() => {
-                  const tokenWithBalance = balances.find(balance => balance.balance !== '0')
-                  if (tokenWithBalance) {
-                    walletStore.sendERC20Transaction(tokenWithBalance, '0.00012')
+                  if (walletStore.selectedExternalProvider.get() === undefined) {
+                    setIsSelectProviderModalOpen(true)
                   }
                 }}
               />
@@ -162,6 +173,17 @@ function Wallet() {
       {isTokenListModalOpen && (
         <Modal onClose={handleTokenListModalClose}>
           <TokenList />
+        </Modal>
+      )}
+      {isSelectProviderModalOpen && (
+        <Modal size="md" onClose={handleSelectProviderModalClose}>
+          <SelectProvider
+            onSelectProvider={provider => {
+              setIsSelectProviderModalOpen(false)
+              walletStore.selectedExternalProvider.set(provider)
+              continueTransaction()
+            }}
+          />
         </Modal>
       )}
     </>

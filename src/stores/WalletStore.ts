@@ -4,6 +4,10 @@ import { ethers } from 'ethers'
 
 import { ERC20_ABI } from '~/constants/abi'
 
+import { EIP1193Provider } from '~/hooks/useSyncProviders'
+
+import { observable } from '~/stores'
+
 import { Store } from '.'
 import { AuthStore } from './AuthStore'
 import { NetworkStore } from './NetworkStore'
@@ -18,6 +22,8 @@ declare global {
 
 export class WalletStore {
   constructor(private store: Store) {}
+
+  selectedExternalProvider = observable<EIP1193Provider | undefined>(undefined)
 
   sendERC20Transaction = async (tokenBalance: TokenBalance, amount: string) => {
     const account = this.store.get(AuthStore).account
@@ -42,80 +48,92 @@ export class WalletStore {
       return
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
-    const windowProvider = new ethers.providers.Web3Provider(window.ethereum, chainId)
+    const externalProvider = this.selectedExternalProvider.get()
 
-    const response = windowProvider.send('eth_requestAccounts', []).then(async accounts => {
-      await windowProvider.send('wallet_switchEthereumChain', [{ chainId: ethers.utils.hexValue(chainId) }])
+    if (!externalProvider) {
+      console.warn('No external provider selected')
+      return
+    }
 
-      const addr = accounts[0]
-
-      const status = await account.status(chainId)
-
-      let txn: commons.transaction.Transactionish | undefined
-
-      if (tokenBalance.contractType === ContractType.NATIVE) {
-        txn = {
-          to: addr,
-          value: ethers.utils.parseEther(amount)
-        }
-      } else if (tokenBalance.contractType === ContractType.ERC20) {
-        const erc20 = new ethers.Contract(tokenBalance.contractAddress, ERC20_ABI, windowProvider)
-        txn = await erc20.populateTransaction.transfer(
-          addr,
-          ethers.utils.parseUnits('0', tokenBalance.contractInfo?.decimals ?? 18)
-        )
+    externalProvider.send?.({ method: 'eth_requestAccounts', params: [] }, (error, accounts) => {
+      if (error) {
+        console.error(error)
       }
-
-      if (!txn) {
-        throw new Error('Could not create transaction')
+      if (accounts) {
+        console.log('accounts', accounts)
       }
-
-      const signer = windowProvider.getSigner()
-
-      // const tx = {
-      //   from: addr,
-      //   to: '0x08FFc248A190E700421C0aFB4135768406dCebfF',
-      //   value: ethers.utils.parseEther('0.00001')
-      // }
-      // signer.sendTransaction(tx).then(transaction => {
-      //   console.dir(transaction)
-      //   alert('Send finished!')
-      // })
-
-      const predecorated = await account.predecorateTransactions(txn, status, chainId)
-      const signed = await account.signTransactions(predecorated, chainId, undefined, { serial: true })
-      const decorated = await account.decorateTransactions(signed, status)
-      const unwound = commons.transaction.unwind(account.address, decorated.transactions)
-
-      // const hash = await windowProvider.send('eth_sendTransaction', [
-      //   {
-      //     from: addr,
-      //     to: decorated.entrypoint,
-      //     data: commons.transaction.encodeBundleExecData(decorated),
-      //     gasLimit: 1000000 // TODO
-      //   }
-      // ])
-
-      const hash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [
-          {
-            from: addr,
-            to: decorated.entrypoint,
-            data: commons.transaction.encodeBundleExecData(decorated)
-          }
-        ]
-      })
-
-      console.log('transactionHash', hash)
-
-      // let response: ethers.providers.TransactionResponse
-      // do {
-      //   response = await windowProvider.getTransaction(hash)
-      //   await response.wait()
-      // } while (!response.blockNumber)
-      // return response
     })
+
+    //   const response = externalProvider.send('eth_requestAccounts', []).then(async accounts => {
+    //     await externalProvider.send('wallet_switchEthereumChain', [{ chainId: ethers.utils.hexValue(chainId) }])
+
+    //     const addr = accounts[0]
+
+    //     const status = await account.status(chainId)
+
+    //     let txn: commons.transaction.Transactionish | undefined
+
+    //     if (tokenBalance.contractType === ContractType.NATIVE) {
+    //       txn = {
+    //         to: addr,
+    //         value: ethers.utils.parseEther(amount)
+    //       }
+    //     } else if (tokenBalance.contractType === ContractType.ERC20) {
+    //       const erc20 = new ethers.Contract(tokenBalance.contractAddress, ERC20_ABI, externalProvider)
+    //       txn = await erc20.populateTransaction.transfer(
+    //         addr,
+    //         ethers.utils.parseUnits('0', tokenBalance.contractInfo?.decimals ?? 18)
+    //       )
+    //     }
+
+    //     if (!txn) {
+    //       throw new Error('Could not create transaction')
+    //     }
+
+    //     // const tx = {
+    //     //   from: addr,
+    //     //   to: '0x08FFc248A190E700421C0aFB4135768406dCebfF',
+    //     //   value: ethers.utils.parseEther('0.00001')
+    //     // }
+    //     // signer.sendTransaction(tx).then(transaction => {
+    //     //   console.dir(transaction)
+    //     //   alert('Send finished!')
+    //     // })
+
+    //     const predecorated = await account.predecorateTransactions(txn, status, chainId)
+    //     const signed = await account.signTransactions(predecorated, chainId, undefined, { serial: true })
+    //     const decorated = await account.decorateTransactions(signed, status)
+    //     const unwound = commons.transaction.unwind(account.address, decorated.transactions)
+
+    //     // const hash = await externalProvider.send('eth_sendTransaction', [
+    //     //   {
+    //     //     from: addr,
+    //     //     to: decorated.entrypoint,
+    //     //     data: commons.transaction.encodeBundleExecData(decorated),
+    //     //     gasLimit: 1000000 // TODO
+    //     //   }
+    //     // ])
+
+    //     const hash = await window.ethereum.request({
+    //       method: 'eth_sendTransaction',
+    //       params: [
+    //         {
+    //           from: addr,
+    //           to: decorated.entrypoint,
+    //           data: commons.transaction.encodeBundleExecData(decorated)
+    //         }
+    //       ]
+    //     })
+
+    //     console.log('transactionHash', hash)
+
+    //     // let response: ethers.providers.TransactionResponse
+    //     // do {
+    //     //   response = await externalProvider.getTransaction(hash)
+    //     //   await response.wait()
+    //     // } while (!response.blockNumber)
+    //     // return response
+    //   })
+    // }
   }
 }
