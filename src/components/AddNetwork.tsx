@@ -43,7 +43,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
         label="Chain ID"
         labelLocation="left"
         name="chainId"
-        value={chainId}
+        value={chainId ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setChainId(ev.target.value)
         }}
@@ -53,7 +53,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
         label="Network Name"
         labelLocation="left"
         name="networkName"
-        value={networkName}
+        value={networkName ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setNetworkName(ev.target.value)
         }}
@@ -63,7 +63,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
         label="RPC URL"
         labelLocation="left"
         name="rpcUrl"
-        value={rpcUrl}
+        value={rpcUrl ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setRpcUrl(ev.target.value)
         }}
@@ -73,7 +73,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
         label="Block explorer URL"
         labelLocation="left"
         name="rpcUrl"
-        value={blockExplorerUrl}
+        value={blockExplorerUrl ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setBlockExplorerUrl(ev.target.value)
         }}

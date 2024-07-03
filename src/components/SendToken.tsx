@@ -70,7 +70,7 @@ export default function SendToken({
             labelLocation="top"
             name="amount"
             placeholder="Enter amount"
-            value={amount}
+            value={amount ?? ''}
             onChange={(ev: ChangeEvent<HTMLInputElement>) => {
               setAmount(ev.target.value)
             }}
@@ -104,7 +104,7 @@ export default function SendToken({
             labelLocation="top"
             name="to"
             placeholder="0x..."
-            value={address}
+            value={address ?? ''}
             onChange={(ev: ChangeEvent<HTMLInputElement>) => {
               setAddress(ev.target.value)
             }}

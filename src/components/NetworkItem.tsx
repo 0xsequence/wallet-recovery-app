@@ -36,7 +36,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
         name="rpcUrl"
         spellCheck={false}
         disabled={isUserAddition}
-        value={rpcUrl}
+        value={rpcUrl ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setRpcUrl(ev.target.value)
         }}
@@ -47,7 +47,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
         name="blockExplorerUrl"
         spellCheck={false}
         disabled={isUserAddition}
-        value={blockExplorerUrl}
+        value={blockExplorerUrl ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setBlockExplorerUrl(ev.target.value)
         }}

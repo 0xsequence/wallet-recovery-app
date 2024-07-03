@@ -95,7 +95,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
           label="Token Address"
           labelLocation="left"
           name="tokenAddress"
-          value={tokenAddress}
+          value={tokenAddress ?? ''}
           onChange={(ev: ChangeEvent<HTMLInputElement>) => {
             setTokenAddress(ev.target.value)
           }}
@@ -114,7 +114,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
               label="Token Symbol"
               labelLocation="left"
               name="tokenSymbol"
-              value={tokenInfo?.symbol}
+              value={tokenInfo?.symbol ?? ''}
               disabled
             />
 
@@ -123,7 +123,7 @@ export default function AddToken({ onClose }: { onClose: () => void }) {
               label="Token Decimals"
               labelLocation="left"
               name="tokenDecimals"
-              value={tokenInfo?.decimals}
+              value={tokenInfo?.decimals ?? ''}
               disabled
             />
           </>
