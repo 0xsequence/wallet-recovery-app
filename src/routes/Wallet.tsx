@@ -14,6 +14,7 @@ import { WalletStore } from '~/stores/WalletStore'
 import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
 import SelectProvider from '~/components/SelectProvider'
+import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import TokenBalanceItem from '~/components/TokenBalanceItem'
 import TokenList from '~/components/TokenList'
@@ -42,47 +43,54 @@ function Wallet() {
   }, [balances, filterZeroBalances, isFetchingBalances])
 
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
-  const handleNetworkModalClose = () => {
-    setIsNetworkModalOpen(false)
-  }
 
   const [isTokenListModalOpen, setIsTokenListModalOpen] = useState(false)
-  const handleTokenListModalClose = () => {
-    setIsTokenListModalOpen(false)
-  }
 
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
-  const handleImportTokenViewClose = () => {
-    setIsImportTokenViewOpen(false)
-  }
 
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
-  const handleSelectProviderModalClose = () => {
-    setIsSelectProviderModalOpen(false)
-  }
+
+  const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
 
   const [pendingSendERC20, setPendingSendERC20] = useState<TokenBalance | undefined>(undefined)
 
-  const handleSendERC20 = async (tokenBalance: TokenBalance) => {
+  // First step of sending txn
+  const handleSelectProvider = async () => {
     if (walletStore.selectedExternalProvider.get() === undefined) {
-      setPendingSendERC20(tokenBalance)
       setIsSelectProviderModalOpen(true)
+    } else {
+      handleSelectAmountAndAddress()
     }
   }
 
-  const continueTransaction = async () => {
+  // Second step of sending txn
+  const handleSelectAmountAndAddress = async () => {
     if (!walletStore.selectedExternalProvider.get()) {
+      console.warn('No external provider selected')
       return
     }
 
     if (!pendingSendERC20) {
+      console.warn('No pending send found')
       return
     }
 
-    // TODO: add modal for setting amount and confirm
-    const response = await walletStore.sendERC20Transaction(pendingSendERC20, '0.002')
+    setIsSendTokenModalOpen(true)
+  }
 
-    console.log('response', response)
+  // Third step of sending txn
+  const handleSendPendingTransaction = async (amount: string, to: string) => {
+    if (!walletStore.selectedExternalProvider.get()) {
+      console.warn('No external provider selected')
+      return
+    }
+
+    if (!pendingSendERC20) {
+      console.warn('No pending send found')
+      return
+    }
+
+    const response = await walletStore.sendERC20Transaction(pendingSendERC20, amount, to)
 
     // TODO: add providerForChainId method to NetworkStore
     const networks = networkStore.networks.get()
@@ -160,7 +168,10 @@ function Wallet() {
                 <TokenBalanceItem
                   key={balance.contractAddress + balance.chainId}
                   tokenBalance={balance}
-                  onSendClick={() => handleSendERC20(balance)}
+                  onSendClick={() => {
+                    setPendingSendERC20(balance)
+                    handleSelectProvider()
+                  }}
                 />
               ))}
               {isFetchingBalances && (
@@ -169,7 +180,7 @@ function Wallet() {
                 </Box>
               )}
             </Box>
-            {isImportTokenViewOpen && <AddToken onClose={handleImportTokenViewClose} />}
+            {isImportTokenViewOpen && <AddToken onClose={() => setIsImportTokenViewOpen(false)} />}
             {!isImportTokenViewOpen && (
               <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
                 <Button
@@ -193,22 +204,37 @@ function Wallet() {
         </Box>
       </Box>
       {isNetworkModalOpen && (
-        <Modal onClose={handleNetworkModalClose}>
+        <Modal onClose={() => setIsNetworkModalOpen(false)}>
           <Networks />
         </Modal>
       )}
       {isTokenListModalOpen && (
-        <Modal onClose={handleTokenListModalClose}>
+        <Modal onClose={() => setIsTokenListModalOpen(false)}>
           <TokenList />
         </Modal>
       )}
       {isSelectProviderModalOpen && (
-        <Modal size="md" onClose={handleSelectProviderModalClose}>
+        <Modal size="md" onClose={() => setIsSelectProviderModalOpen(false)}>
           <SelectProvider
-            onSelectProvider={provider => {
+            onSelectProvider={async provider => {
               setIsSelectProviderModalOpen(false)
-              walletStore.selectedExternalProvider.set(provider)
-              continueTransaction()
+              walletStore.setExternalProvider(provider)
+
+              handleSelectAmountAndAddress()
+            }}
+          />
+        </Modal>
+      )}
+      {isSendTokenModalOpen && (
+        <Modal size="md" onClose={() => setIsSendTokenModalOpen(false)}>
+          <SendToken
+            tokenBalance={pendingSendERC20}
+            onClose={(amount, to) => {
+              setIsSendTokenModalOpen(false)
+
+              if (amount && to) {
+                handleSendPendingTransaction(amount, to)
+              }
             }}
           />
         </Modal>

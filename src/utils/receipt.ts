@@ -10,6 +10,9 @@ export const getTransactionReceipt = async (
   let tries = 0
 
   do {
+    if (tries > 5) {
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
     receipt = await provider.getTransactionReceipt(hash as string)
 
     if (tries === maxTries) {

@@ -1,4 +1,4 @@
-import { Box, Card, Text } from '@0xsequence/design-system'
+import { Box, Card, Divider, Text } from '@0xsequence/design-system'
 
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
@@ -10,10 +10,11 @@ export default function SelectProvider({
   const providers = useSyncProviders()
 
   return (
-    <Box flexDirection="column" gap="2" paddingX="16" paddingY="4" marginBottom="4" alignItems="center">
-      <Text variant="large" color="text100">
+    <Box flexDirection="column" paddingY="5" alignItems="center">
+      <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="1">
         Select an external wallet to send transactions
       </Text>
+      <Divider color="gradientPrimary" width="full" height="px" />
       <Box flexDirection="column" gap="4" padding="8">
         {providers.map(provider => (
           <Card

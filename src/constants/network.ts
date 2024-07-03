@@ -2,7 +2,7 @@
 export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
   [1, 'https://rpc.flashbots.net'],
   [11155111, 'https://ethereum-sepolia-rpc.publicnode.com'],
-  [137, 'https://polygon.drpc.org'],
+  [137, 'https://rpc.ankr.com/polygon'],
   [80002, 'https://polygon-amoy.drpc.org'],
   [1101, 'https://zkevm-rpc.com'],
   [56, 'https://bsc-rpc.publicnode.com'],

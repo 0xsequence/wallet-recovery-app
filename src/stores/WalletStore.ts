@@ -25,8 +25,13 @@ export class WalletStore {
   constructor(private store: Store) {}
 
   selectedExternalProvider = observable<EIP1193Provider | undefined>(undefined)
+  selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
-  sendERC20Transaction = async (tokenBalance: TokenBalance, amount: string): Promise<{ hash: string }> => {
+  sendERC20Transaction = async (
+    tokenBalance: TokenBalance,
+    amount: string,
+    to: string
+  ): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = tokenBalance.chainId
 
@@ -64,14 +69,14 @@ export class WalletStore {
 
     if (tokenBalance.contractType === ContractType.NATIVE) {
       txn = {
-        to: externalProviderAddress,
+        to,
         value: ethers.utils.parseEther(amount)
       }
     } else if (tokenBalance.contractType === ContractType.ERC20) {
       const erc20 = new ethers.Contract(tokenBalance.contractAddress, ERC20_ABI, provider)
       txn = await erc20.populateTransaction.transfer(
-        externalProviderAddress,
-        ethers.utils.parseUnits('0', tokenBalance.contractInfo?.decimals ?? 18)
+        to,
+        ethers.utils.parseUnits(amount, tokenBalance.contractInfo?.decimals ?? 18)
       )
     }
 
@@ -80,6 +85,13 @@ export class WalletStore {
     }
 
     return await this.sendTransaction(account, externalProvider, externalProviderAddress, txn, chainId)
+  }
+
+  setExternalProvider = async (provider: EIP1193Provider) => {
+    this.selectedExternalProvider.set(provider)
+    const externalProviderAccounts = await this.getExternalProviderAccounts(provider)
+    const externalProviderAddress = externalProviderAccounts[0]
+    this.selectedExternalWalletAddress.set(externalProviderAddress)
   }
 
   private async sendTransaction(
