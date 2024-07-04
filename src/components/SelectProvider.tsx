@@ -1,11 +1,11 @@
 import { Box, Card, Divider, Text } from '@0xsequence/design-system'
 
-import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
+import { EIP6963ProviderDetail, useSyncProviders } from '~/hooks/useSyncProviders'
 
 export default function SelectProvider({
   onSelectProvider
 }: {
-  onSelectProvider: (provider: EIP1193Provider) => void
+  onSelectProvider: (provider: EIP6963ProviderDetail) => void
 }) {
   const providers = useSyncProviders()
 
@@ -24,7 +24,7 @@ export default function SelectProvider({
             gap="2"
             cursor="pointer"
             background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
-            onClick={() => onSelectProvider(provider.provider)}
+            onClick={() => onSelectProvider(provider)}
           >
             <Box flexDirection="row" alignItems="center" gap="2">
               <img

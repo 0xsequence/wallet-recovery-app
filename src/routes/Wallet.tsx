@@ -31,6 +31,9 @@ function Wallet() {
 
   const walletStore = useStore(WalletStore)
 
+  const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
+  const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
+
   const networkStore = useStore(NetworkStore)
 
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
@@ -55,8 +58,8 @@ function Wallet() {
   const [pendingSendERC20, setPendingSendERC20] = useState<TokenBalance | undefined>(undefined)
 
   // First step of sending txn
-  const handleSelectProvider = async () => {
-    if (walletStore.selectedExternalProvider.get() === undefined) {
+  const handleSelectProvider = async (isChange: boolean = false) => {
+    if (selectedExternalProvider === undefined || isChange) {
       setIsSelectProviderModalOpen(true)
     } else {
       handleSelectAmountAndAddress()
@@ -64,15 +67,19 @@ function Wallet() {
   }
 
   // Second step of sending txn
-  const handleSelectAmountAndAddress = async () => {
+  const handleSelectAmountAndAddress = async (balance?: TokenBalance) => {
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
       return
     }
 
     if (!pendingSendERC20) {
-      console.warn('No pending send found')
-      return
+      if (balance) {
+        setPendingSendERC20(balance)
+      } else {
+        console.warn('No pending send found')
+        return
+      }
     }
 
     setIsSendTokenModalOpen(true)
@@ -148,6 +155,52 @@ function Wallet() {
               {accountAddress}
             </Text>
           </Card>
+
+          <Card alignItems="center" flexDirection="column" padding="6" marginTop="4">
+            <Text variant="large" color="text80" marginBottom="4">
+              {selectedExternalProvider
+                ? 'Your external wallet that will be used to relay transactions'
+                : 'Connect an external wallet to relay transactions'}
+            </Text>
+            {selectedExternalProvider && (
+              <Box flexDirection="row" alignItems="center" gap="2">
+                <Box flexDirection="column" alignItems="center" gap="2">
+                  <Box flexDirection="row" gap="2">
+                    <img
+                      src={selectedExternalProvider.info.icon}
+                      alt={selectedExternalProvider.info.name}
+                      style={{ width: '20px', height: '20px' }}
+                    />
+                    <Text variant="normal" color="text100">
+                      {selectedExternalProvider.info.name}
+                    </Text>
+                  </Box>
+                  {selectedExternalWalletAddress && (
+                    <Text variant="normal" color="text100">
+                      ({selectedExternalWalletAddress})
+                    </Text>
+                  )}
+                  <Button
+                    size="xs"
+                    label="Change external wallet"
+                    variant="text"
+                    shape="square"
+                    onClick={() => handleSelectProvider(true)}
+                  />
+                </Box>
+              </Box>
+            )}
+            {!selectedExternalProvider && (
+              <Button
+                label="Connect"
+                variant="primary"
+                size="md"
+                shape="square"
+                onClick={handleSelectProvider}
+              />
+            )}
+          </Card>
+
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
               <Text variant="large" color="text80">
@@ -168,9 +221,14 @@ function Wallet() {
                 <TokenBalanceItem
                   key={balance.contractAddress + balance.chainId}
                   tokenBalance={balance}
-                  onSendClick={() => {
+                  onSendClick={async () => {
                     setPendingSendERC20(balance)
-                    handleSelectProvider()
+
+                    if (selectedExternalProvider) {
+                      handleSelectAmountAndAddress(balance)
+                    } else {
+                      handleSelectProvider()
+                    }
                   }}
                 />
               ))}

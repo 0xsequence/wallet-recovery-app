@@ -39,7 +39,15 @@ function Recovery() {
             </Text>
 
             <Text variant="normal" color="text50" marginTop="4" textAlign="center">
-              This is the recovery phrase you create on sequence.app/settings/recovery
+              This is the recovery phrase you create on{' '}
+              <Text
+                variant="link"
+                cursor="pointer"
+                color="text80"
+                onClick={() => window.open('https://sequence.app/settings/recovery')}
+              >
+                sequence.app/settings/recovery
+              </Text>
             </Text>
           </Box>
 

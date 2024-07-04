@@ -10,6 +10,7 @@ interface EIP6963ProviderInfo {
 
 // Interface for Ethereum providers based on the EIP-1193 standard.
 export interface EIP1193Provider {
+  on: (event: string, callback: (...args: any[]) => void) => void
   isStatus?: boolean // Optional: Indicates the status of the provider
   host?: string // Optional: Host URL of the Ethereum node
   path?: string // Optional: Path to a specific endpoint or service on the host
@@ -25,7 +26,7 @@ export interface EIP1193Provider {
 }
 
 // Interface detailing the structure of provider information and its Ethereum provider.
-interface EIP6963ProviderDetail {
+export interface EIP6963ProviderDetail {
   info: EIP6963ProviderInfo // The provider's info
   provider: EIP1193Provider // The EIP-1193 compatible provider
 }

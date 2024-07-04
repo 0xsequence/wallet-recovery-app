@@ -5,7 +5,7 @@ import { ethers } from 'ethers'
 
 import { ERC20_ABI } from '~/constants/abi'
 
-import { EIP1193Provider } from '~/hooks/useSyncProviders'
+import { EIP1193Provider, EIP6963ProviderDetail } from '~/hooks/useSyncProviders'
 
 import { observable } from '~/stores'
 
@@ -24,7 +24,7 @@ declare global {
 export class WalletStore {
   constructor(private store: Store) {}
 
-  selectedExternalProvider = observable<EIP1193Provider | undefined>(undefined)
+  selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
   sendERC20Transaction = async (
@@ -54,7 +54,7 @@ export class WalletStore {
 
     const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
 
-    const externalProvider = this.selectedExternalProvider.get()
+    const externalProvider = this.selectedExternalProvider.get()?.provider
 
     if (!externalProvider) {
       throw new Error('No external provider selected')
@@ -87,11 +87,24 @@ export class WalletStore {
     return await this.sendTransaction(account, externalProvider, externalProviderAddress, txn, chainId)
   }
 
-  setExternalProvider = async (provider: EIP1193Provider) => {
+  setExternalProvider = async (provider: EIP6963ProviderDetail) => {
     this.selectedExternalProvider.set(provider)
-    const externalProviderAccounts = await this.getExternalProviderAccounts(provider)
+    const externalProviderAccounts = await this.getExternalProviderAccounts(provider.provider)
     const externalProviderAddress = externalProviderAccounts[0]
     this.selectedExternalWalletAddress.set(externalProviderAddress)
+
+    provider.provider.on('accountsChanged', async accounts => {
+      if (accounts.length === 0) {
+        this.selectedExternalProvider.set(undefined)
+        this.selectedExternalWalletAddress.set(undefined)
+        return
+      }
+      if (accounts[0] !== externalProviderAddress) {
+        const newExternalProviderAccounts = await this.getExternalProviderAccounts(provider.provider)
+        const newExternalProviderAddress = newExternalProviderAccounts[0]
+        this.selectedExternalWalletAddress.set(newExternalProviderAddress)
+      }
+    })
   }
 
   private async sendTransaction(
