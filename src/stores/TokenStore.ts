@@ -34,6 +34,10 @@ export class TokenStore {
 
   userAddedTokens = observable<UserAddedToken[]>([])
 
+  private local = {
+    userAddedTokens: new LocalStore<UserAddedToken[]>(LocalStorageKey.TOKENS_USER_ADDITIONS)
+  }
+
   constructor(private store: Store) {
     const networkStore = this.store.get(NetworkStore)
 
@@ -43,10 +47,6 @@ export class TokenStore {
         this.loadBalances(accountAddress, networks)
       }
     })
-  }
-
-  private local = {
-    userAddedTokens: new LocalStore<UserAddedToken[]>(LocalStorageKey.TOKENS_USER_ADDITIONS)
   }
 
   private async loadBalances(account: string, networks: NetworkConfig[]) {

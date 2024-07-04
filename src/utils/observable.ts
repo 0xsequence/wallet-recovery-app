@@ -1,37 +1,8 @@
-import { Observable, WritableObservable } from 'micro-observables'
+import { Observable } from 'micro-observables'
 
 type SubscribeCallback<T> = T extends Observable<infer R> ? (value: R) => void : never
 
 export function subscribeImmediately<T extends Observable<any>>(observable: T, cb: SubscribeCallback<T>) {
   cb(observable.get())
   observable.subscribe(cb)
-}
-
-export const syncWithLocalStore = <T>(
-  key: string,
-  observable: WritableObservable<T>,
-  onChange?: (value: T) => void,
-  options: { immediate?: boolean } = {}
-) => {
-  const storedValue = window.localStorage.getItem(key)
-
-  if (storedValue !== null) {
-    try {
-      observable.set(JSON.parse(storedValue))
-
-      if (options.immediate) {
-        onChange?.(observable.get())
-      }
-    } catch (err) {
-      console.error(`LocalStorageObservable: Stored data for ${key} is corrupted.`)
-    }
-  }
-
-  // Sync localStorage when observable updates
-  observable.subscribe(value => {
-    window.localStorage.setItem(key, JSON.stringify(value))
-    onChange?.(value)
-  })
-
-  return observable
 }

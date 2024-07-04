@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
 // Interface for provider information following EIP-6963.
-interface EIP6963ProviderInfo {
+export interface EIP6963ProviderInfo {
   walletId: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask
   uuid: string // Globally unique ID to differentiate between provider sessions for the lifetime of the page
   name: string // Human-readable name of the wallet

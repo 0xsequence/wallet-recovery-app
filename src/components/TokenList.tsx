@@ -28,7 +28,14 @@ export default function TokenList() {
         </Text>
       </Box>
 
-      <Box width="full" flexDirection="column" marginTop="4" paddingBottom="4" gap="4">
+      <Box width="full" height="full" flexDirection="column" marginTop="4" paddingBottom="12" gap="4">
+        {userAddedTokens.length === 0 && (
+          <Box height="full" alignItems="center" justifyContent="center">
+            <Text variant="medium" color="text50" marginBottom="16">
+              You haven't added any tokens yet
+            </Text>
+          </Box>
+        )}
         {userAddedTokens.map((token, i) => (
           <Card key={i} width="full" flexDirection="row" gap="2" alignItems="center">
             <Box flexDirection="column" gap="2">

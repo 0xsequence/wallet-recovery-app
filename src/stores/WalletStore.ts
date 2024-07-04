@@ -4,13 +4,15 @@ import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 
 import { ERC20_ABI } from '~/constants/abi'
+import { LocalStorageKey } from '~/constants/storage'
 
-import { EIP1193Provider, EIP6963ProviderDetail } from '~/hooks/useSyncProviders'
+import { EIP1193Provider, EIP6963ProviderDetail, EIP6963ProviderInfo } from '~/hooks/useSyncProviders'
 
 import { observable } from '~/stores'
 
 import { Store } from '.'
 import { AuthStore } from './AuthStore'
+import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 
 declare global {
@@ -22,10 +24,30 @@ declare global {
 }
 
 export class WalletStore {
-  constructor(private store: Store) {}
+  availableExternalProviders = observable<EIP6963ProviderDetail[]>([])
 
   selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
+
+  private local = {
+    lastConnectedExternalProviderInfo: new LocalStore<EIP6963ProviderInfo>(
+      LocalStorageKey.LAST_CONNECTED_EXTERNAL_PROVIDER_INFO
+    )
+  }
+
+  constructor(private store: Store) {
+    this.availableExternalProviders.subscribe(providers => {
+      const lastConnected = this.local.lastConnectedExternalProviderInfo.get()
+
+      const lastConnectedProvider = providers.find(provider => {
+        return lastConnected?.name === provider.info.name
+      })
+
+      if (lastConnectedProvider) {
+        this.setExternalProvider(lastConnectedProvider)
+      }
+    })
+  }
 
   sendERC20Transaction = async (
     tokenBalance: TokenBalance,
@@ -88,9 +110,11 @@ export class WalletStore {
   }
 
   setExternalProvider = async (provider: EIP6963ProviderDetail) => {
-    this.selectedExternalProvider.set(provider)
     const externalProviderAccounts = await this.getExternalProviderAccounts(provider.provider)
     const externalProviderAddress = externalProviderAccounts[0]
+
+    this.local.lastConnectedExternalProviderInfo.set(provider.info)
+    this.selectedExternalProvider.set(provider)
     this.selectedExternalWalletAddress.set(externalProviderAddress)
 
     provider.provider.on('accountsChanged', async accounts => {

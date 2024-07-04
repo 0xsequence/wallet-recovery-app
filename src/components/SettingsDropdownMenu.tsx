@@ -23,8 +23,8 @@ export default function SettingsDropdownMenu({ onTokenListClick }: { onTokenList
       <Button as={DropdownMenuTrigger} label="Settings" variant="text" />
       <DropdownMenuContent side="bottom" align="end" sideOffset={20}>
         <Box marginTop="2">
-          <DropdownMenuItem>
-            <Box padding="1" onClick={onTokenListClick}>
+          <DropdownMenuItem onClick={onTokenListClick}>
+            <Box padding="1">
               <Text variant="normal" fontWeight="bold">
                 Token List
               </Text>
@@ -35,14 +35,13 @@ export default function SettingsDropdownMenu({ onTokenListClick }: { onTokenList
               <Divider color="white" />
             </Box>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Box
-              padding="1"
-              onClick={() => {
-                authStore.logout()
-                navigate('/')
-              }}
-            >
+          <DropdownMenuItem
+            onClick={() => {
+              authStore.logout()
+              navigate('/')
+            }}
+          >
+            <Box padding="1">
               <Text variant="normal" fontWeight="bold">
                 Log out
               </Text>

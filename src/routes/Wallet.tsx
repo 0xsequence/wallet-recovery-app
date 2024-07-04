@@ -1,9 +1,11 @@
 import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { getTransactionReceipt } from '~/utils/receipt'
+
+import { useSyncProviders } from '~/hooks/useSyncProviders'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -22,6 +24,14 @@ import TokenList from '~/components/TokenList'
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Wallet() {
+  const externalProviders = useSyncProviders()
+
+  useEffect(() => {
+    if (externalProviders.length > 0) {
+      walletStore.availableExternalProviders.set(externalProviders)
+    }
+  }, [externalProviders])
+
   const authStore = useStore(AuthStore)
   const accountAddress = useObservable(authStore.accountAddress)
 
