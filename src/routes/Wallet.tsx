@@ -1,4 +1,4 @@
-import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
+import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 import { useEffect, useMemo, useState } from 'react'
@@ -26,6 +26,8 @@ import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Wallet() {
   const externalProviders = useSyncProviders()
+
+  const toast = useToast()
 
   useEffect(() => {
     if (externalProviders.length > 0) {
@@ -108,8 +110,19 @@ function Wallet() {
       console.warn('No pending send found')
       return
     }
-
-    const response = await walletStore.sendToken(pendingSendToken, amount, to)
+    let response: { hash: string } | undefined
+    try {
+      response = await walletStore.sendToken(pendingSendToken, amount, to)
+    } catch (error) {
+      if ((error as any).code === 4001) {
+        toast({
+          variant: 'error',
+          title: 'User denied transaction signature.'
+        })
+      }
+      console.error(error)
+      return
+    }
 
     // TODO: add providerForChainId method to NetworkStore
     const networks = networkStore.networks.get()
@@ -122,8 +135,17 @@ function Wallet() {
 
     const receipt = await getTransactionReceipt(provider, response.hash)
 
+    if (receipt) {
+      toast({
+        variant: 'success',
+        title: 'Transaction confirmed',
+        description: `You can view the transaction details on your connected external wallet`
+      })
+    }
+
     tokenStore.updateTokenBalance(pendingSendToken)
     setPendingSendToken(undefined)
+    walletStore.isSendingTransaction.set(undefined)
 
     console.log('receipt', receipt)
   }
@@ -213,11 +235,11 @@ function Wallet() {
             )}
           </Card>
 
-          {/* {isSendingTransaction && (
+          {isSendingTransaction && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
               <PendingTxn {...isSendingTransaction} />
             </Box>
-          )} */}
+          )}
 
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">

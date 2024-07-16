@@ -109,18 +109,25 @@ export class WalletStore {
     }
 
     if (!txn) {
+      this.isSendingTransaction.set(undefined)
       throw new Error('Could not create transaction')
     }
 
-    const { hash } = await this.sendTransaction(
-      account,
-      externalProvider,
-      externalProviderAddress,
-      txn,
-      chainId
-    )
+    let hash: string | undefined
 
-    this.isSendingTransaction.set(undefined)
+    try {
+      const response = await this.sendTransaction(
+        account,
+        externalProvider,
+        externalProviderAddress,
+        txn,
+        chainId
+      )
+      hash = response.hash
+    } catch (error) {
+      this.isSendingTransaction.set(undefined)
+      throw error
+    }
 
     return { hash }
   }
