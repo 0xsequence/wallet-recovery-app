@@ -1,11 +1,11 @@
 import { ethers } from 'ethers'
 
 export const getTransactionReceipt = async (
-  provider: ethers.providers.JsonRpcProvider,
+  provider: ethers.JsonRpcProvider,
   hash: string,
   maxTries: number = 15
 ) => {
-  let receipt: ethers.providers.TransactionReceipt | undefined
+  let receipt: ethers.TransactionReceipt | null
 
   let tries = 0
 

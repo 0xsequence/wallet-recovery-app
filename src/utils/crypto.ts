@@ -50,7 +50,7 @@ export const createSalt = (length = 32) => {
 }
 
 export const createSaltFromAddress = (address: string) => {
-  return ethers.utils.arrayify(address)
+  return ethers.getBytes(address)
 }
 
 export const encrypt = async (key: CryptoKey, text: string): Promise<Encrypted> => {

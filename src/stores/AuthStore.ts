@@ -46,7 +46,7 @@ export class AuthStore {
   async signInWithRecoveryMnemonic(mnemonic: string) {
     this.isLoadingAccount.set(true)
 
-    const recoverySigner = ethers.Wallet.fromMnemonic(mnemonic)
+    const recoverySigner = ethers.Wallet.fromPhrase(mnemonic)
 
     const wallets = await TRACKER.walletsOfSigner({ signer: recoverySigner.address })
 

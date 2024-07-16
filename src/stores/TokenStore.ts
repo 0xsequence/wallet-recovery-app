@@ -61,18 +61,18 @@ export class TokenStore {
           console.warn(`No RPC URL found for network ${network.name}`)
           return
         }
-        const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+        const provider = new ethers.JsonRpcProvider(network.rpcUrl)
         try {
           const balance = await provider.getBalance(account)
 
           update.push({
             contractType: ContractType.NATIVE,
-            contractAddress: ethers.constants.AddressZero,
+            contractAddress: ethers.ZeroAddress,
             tokenID: '',
             accountAddress: account,
             balance: balance.toString(),
             chainId: network.chainId,
-            blockHash: ethers.constants.HashZero,
+            blockHash: ethers.ZeroHash,
             blockNumber: 0,
             contractInfo: getNativeTokenInfo(getChainId(network.chainId))
           })
@@ -113,7 +113,7 @@ export class TokenStore {
       return
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
+    const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
     try {
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
       const balance = await erc20.balanceOf(accountAddress)
@@ -127,7 +127,7 @@ export class TokenStore {
         accountAddress: accountAddress,
         balance: balance.toString(),
         chainId: token.chainId,
-        blockHash: ethers.constants.HashZero,
+        blockHash: ethers.ZeroHash,
         blockNumber: 0,
         contractInfo: {
           address: token.address,
@@ -147,7 +147,8 @@ export class TokenStore {
             originChainId: 0,
             blacklist: false,
             verified: true,
-            verifiedBy: 'User'
+            verifiedBy: 'User',
+            featured: false
           },
           updatedAt: '0'
         }
@@ -182,10 +183,10 @@ export class TokenStore {
 
     const update = this.balances.get()
 
-    const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+    const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     try {
-      let balance: ethers.BigNumber
+      let balance: BigInt
 
       if (tokenBalance.contractType === ContractType.NATIVE) {
         balance = await provider.getBalance(accountAddress)
@@ -266,7 +267,7 @@ export class TokenStore {
 
     this.isFetchingTokenInfo.set(true)
 
-    const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
+    const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
     try {
       const erc20 = new ethers.Contract(address, ERC20_ABI, provider)

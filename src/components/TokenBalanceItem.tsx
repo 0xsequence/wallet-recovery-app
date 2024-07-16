@@ -13,10 +13,7 @@ export default function TokenBalanceItem({
   tokenBalance: TokenBalance
   onSendClick: () => void
 }) {
-  const formattedBalance = ethers.utils.formatUnits(
-    tokenBalance.balance,
-    tokenBalance.contractInfo?.decimals ?? 18
-  )
+  const formattedBalance = ethers.formatUnits(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
 
   return (

@@ -29,6 +29,10 @@ export class WalletStore {
   selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
+  isSendingTransaction = observable<{ tokenBalance: TokenBalance; amount: string; to: string } | undefined>(
+    undefined
+  )
+
   private local = {
     lastConnectedExternalProviderInfo: new LocalStore<EIP6963ProviderInfo>(
       LocalStorageKey.LAST_CONNECTED_EXTERNAL_PROVIDER_INFO
@@ -74,7 +78,9 @@ export class WalletStore {
       throw new Error(`No RPC URL found for network ${networkForToken.name}`)
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(networkForToken.rpcUrl)
+    this.isSendingTransaction.set({ tokenBalance, amount, to })
+
+    const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
     const externalProvider = this.selectedExternalProvider.get()?.provider
 
@@ -92,13 +98,13 @@ export class WalletStore {
     if (tokenBalance.contractType === ContractType.NATIVE) {
       txn = {
         to,
-        value: ethers.utils.parseEther(amount)
+        value: ethers.parseEther(amount)
       }
     } else if (tokenBalance.contractType === ContractType.ERC20) {
       const erc20 = new ethers.Contract(tokenBalance.contractAddress, ERC20_ABI, provider)
-      txn = await erc20.populateTransaction.transfer(
+      txn = await erc20.transfer.populateTransaction(
         to,
-        ethers.utils.parseUnits(amount, tokenBalance.contractInfo?.decimals ?? 18)
+        ethers.parseUnits(amount, tokenBalance.contractInfo?.decimals ?? 18)
       )
     }
 
@@ -106,7 +112,17 @@ export class WalletStore {
       throw new Error('Could not create transaction')
     }
 
-    return await this.sendTransaction(account, externalProvider, externalProviderAddress, txn, chainId)
+    const { hash } = await this.sendTransaction(
+      account,
+      externalProvider,
+      externalProviderAddress,
+      txn,
+      chainId
+    )
+
+    this.isSendingTransaction.set(undefined)
+
+    return { hash }
   }
 
   setExternalProvider = async (provider: EIP6963ProviderDetail) => {
@@ -174,7 +190,7 @@ export class WalletStore {
   private async switchToChain(provider: EIP1193Provider, chainId: number) {
     return new Promise((resolve, reject) => {
       provider.sendAsync?.(
-        { method: 'wallet_switchEthereumChain', params: [{ chainId: ethers.utils.hexValue(chainId) }] },
+        { method: 'wallet_switchEthereumChain', params: [{ chainId: ethers.toQuantity(chainId) }] },
         (error, result) => {
           if (error) {
             reject(error)

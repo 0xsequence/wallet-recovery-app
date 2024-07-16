@@ -15,6 +15,7 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import AddToken from '~/components/AddToken'
 import Networks from '~/components/Networks'
+import PendingTxn from '~/components/PendingTxn'
 import SelectProvider from '~/components/SelectProvider'
 import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
@@ -43,6 +44,7 @@ function Wallet() {
 
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
+  const isSendingTransaction = useObservable(walletStore.isSendingTransaction)
 
   const networkStore = useStore(NetworkStore)
 
@@ -116,7 +118,7 @@ function Wallet() {
       throw new Error(`No network found for chainId ${pendingSendERC20.chainId}`)
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(network.rpcUrl)
+    const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     const receipt = await getTransactionReceipt(provider, response.hash)
 
@@ -210,6 +212,12 @@ function Wallet() {
               />
             )}
           </Card>
+
+          {/* {isSendingTransaction && (
+            <Box marginTop="8" alignItems="center" justifyContent="center">
+              <PendingTxn {...isSendingTransaction} />
+            </Box>
+          )} */}
 
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">

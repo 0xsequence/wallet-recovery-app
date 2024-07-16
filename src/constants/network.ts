@@ -1,14 +1,14 @@
 // Picked from https://chainlist.org/
 export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
-  [1, 'https://rpc.flashbots.net'],
+  [1, 'https://ethereum-rpc.publicnode.com'],
   [11155111, 'https://ethereum-sepolia-rpc.publicnode.com'],
-  [137, 'https://rpc.ankr.com/polygon'],
-  [80002, 'https://polygon-amoy.drpc.org'],
+  [137, 'https://polygon-bor-rpc.publicnode.com'],
+  [80002, 'https://rpc-amoy.polygon.technology'],
   [1101, 'https://zkevm-rpc.com'],
   [56, 'https://bsc-rpc.publicnode.com'],
   [97, 'https://bsc-testnet-rpc.publicnode.com'],
   [10, 'https://optimism.llamarpc.com'],
-  [11155420, 'https://optimism-sepolia.drpc.org'],
+  [11155420, 'https://sepolia.optimism.io'],
   [42161, 'https://arb1.arbitrum.io/rpc'],
   [421614, 'https://sepolia-rollup.arbitrum.io/rpc'],
   [42170, 'https://arbitrum-nova.publicnode.com'],

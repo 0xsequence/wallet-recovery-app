@@ -11,7 +11,7 @@ interface NativeTokenInfo extends ContractInfo {
   type: 'NATIVE'
 }
 
-const ZERO_ADDRESS = ethers.constants.AddressZero
+const ZERO_ADDRESS = ethers.ZeroAddress
 
 const ETH: NativeTokenInfo = {
   chainId: ChainId.MAINNET,
@@ -32,7 +32,8 @@ const ETH: NativeTokenInfo = {
     originChainId: 0,
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
@@ -62,7 +63,8 @@ const MATIC: NativeTokenInfo = {
     originChainId: 0,
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
@@ -86,7 +88,8 @@ const AVAX: NativeTokenInfo = {
     originChainId: 0,
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
@@ -110,7 +113,8 @@ const XDAI: NativeTokenInfo = {
     originChainId: 0,
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
@@ -141,7 +145,8 @@ const BNB: NativeTokenInfo = {
     originAddress: '',
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
@@ -171,7 +176,8 @@ const XAI: NativeTokenInfo = {
     originAddress: '',
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2024-02-28T20:00:00.000000000Z'
 }
@@ -203,7 +209,8 @@ const HomeverseOAS: NativeTokenInfo = {
     originAddress: ZERO_ADDRESS,
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
@@ -232,7 +239,8 @@ const tXR: NativeTokenInfo = {
     originAddress: '',
     blacklist: false,
     verified: true,
-    verifiedBy: 'Sequence'
+    verifiedBy: 'Sequence',
+    featured: false
   },
   updatedAt: '2024-04-09T11:46:00.000000000Z'
 }

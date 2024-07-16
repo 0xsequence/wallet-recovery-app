@@ -10,7 +10,7 @@ const polygonRpcUrl = DEFAULT_PUBLIC_RPC_LIST.get(137)
 // TODO: temporary, remove/update once sessions work is done
 export const LOCAL_TRACKER = new trackers.DedupedTracker(
   new trackers.local.LocalConfigTracker(
-    new ethers.providers.StaticJsonRpcProvider(polygonRpcUrl),
+    new ethers.JsonRpcProvider(polygonRpcUrl),
     new trackers.stores.IndexedDBStore('local-tracker-v1.0.1')
   ),
   50

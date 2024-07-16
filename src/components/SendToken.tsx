@@ -83,10 +83,7 @@ export default function SendToken({
                 paddingRight="2"
                 onClick={() => {
                   setAmount(
-                    ethers.utils.formatUnits(
-                      tokenBalance?.balance,
-                      tokenBalance?.contractInfo?.decimals ?? 18
-                    )
+                    ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)
                   )
                 }}
               />
@@ -94,7 +91,7 @@ export default function SendToken({
           />
           <Text variant="small" color="text50">
             Current balance:{' '}
-            {ethers.utils.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)}
+            {ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)}
           </Text>
         </Box>
 

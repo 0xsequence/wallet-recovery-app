@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 
 export const isAddress = (address: string): boolean => {
   try {
-    ethers.utils.getAddress(address)
+    ethers.getAddress(address)
   } catch (error) {
     return false
   }
@@ -12,10 +12,10 @@ export const isAddress = (address: string): boolean => {
 }
 
 export const isNativeTokenAddress = (address: string) => {
-  return address === '0x0' || compareAddress(address, ethers.constants.AddressZero)
+  return address === '0x0' || compareAddress(address, ethers.ZeroAddress)
 }
 
-export const normalizeAddress = ethers.utils.getAddress
+export const normalizeAddress = ethers.getAddress
 
 export const compareAddress = (a: string | undefined, b: string | undefined): boolean => {
   return !!a && !!b && a.toLowerCase() === b.toLowerCase()
