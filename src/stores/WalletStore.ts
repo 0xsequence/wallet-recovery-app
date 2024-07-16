@@ -159,13 +159,28 @@ export class WalletStore {
     const signed = await account.signTransactions(predecorated, chainId, undefined, { serial: true })
     const decorated = await account.decorateTransactions(signed, status)
 
+    // Calculating gas is not actually needed, but there can be a node issue which returns the following error:
+    // MetaMask - RPC Error: Cannot destructure property 'gasLimit' of '(intermediate value)' as it is null.
+    // Note: this error came up when using rpc url https://rpc.ankr.com/polygon
+    const gas = await externalProvider.request({
+      method: 'eth_estimateGas',
+      params: [
+        {
+          from: externalProviderAddress,
+          to: decorated.entrypoint,
+          data: commons.transaction.encodeBundleExecData(decorated)
+        }
+      ]
+    })
+
     const hash = await externalProvider.request({
       method: 'eth_sendTransaction',
       params: [
         {
           from: externalProviderAddress,
           to: decorated.entrypoint,
-          data: commons.transaction.encodeBundleExecData(decorated)
+          data: commons.transaction.encodeBundleExecData(decorated),
+          gas
         }
       ]
     })
