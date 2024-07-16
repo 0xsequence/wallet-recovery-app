@@ -53,11 +53,7 @@ export class WalletStore {
     })
   }
 
-  sendERC20Transaction = async (
-    tokenBalance: TokenBalance,
-    amount: string,
-    to: string
-  ): Promise<{ hash: string }> => {
+  sendToken = async (tokenBalance: TokenBalance, amount: string, to: string): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = tokenBalance.chainId
 
@@ -96,11 +92,15 @@ export class WalletStore {
     let txn: commons.transaction.Transactionish | undefined
 
     if (tokenBalance.contractType === ContractType.NATIVE) {
+      console.info('Sending native token with address, on chainId: ', tokenBalance.contractAddress, chainId)
+
       txn = {
         to,
         value: ethers.parseEther(amount)
       }
     } else if (tokenBalance.contractType === ContractType.ERC20) {
+      console.info('Sending ERC20 token with address, on chainId: ', tokenBalance.contractAddress, chainId)
+
       const erc20 = new ethers.Contract(tokenBalance.contractAddress, ERC20_ABI, provider)
       txn = await erc20.transfer.populateTransaction(
         to,

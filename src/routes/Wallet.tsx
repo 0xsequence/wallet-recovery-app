@@ -67,7 +67,7 @@ function Wallet() {
 
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
 
-  const [pendingSendERC20, setPendingSendERC20] = useState<TokenBalance | undefined>(undefined)
+  const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
 
   // First step of sending txn
   const handleSelectProvider = async (isChange: boolean = false) => {
@@ -85,9 +85,9 @@ function Wallet() {
       return
     }
 
-    if (!pendingSendERC20) {
+    if (!pendingSendToken) {
       if (balance) {
-        setPendingSendERC20(balance)
+        setPendingSendToken(balance)
       } else {
         console.warn('No pending send found')
         return
@@ -104,26 +104,26 @@ function Wallet() {
       return
     }
 
-    if (!pendingSendERC20) {
+    if (!pendingSendToken) {
       console.warn('No pending send found')
       return
     }
 
-    const response = await walletStore.sendERC20Transaction(pendingSendERC20, amount, to)
+    const response = await walletStore.sendToken(pendingSendToken, amount, to)
 
     // TODO: add providerForChainId method to NetworkStore
     const networks = networkStore.networks.get()
-    const network = networks.find(n => n.chainId === pendingSendERC20.chainId)
+    const network = networks.find(n => n.chainId === pendingSendToken.chainId)
     if (!network) {
-      throw new Error(`No network found for chainId ${pendingSendERC20.chainId}`)
+      throw new Error(`No network found for chainId ${pendingSendToken.chainId}`)
     }
 
     const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     const receipt = await getTransactionReceipt(provider, response.hash)
 
-    tokenStore.updateTokenBalance(pendingSendERC20)
-    setPendingSendERC20(undefined)
+    tokenStore.updateTokenBalance(pendingSendToken)
+    setPendingSendToken(undefined)
 
     console.log('receipt', receipt)
   }
@@ -240,7 +240,7 @@ function Wallet() {
                   key={balance.contractAddress + balance.chainId}
                   tokenBalance={balance}
                   onSendClick={async () => {
-                    setPendingSendERC20(balance)
+                    setPendingSendToken(balance)
 
                     if (selectedExternalProvider) {
                       handleSelectAmountAndAddress(balance)
@@ -304,7 +304,7 @@ function Wallet() {
       {isSendTokenModalOpen && (
         <Modal size="md" onClose={() => setIsSendTokenModalOpen(false)}>
           <SendToken
-            tokenBalance={pendingSendERC20}
+            tokenBalance={pendingSendToken}
             onClose={(amount, to) => {
               setIsSendTokenModalOpen(false)
 
