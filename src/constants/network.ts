@@ -27,5 +27,5 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
   [40, 'https://mainnet-asia.telos.net/evm']
 ])
 
-// These are either old testnets or local hardhat networks
-export const IGNORED_CHAIN_IDS = new Set([3, 4, 5, 42, 69, 420, 80001, 84531, 421613, 31337, 31338])
+// These are hardhat test networks
+export const IGNORED_CHAIN_IDS = new Set([31337, 31338])

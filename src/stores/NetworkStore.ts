@@ -56,6 +56,10 @@ export class NetworkStore {
         continue
       }
 
+      if (value.deprecated) {
+        continue
+      }
+
       const updatedNetworkConfig = value as NetworkConfig
 
       const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
