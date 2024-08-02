@@ -61,10 +61,7 @@ export class WalletStore {
       throw new Error('No account found')
     }
 
-    const networkForToken = this.store
-      .get(NetworkStore)
-      .networks.get()
-      .find(network => network.chainId === chainId)
+    const networkForToken = this.store.get(NetworkStore).networkForChainId(chainId)
 
     if (!networkForToken) {
       throw new Error(`No network found for chainId ${chainId}`)

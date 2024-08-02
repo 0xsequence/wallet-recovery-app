@@ -95,6 +95,10 @@ export class NetworkStore {
     this.networks.set(updatedNetworkConfigs)
   }
 
+  networkForChainId(chainId: number) {
+    return this.networks.get().find(n => n.chainId === chainId)
+  }
+
   editNetwork(network: NetworkConfig) {
     const userEdits = this.local.networksUserEdits.get() ?? []
 

@@ -98,10 +98,7 @@ export class TokenStore {
   }
 
   private async loadUserAddedTokenBalance(accountAddress: string, token: UserAddedToken) {
-    const networkForToken = this.store
-      .get(NetworkStore)
-      .networks.get()
-      .find(network => network.chainId === token.chainId)
+    const networkForToken = this.store.get(NetworkStore).networkForChainId(token.chainId)
 
     if (!networkForToken) {
       console.warn(`No network found for chainId ${token.chainId}`)
@@ -164,10 +161,7 @@ export class TokenStore {
   async updateTokenBalance(tokenBalance: TokenBalance) {
     this.isFetchingBalances.set(true)
 
-    const network = this.store
-      .get(NetworkStore)
-      .networks.get()
-      .find(network => network.chainId === tokenBalance.chainId)
+    const network = this.store.get(NetworkStore).networkForChainId(tokenBalance.chainId)
 
     if (!network) {
       console.warn(`No network found for chainId ${tokenBalance.chainId}`)
@@ -250,10 +244,7 @@ export class TokenStore {
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
-    const networkForToken = this.store
-      .get(NetworkStore)
-      .networks.get()
-      .find(network => network.chainId === chainId)
+    const networkForToken = this.store.get(NetworkStore).networkForChainId(chainId)
 
     if (!networkForToken) {
       console.warn(`No network found for chainId ${chainId}`)
