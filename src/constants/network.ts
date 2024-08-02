@@ -7,7 +7,7 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
   [1101, 'https://zkevm-rpc.com'],
   [56, 'https://bsc-rpc.publicnode.com'],
   [97, 'https://bsc-testnet-rpc.publicnode.com'],
-  [10, 'https://optimism.llamarpc.com'],
+  [10, 'https://optimism-rpc.publicnode.com'],
   [11155420, 'https://sepolia.optimism.io'],
   [42161, 'https://arb1.arbitrum.io/rpc'],
   [421614, 'https://sepolia-rollup.arbitrum.io/rpc'],
