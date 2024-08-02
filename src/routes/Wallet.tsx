@@ -14,6 +14,7 @@ import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 import AddToken from '~/components/AddToken'
+import ImportToken from '~/components/ImportToken'
 import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
 import SelectProvider from '~/components/SelectProvider'
@@ -278,7 +279,7 @@ function Wallet() {
                 </Box>
               )}
             </Box>
-            {isImportTokenViewOpen && <AddToken onClose={() => setIsImportTokenViewOpen(false)} />}
+            {isImportTokenViewOpen && <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />}
             {!isImportTokenViewOpen && (
               <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
                 <Button

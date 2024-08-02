@@ -7,7 +7,7 @@ import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 
-export default function AddToken({ onClose }: { onClose: () => void }) {
+export default function ImportToken({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
   const networks = networkStore.networks.get()
   const mainnetNetworks = networks.filter(network => network.type === NetworkType.MAINNET)
