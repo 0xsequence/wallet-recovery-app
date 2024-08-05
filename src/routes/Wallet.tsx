@@ -13,7 +13,7 @@ import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import AddToken from '~/components/AddToken'
+import CollectibleList from '~/components/CollectibleList'
 import ImportToken from '~/components/ImportToken'
 import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
@@ -295,10 +295,11 @@ function Wallet() {
               </Box>
             )}
           </Box>
-          <Box alignItems="flex-start" justifyContent="flex-start" marginTop="8">
+          <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles
             </Text>
+            <CollectibleList />
           </Box>
         </Box>
       </Box>

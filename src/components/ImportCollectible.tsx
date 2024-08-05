@@ -4,35 +4,38 @@ import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
+import { CollectibleContractType } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 
-export default function ImportToken({ onClose }: { onClose: () => void }) {
+export default function ImportCollectible({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
   const networks = networkStore.networks.get()
   const mainnetNetworks = networks.filter(network => network.type === NetworkType.MAINNET)
 
-  const tokenStore = useStore(TokenStore)
-  const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
+  // const tokenStore = useStore(TokenStore)
+  // const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
 
   const toast = useToast()
 
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig | undefined>()
-  const [tokenAddress, setTokenAddress] = useState<string | undefined>()
+  const [collectibleAddress, setCollectibleAddress] = useState<string | undefined>()
+  const [collectibleTokenId, setCollectibleTokenId] = useState<number | undefined>()
+  const [contractType, setContractType] = useState<CollectibleContractType | undefined>()
 
-  const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
+  // const [collectibleInfo, setCollectibleInfo] = useState<UserAddedTokenInitialInfo | undefined>()
 
   const [isAddingToken, setIsAddingToken] = useState(false)
 
   useEffect(() => {
-    if (selectedNetwork && tokenAddress) {
-      tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
-        setTokenInfo(tokenInfo)
-      })
+    if (selectedNetwork && collectibleAddress) {
+      // tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
+      //   setTokenInfo(tokenInfo)
+      // })
     } else {
-      setTokenInfo(undefined)
+      // setTokenInfo(undefined)
     }
-  }, [selectedNetwork, tokenAddress])
+  }, [selectedNetwork, collectibleAddress])
 
   const selectOptions = mainnetNetworks.map(network => ({
     label: network.title,
@@ -41,27 +44,27 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const handleAdd = async () => {
     // TODO: add form validation
-    if (selectedNetwork && tokenAddress && tokenInfo) {
-      setIsAddingToken(true)
-      await tokenStore.addToken({
-        chainId: selectedNetwork.chainId,
-        address: tokenAddress,
-        contractType: ContractType.ERC20,
-        symbol: tokenInfo.symbol,
-        decimals: tokenInfo.decimals
-      })
-      setIsAddingToken(false)
-      toast({
-        variant: 'success',
-        title: 'Token added'
-      })
-      resetInputs()
-      onClose()
-    }
+    // if (selectedNetwork && collectibleAddress && tokenInfo) {
+    //   setIsAddingToken(true)
+    //   // await tokenStore.addToken({
+    //   //   chainId: selectedNetwork.chainId,
+    //   //   address: tokenAddress,
+    //   //   contractType: ContractType.ERC20,
+    //   //   symbol: tokenInfo.symbol,
+    //   //   decimals: tokenInfo.decimals
+    //   // })
+    //   setIsAddingToken(false)
+    //   toast({
+    //     variant: 'success',
+    //     title: 'Token added'
+    //   })
+    //   resetInputs()
+    //   onClose()
+    // }
   }
 
   const resetInputs = () => {
-    setTokenAddress(undefined)
+    setCollectibleAddress(undefined)
     setSelectedNetwork(undefined)
   }
 
@@ -83,31 +86,54 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       </Box>
       <Box flexDirection="column" width="full" marginTop="4" gap="4">
         <Select
-          label="Token Network"
+          label="Collectible Network"
           labelLocation="left"
-          name="tokenNetwork"
+          name="collectibleNetwork"
           options={selectOptions}
           onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
         />
 
         <TextInput
           width="full"
-          label="Token Address"
+          label="Collectible Address"
           labelLocation="left"
-          name="tokenAddress"
-          value={tokenAddress ?? ''}
+          name="collectibleAddress"
+          value={collectibleAddress ?? ''}
           onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            setTokenAddress(ev.target.value)
+            setCollectibleAddress(ev.target.value)
           }}
         />
 
-        {isFetchingTokenInfo && (
+        <Select
+          label="Collectible Type"
+          labelLocation="left"
+          name="collectibleType"
+          options={[
+            { value: 'ERC721', label: 'ERC721' },
+            { value: 'ERC1155', label: 'ERC1155' }
+          ]}
+          onValueChange={value => setContractType(value as CollectibleContractType)}
+        />
+
+        <TextInput
+          width="full"
+          label="Collectible Token ID"
+          labelLocation="left"
+          name="collectibleId"
+          value={collectibleAddress ?? ''}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+            // TODO: Check if the value is a number
+            setCollectibleTokenId(Number(ev.target.value))
+          }}
+        />
+
+        {/* {isFetchingTokenInfo && (
           <Box marginTop="4" alignItems="center" justifyContent="center">
             <Spinner size="lg" />
           </Box>
-        )}
+        )} */}
 
-        {tokenInfo && (
+        {/* {tokenInfo && (
           <>
             <TextInput
               width="full"
@@ -127,7 +153,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               disabled
             />
           </>
-        )}
+        )} */}
 
         <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
           <Button
@@ -143,7 +169,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           />
           <Button
             label="Add"
-            disabled={tokenInfo === undefined || isAddingToken}
+            // disabled={tokenInfo === undefined || isAddingToken}
             variant="primary"
             size="md"
             shape="square"
