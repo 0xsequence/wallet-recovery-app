@@ -270,7 +270,7 @@ export class TokenStore {
 
       if (decimals && symbol) {
         return {
-          decimals,
+          decimals: Number(decimals),
           symbol
         }
       } else {

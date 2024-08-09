@@ -1,7 +1,7 @@
-import { AddIcon, Box, Button, Card, Modal, Spinner, Switch, Text, useToast } from '@0xsequence/design-system'
+import { Box, Button, Card, Modal, Switch, Text, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { getTransactionReceipt } from '~/utils/receipt'
 
@@ -14,13 +14,12 @@ import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 import CollectibleList from '~/components/CollectibleList'
-import ImportToken from '~/components/ImportToken'
 import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
 import SelectProvider from '~/components/SelectProvider'
 import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
-import TokenBalanceItem from '~/components/TokenBalanceItem'
+import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
@@ -37,13 +36,10 @@ function Wallet() {
   }, [externalProviders])
 
   const authStore = useStore(AuthStore)
-  const accountAddress = useObservable(authStore.accountAddress)
-
   const tokenStore = useStore(TokenStore)
-  const balances = useObservable(tokenStore.balances)
-  const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
-
   const walletStore = useStore(WalletStore)
+
+  const accountAddress = useObservable(authStore.accountAddress)
 
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
@@ -52,25 +48,23 @@ function Wallet() {
   const networkStore = useStore(NetworkStore)
 
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
-  const filteredBalance = useMemo(() => {
-    if (filterZeroBalances) {
-      return balances.filter(balance => balance.balance !== '0')
-    } else {
-      return balances
-    }
-  }, [balances, filterZeroBalances, isFetchingBalances])
-
-  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
-
-  const [isTokenListModalOpen, setIsTokenListModalOpen] = useState(false)
-
-  const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
-
-  const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
-
-  const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
 
   const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
+
+  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
+  const [isSettingsTokenListModalOpen, setIsSettingsTokenListModalOpen] = useState(false)
+  const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
+  const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
+
+  const handleOnSendClick = (tokenBalance: TokenBalance) => {
+    setPendingSendToken(tokenBalance)
+
+    if (selectedExternalProvider) {
+      handleSelectAmountAndAddress(tokenBalance)
+    } else {
+      handleSelectProvider()
+    }
+  }
 
   // First step of sending txn
   const handleSelectProvider = async (isChange: boolean = false) => {
@@ -125,13 +119,12 @@ function Wallet() {
       return
     }
 
-    // TODO: add providerForChainId method to NetworkStore
-    const networks = networkStore.networks.get()
-    const network = networks.find(n => n.chainId === pendingSendToken.chainId)
+    const network = networkStore.networkForChainId(pendingSendToken.chainId)
     if (!network) {
       throw new Error(`No network found for chainId ${pendingSendToken.chainId}`)
     }
 
+    // TODO: add providerForChainId method to NetworkStore
     const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     const receipt = await getTransactionReceipt(provider, response.hash)
@@ -178,7 +171,7 @@ function Wallet() {
               onClick={() => setIsNetworkModalOpen(true)}
             />
 
-            <SettingsDropdownMenu onTokenListClick={() => setIsTokenListModalOpen(true)} />
+            <SettingsDropdownMenu onTokenListClick={() => setIsSettingsTokenListModalOpen(true)} />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
@@ -257,44 +250,9 @@ function Wallet() {
               </Box>
             </Box>
 
-            <Box width="full" flexDirection="column" gap="4" marginBottom="8">
-              {(filterZeroBalances ? filteredBalance : balances).map(balance => (
-                <TokenBalanceItem
-                  key={balance.contractAddress + balance.chainId}
-                  tokenBalance={balance}
-                  onSendClick={async () => {
-                    setPendingSendToken(balance)
-
-                    if (selectedExternalProvider) {
-                      handleSelectAmountAndAddress(balance)
-                    } else {
-                      handleSelectProvider()
-                    }
-                  }}
-                />
-              ))}
-              {isFetchingBalances && (
-                <Box marginTop="4" alignItems="center" justifyContent="center">
-                  <Spinner size="lg" />
-                </Box>
-              )}
-            </Box>
-            {isImportTokenViewOpen && <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />}
-            {!isImportTokenViewOpen && (
-              <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
-                <Button
-                  label="Import token"
-                  leftIcon={AddIcon}
-                  variant="primary"
-                  size="md"
-                  shape="square"
-                  onClick={() => {
-                    setIsImportTokenViewOpen(true)
-                  }}
-                />
-              </Box>
-            )}
+            <TokenList filterZeroBalances={filterZeroBalances} onSendClick={handleOnSendClick} />
           </Box>
+
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles
@@ -308,9 +266,9 @@ function Wallet() {
           <Networks />
         </Modal>
       )}
-      {isTokenListModalOpen && (
-        <Modal onClose={() => setIsTokenListModalOpen(false)}>
-          <TokenList />
+      {isSettingsTokenListModalOpen && (
+        <Modal onClose={() => setIsSettingsTokenListModalOpen(false)}>
+          <SettingsTokenList />
         </Modal>
       )}
       {isSelectProviderModalOpen && (
