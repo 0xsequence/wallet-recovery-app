@@ -179,7 +179,7 @@ function Wallet() {
             <Text variant="large" color="text80" marginBottom="4">
               Your recovered wallet address
             </Text>
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="bold" color="text100">
               {accountAddress}
             </Text>
           </Card>

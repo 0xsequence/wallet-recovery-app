@@ -94,19 +94,26 @@ export class CollectibleStore {
       }
 
       uri = await contract.uri(params.tokenId)
-      if (uri) {
-        const metadata = await fetch(uri).then(res => res.json())
-
-        if (metadata) {
-          decimals = metadata.decimals
-          image = metadata.image
-          name = metadata.name
-        }
-      }
     }
 
     if (!uri) {
       throw new Error('Could not get collectible URI')
+    }
+
+    if (uri.startsWith('ipfs://')) {
+      uri = uri.replace('ipfs://', 'https://ipfs.io/ipfs/')
+    }
+
+    const metadata = await fetch(uri).then(res => res.json())
+
+    if (metadata) {
+      decimals = metadata.decimals
+      image = metadata.image
+      name = metadata.name
+    }
+
+    if (image?.startsWith('ipfs://')) {
+      image = image.replace('ipfs://', 'https://ipfs.io/ipfs/')
     }
 
     this.isFetchingCollectibleInfo.set(false)
