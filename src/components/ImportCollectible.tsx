@@ -39,7 +39,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           contractType
         })
         .then(response => {
-          console.log('collectible info', response)
           setCollectibleInfoResponse(response)
         })
 
@@ -57,24 +56,23 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }))
 
   const handleAdd = async () => {
-    // TODO: add form validation
-    // if (selectedNetwork && collectibleAddress && tokenInfo) {
-    //   setIsAddingToken(true)
-    //   // await tokenStore.addToken({
-    //   //   chainId: selectedNetwork.chainId,
-    //   //   address: tokenAddress,
-    //   //   contractType: ContractType.ERC20,
-    //   //   symbol: tokenInfo.symbol,
-    //   //   decimals: tokenInfo.decimals
-    //   // })
-    //   setIsAddingToken(false)
-    //   toast({
-    //     variant: 'success',
-    //     title: 'Token added'
-    //   })
-    //   resetInputs()
-    //   onClose()
-    // }
+    if (
+      selectedNetwork &&
+      collectibleAddress &&
+      collectibleInfoResponse &&
+      collectibleTokenId &&
+      contractType
+    ) {
+      collectibleStore.addCollectible(
+        {
+          chainId: selectedNetwork.chainId,
+          address: collectibleAddress,
+          tokenId: collectibleTokenId,
+          contractType
+        },
+        collectibleInfoResponse
+      )
+    }
   }
 
   const resetInputs = () => {
