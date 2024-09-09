@@ -3,11 +3,16 @@ import { useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
+import { CollectibleInfo } from '~/stores/CollectibleStore'
 
 import CollectibleBalanceItem from './CollectibleBalanceItem'
 import ImportCollectible from './ImportCollectible'
 
-export default function CollectibleList() {
+export default function CollectibleList({
+  onSendClick
+}: {
+  onSendClick: (collectibleInfo: CollectibleInfo) => void
+}) {
   const collectibleStore = useStore(CollectibleStore)
 
   const isFetchingBalances = useObservable(collectibleStore.isFetchingBalances)
@@ -18,12 +23,20 @@ export default function CollectibleList() {
   return (
     <>
       <Box width="full" flexDirection="row" gap="4" marginBottom="8">
-        {userCollectibles.map(({ infoParams, infoResponse }) => (
-          <Box key={infoParams.chainId + infoParams.address + infoParams.tokenId} width="1/3">
+        {userCollectibles.map(({ collectibleInfo }) => (
+          <Box
+            key={
+              collectibleInfo.collectibleInfoParams.chainId +
+              collectibleInfo.collectibleInfoParams.address +
+              collectibleInfo.collectibleInfoParams.tokenId
+            }
+            width="1/3"
+          >
             <CollectibleBalanceItem
-              collectibleInfoParams={infoParams}
-              collectibleInfoResponse={infoResponse}
-              onSendClick={() => {}}
+              collectibleInfo={collectibleInfo}
+              onSendClick={() => {
+                onSendClick(collectibleInfo)
+              }}
             />
           </Box>
         ))}

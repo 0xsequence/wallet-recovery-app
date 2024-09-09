@@ -30,6 +30,13 @@ export type CollectibleInfoResponse = {
   decimals?: number
 }
 
+export type CollectibleInfo = {
+  collectibleInfoParams: CollectibleInfoParams
+  collectibleInfoResponse: CollectibleInfoResponse
+}
+
+const gateway = 'https://gateway.pinata.cloud/ipfs/'
+
 export class CollectibleStore {
   isFetchingBalances = observable(false)
   isFetchingCollectibleInfo = observable(false)
@@ -45,9 +52,7 @@ export class CollectibleStore {
     })
   }
 
-  userCollectibles = observable<
-    { infoParams: CollectibleInfoParams; infoResponse: CollectibleInfoResponse }[]
-  >([])
+  userCollectibles = observable<{ collectibleInfo: CollectibleInfo }[]>([])
 
   private local = {
     userCollectibles: new LocalStore<CollectibleInfoParams[]>(LocalStorageKey.COLLECTIBLES)
@@ -62,11 +67,16 @@ export class CollectibleStore {
 
     this.isFetchingBalances.set(true)
 
-    const balances: { infoParams: CollectibleInfoParams; infoResponse: CollectibleInfoResponse }[] = []
+    const balances: { collectibleInfo: CollectibleInfo }[] = []
 
     const promises = userCollectibles.map(async params => {
       const response = await this.getCollectibleInfo(params)
-      balances.push({ infoParams: params, infoResponse: response })
+      balances.push({
+        collectibleInfo: {
+          collectibleInfoParams: params,
+          collectibleInfoResponse: response
+        }
+      })
     })
 
     await Promise.allSettled(promises)
@@ -131,7 +141,7 @@ export class CollectibleStore {
     }
 
     if (uri.startsWith('ipfs://')) {
-      uri = uri.replace('ipfs://', 'https://ipfs.io/ipfs/')
+      uri = uri.replace('ipfs://', gateway)
     }
 
     if (uri.includes('{id}')) {
@@ -147,7 +157,7 @@ export class CollectibleStore {
     }
 
     if (image?.startsWith('ipfs://')) {
-      image = image.replace('ipfs://', 'https://ipfs.io/ipfs/')
+      image = image.replace('ipfs://', gateway)
     }
 
     this.isFetchingCollectibleInfo.set(false)
@@ -155,13 +165,19 @@ export class CollectibleStore {
     return { isOwner: true, uri, image, name, balance, decimals }
   }
 
-  async addCollectible(params: CollectibleInfoParams, info: CollectibleInfoResponse) {
-    if (info.isOwner) {
+  async addCollectible(collectibleInfo: CollectibleInfo) {
+    if (collectibleInfo.collectibleInfoResponse.isOwner) {
       const current = this.local.userCollectibles.get() ?? []
-      if (current.some(c => c.address === params.address && c.tokenId === params.tokenId)) {
+      if (
+        current.some(
+          c =>
+            c.address === collectibleInfo.collectibleInfoParams.address &&
+            c.tokenId === collectibleInfo.collectibleInfoParams.tokenId
+        )
+      ) {
         throw new Error('Collectible already added')
       }
-      this.local.userCollectibles.set([...current, params])
+      this.local.userCollectibles.set([...current, collectibleInfo.collectibleInfoParams])
     }
   }
 }
