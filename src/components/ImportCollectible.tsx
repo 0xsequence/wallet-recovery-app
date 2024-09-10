@@ -5,12 +5,7 @@ import { ethers } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
-import {
-  CollectibleContractType,
-  CollectibleInfo,
-  CollectibleInfoResponse,
-  CollectibleStore
-} from '~/stores/CollectibleStore'
+import { CollectibleContractType, CollectibleInfoResponse, CollectibleStore } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 
 export default function ImportCollectible({ onClose }: { onClose: () => void }) {
@@ -68,7 +63,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
       collectibleTokenId &&
       contractType
     ) {
-      collectibleStore.addCollectible({
+      await collectibleStore.addCollectible({
         collectibleInfoParams: {
           chainId: selectedNetwork.chainId,
           address: collectibleAddress,
@@ -77,6 +72,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         },
         collectibleInfoResponse: collectibleInfoResponse
       })
+      setIsAddingCollectible(false)
+      toast({
+        variant: 'success',
+        title: 'Collectible added'
+      })
+      resetInputs()
+      onClose()
     }
   }
 

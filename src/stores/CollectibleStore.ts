@@ -71,6 +71,13 @@ export class CollectibleStore {
 
     const promises = userCollectibles.map(async params => {
       const response = await this.getCollectibleInfo(params)
+
+      // Remove collectible if not owner
+      if (!response.isOwner) {
+        this.removeCollectible({ collectibleInfoParams: params, collectibleInfoResponse: response })
+        return
+      }
+
       balances.push({
         collectibleInfoParams: params,
         collectibleInfoResponse: response
@@ -180,5 +187,19 @@ export class CollectibleStore {
       }
       this.local.userCollectibles.set([...current, collectibleInfo.collectibleInfoParams])
     }
+  }
+
+  async removeCollectible(collectibleInfo: CollectibleInfo) {
+    const current = this.local.userCollectibles.get() ?? []
+    const filtered = current.filter(
+      c =>
+        c.address !== collectibleInfo.collectibleInfoParams.address ||
+        c.tokenId !== collectibleInfo.collectibleInfoParams.tokenId
+    )
+    this.local.userCollectibles.set(filtered)
+  }
+
+  async removeAllCollectibles() {
+    this.local.userCollectibles.set([])
   }
 }

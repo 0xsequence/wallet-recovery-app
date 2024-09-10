@@ -180,7 +180,6 @@ function Wallet() {
   }
 
   const handleSendPendingTransactionCollectibles = async (amount: string, to: string) => {
-    console.log(pendingSendCollectible?.collectibleInfoParams.contractType, amount)
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
       return
@@ -348,6 +347,10 @@ function Wallet() {
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles
             </Text>
+            <Button
+              label="Remove All Collectibles"
+              onClick={() => collectibleStore.removeAllCollectibles()}
+            />
             <CollectibleList onSendClick={handleCollectibleOnSendClick} />
           </Box>
         </Box>

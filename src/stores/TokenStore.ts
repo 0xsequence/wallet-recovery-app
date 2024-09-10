@@ -64,7 +64,6 @@ export class TokenStore {
         const provider = new ethers.JsonRpcProvider(network.rpcUrl)
         try {
           const balance = await provider.getBalance(account)
-
           update.push({
             contractType: ContractType.NATIVE,
             contractAddress: ethers.ZeroAddress,
@@ -116,6 +115,12 @@ export class TokenStore {
       const balance = await erc20.balanceOf(accountAddress)
 
       const updatedBalances = this.balances.get()
+
+      // Remove token if balance is 0
+      if (!balance) {
+        this.removeToken(token)
+        return
+      }
 
       updatedBalances.push({
         contractType: token.contractType,
