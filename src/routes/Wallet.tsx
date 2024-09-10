@@ -17,6 +17,7 @@ import { WalletStore } from '~/stores/WalletStore'
 import CollectibleList from '~/components/CollectibleList'
 import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
+import PendingTxnCollectible from '~/components/PendingTxnCollectible'
 import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
@@ -47,6 +48,7 @@ function Wallet() {
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
   const isSendingTransaction = useObservable(walletStore.isSendingTransaction)
+  const isSendingCollectible = useObservable(walletStore.isSendingTransactionCollectible)
 
   const networkStore = useStore(NetworkStore)
 
@@ -178,6 +180,7 @@ function Wallet() {
   }
 
   const handleSendPendingTransactionCollectibles = async (amount: string, to: string) => {
+    console.log(pendingSendCollectible?.collectibleInfoParams.contractType, amount)
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
       return
@@ -221,7 +224,7 @@ function Wallet() {
 
     // Update collectibleStore?
     setPendingSendCollectible(undefined)
-    walletStore.isSendingTransaction.set(undefined)
+    walletStore.isSendingTransactionCollectible.set(undefined)
 
     console.log('receipt', receipt)
   }
@@ -334,6 +337,12 @@ function Wallet() {
 
             <TokenList filterZeroBalances={filterZeroBalances} onSendClick={handleTokenOnSendClick} />
           </Box>
+
+          {isSendingCollectible && (
+            <Box marginTop="8" alignItems="center" justifyContent="center">
+              <PendingTxnCollectible {...isSendingCollectible} />
+            </Box>
+          )}
 
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">

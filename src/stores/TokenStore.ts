@@ -180,7 +180,7 @@ export class TokenStore {
     const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     try {
-      let balance: BigInt
+      let balance: bigint
 
       if (tokenBalance.contractType === ContractType.NATIVE) {
         balance = await provider.getBalance(accountAddress)

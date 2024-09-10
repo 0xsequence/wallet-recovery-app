@@ -32,16 +32,16 @@ export default function SendCollectible({
     }
   }, [sendToExternalWallet])
 
+  if (!collectibleInfo) {
+    return null
+  }
+
   // Set amount to 1 for ERC721 to bypass send button condition
   useEffect(() => {
     if (collectibleInfo?.collectibleInfoParams.contractType === 'ERC721') {
       setAmount('1')
     }
   }, [])
-
-  if (!collectibleInfo) {
-    return null
-  }
 
   const networkTitle = getNetworkTitle(collectibleInfo.collectibleInfoParams.chainId)
 
@@ -61,44 +61,47 @@ export default function SendCollectible({
         width="full"
         marginTop="6"
       >
-        {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155' && (
-          <Box flexDirection="column" gap="2">
-            <TextInput
-              label="Amount"
-              labelLocation="top"
-              name="amount"
-              placeholder="Enter amount"
-              value={amount ?? ''}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                setAmount(ev.target.value)
-              }}
-              controls={
-                <Button
-                  label="Max"
-                  variant="text"
-                  size="md"
-                  shape="square"
-                  paddingRight="2"
-                  onClick={() => {
-                    setAmount(
-                      ethers.formatUnits(
-                        collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                        collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+        <Box flexDirection="column" gap="2">
+          <TextInput
+            label="Amount"
+            labelLocation="top"
+            name="amount"
+            placeholder="Enter amount"
+            value={amount ?? ''}
+            onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+              setAmount(ev.target.value)
+            }}
+            disabled={collectibleInfo.collectibleInfoParams.contractType === 'ERC721'}
+            controls={
+              <>
+                {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155' && (
+                  <Button
+                    label="Max"
+                    variant="text"
+                    size="md"
+                    shape="square"
+                    paddingRight="2"
+                    onClick={() => {
+                      setAmount(
+                        ethers.formatUnits(
+                          collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
+                          collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+                        )
                       )
-                    )
-                  }}
-                />
-              }
-            />
-            <Text variant="small" color="text50">
-              Current balance:{' '}
-              {ethers.formatUnits(
-                collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
-              )}
-            </Text>
-          </Box>
-        )}
+                    }}
+                  />
+                )}
+              </>
+            }
+          />
+          <Text variant="small" color="text50">
+            Current balance:{' '}
+            {ethers.formatUnits(
+              collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
+              collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+            )}
+          </Text>
+        </Box>
 
         <Box flexDirection="column" gap="3">
           <TextInput

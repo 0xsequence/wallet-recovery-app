@@ -33,6 +33,7 @@ export class WalletStore {
   isSendingTransaction = observable<{ tokenBalance: TokenBalance; amount: string; to: string } | undefined>(
     undefined
   )
+
   isSendingTransactionCollectible = observable<
     { collectibleInfo: CollectibleInfo; amount: string; to: string } | undefined
   >(undefined)
@@ -136,6 +137,7 @@ export class WalletStore {
   sendCollectible = async (
     collectibleInfo: CollectibleInfo,
     amount: string,
+
     to: string
   ): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
@@ -200,6 +202,11 @@ export class WalletStore {
       )
 
       console.log('REMOVE', collectibleInfo.collectibleInfoResponse.decimals)
+
+      if (!amount) {
+        return { hash: '' }
+      }
+
       txn = await erc1155.safeTransferFrom.populateTransaction(
         account,
         to,
@@ -210,7 +217,7 @@ export class WalletStore {
     }
 
     if (!txn) {
-      this.isSendingTransaction.set(undefined)
+      this.isSendingTransactionCollectible.set(undefined)
       throw new Error('Could not create transaction')
     }
 
@@ -226,7 +233,7 @@ export class WalletStore {
       )
       hash = response.hash
     } catch (error) {
-      this.isSendingTransaction.set(undefined)
+      this.isSendingTransactionCollectible.set(undefined)
       throw error
     }
 

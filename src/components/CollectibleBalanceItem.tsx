@@ -29,7 +29,7 @@ export default function CollectibleBalanceItem({
           width="full"
         />
       </Box>
-      <Box flexDirection="row" style={{ justifyContent: 'space-between' }}>
+      <Box flexDirection="row" justifyContent="space-between">
         <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
         <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
       </Box>

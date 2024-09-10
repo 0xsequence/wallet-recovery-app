@@ -26,7 +26,7 @@ export type CollectibleInfoResponse = {
   uri: string
   image?: string
   name?: string
-  balance?: BigInt
+  balance?: bigint
   decimals?: number
 }
 
@@ -52,7 +52,7 @@ export class CollectibleStore {
     })
   }
 
-  userCollectibles = observable<{ collectibleInfo: CollectibleInfo }[]>([])
+  userCollectibles = observable<CollectibleInfo[]>([])
 
   private local = {
     userCollectibles: new LocalStore<CollectibleInfoParams[]>(LocalStorageKey.COLLECTIBLES)
@@ -67,15 +67,13 @@ export class CollectibleStore {
 
     this.isFetchingBalances.set(true)
 
-    const balances: { collectibleInfo: CollectibleInfo }[] = []
+    const balances: CollectibleInfo[] = []
 
     const promises = userCollectibles.map(async params => {
       const response = await this.getCollectibleInfo(params)
       balances.push({
-        collectibleInfo: {
-          collectibleInfoParams: params,
-          collectibleInfoResponse: response
-        }
+        collectibleInfoParams: params,
+        collectibleInfoResponse: response
       })
     })
 
@@ -110,7 +108,7 @@ export class CollectibleStore {
     let uri: string | undefined
     let image: string | undefined
     let name: string | undefined
-    let balance: BigInt | undefined
+    let balance: bigint | undefined
     let decimals: number | undefined
 
     if (params.contractType === ContractType.ERC721) {
@@ -159,6 +157,9 @@ export class CollectibleStore {
     if (image?.startsWith('ipfs://')) {
       image = image.replace('ipfs://', gateway)
     }
+
+    balance = balance ?? BigInt(1)
+    decimals = decimals ?? 0
 
     this.isFetchingCollectibleInfo.set(false)
 

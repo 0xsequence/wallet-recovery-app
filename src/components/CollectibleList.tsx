@@ -23,7 +23,7 @@ export default function CollectibleList({
   return (
     <>
       <Box width="full" flexDirection="row" gap="4" marginBottom="8">
-        {userCollectibles.map(({ collectibleInfo }) => (
+        {userCollectibles.map(collectibleInfo => (
           <Box
             key={
               collectibleInfo.collectibleInfoParams.chainId +
