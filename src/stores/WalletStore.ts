@@ -30,12 +30,12 @@ export class WalletStore {
   selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
-  isSendingTransaction = observable<{ tokenBalance: TokenBalance; amount: string; to: string } | undefined>(
+  isSendingTransaction = observable<{ tokenBalance: TokenBalance; to: string; amount: string } | undefined>(
     undefined
   )
 
   isSendingTransactionCollectible = observable<
-    { collectibleInfo: CollectibleInfo; amount: string; to: string } | undefined
+    { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
 
   private local = {
@@ -58,7 +58,7 @@ export class WalletStore {
     })
   }
 
-  sendToken = async (tokenBalance: TokenBalance, amount: string, to: string): Promise<{ hash: string }> => {
+  sendToken = async (tokenBalance: TokenBalance, to: string, amount: string): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = tokenBalance.chainId
 
@@ -76,7 +76,7 @@ export class WalletStore {
       throw new Error(`No RPC URL found for network ${networkForToken.name}`)
     }
 
-    this.isSendingTransaction.set({ tokenBalance, amount, to })
+    this.isSendingTransaction.set({ tokenBalance, to, amount })
 
     const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
@@ -136,9 +136,8 @@ export class WalletStore {
 
   sendCollectible = async (
     collectibleInfo: CollectibleInfo,
-    amount: string,
-
-    to: string
+    to: string,
+    amount?: string
   ): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = collectibleInfo.collectibleInfoParams.chainId
@@ -157,7 +156,7 @@ export class WalletStore {
       throw new Error(`No RPC URL found for network ${networkForToken.name}`)
     }
 
-    this.isSendingTransactionCollectible.set({ collectibleInfo, amount, to })
+    this.isSendingTransactionCollectible.set({ collectibleInfo, to, amount })
 
     const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
@@ -200,8 +199,6 @@ export class WalletStore {
         ERC1155_ABI,
         provider
       )
-
-      console.log('REMOVE', collectibleInfo.collectibleInfoResponse.decimals)
 
       if (!amount) {
         return { hash: '' }

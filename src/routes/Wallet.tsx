@@ -17,7 +17,6 @@ import { WalletStore } from '~/stores/WalletStore'
 import CollectibleList from '~/components/CollectibleList'
 import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
-import PendingTxnCollectible from '~/components/PendingTxnCollectible'
 import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
@@ -130,7 +129,7 @@ function Wallet() {
   }
 
   // Third step of sending txn
-  const handleSendPendingTransaction = async (amount: string, to: string) => {
+  const handleSendPendingTransaction = async (to: string, amount: string) => {
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
       return
@@ -142,7 +141,7 @@ function Wallet() {
     }
     let response: { hash: string } | undefined
     try {
-      response = await walletStore.sendToken(pendingSendToken, amount, to)
+      response = await walletStore.sendToken(pendingSendToken, to, amount)
     } catch (error) {
       if ((error as any).code === 4001) {
         toast({
@@ -179,7 +178,7 @@ function Wallet() {
     console.log('receipt', receipt)
   }
 
-  const handleSendPendingTransactionCollectibles = async (amount: string, to: string) => {
+  const handleSendPendingTransactionCollectibles = async (to: string, amount?: string) => {
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
       return
@@ -191,7 +190,7 @@ function Wallet() {
     }
     let response: { hash: string } | undefined
     try {
-      response = await walletStore.sendCollectible(pendingSendCollectible, amount, to)
+      response = await walletStore.sendCollectible(pendingSendCollectible, to, amount)
     } catch (error) {
       if ((error as any).code === 4001) {
         toast({
@@ -315,7 +314,12 @@ function Wallet() {
 
           {isSendingTransaction && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn {...isSendingTransaction} />
+              <PendingTxn
+                symbol={isSendingTransaction.tokenBalance?.contractInfo?.symbol ?? ''}
+                chainId={isSendingTransaction.tokenBalance.chainId}
+                to={isSendingTransaction.to}
+                amount={isSendingTransaction.amount}
+              />
             </Box>
           )}
 
@@ -339,7 +343,12 @@ function Wallet() {
 
           {isSendingCollectible && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxnCollectible {...isSendingCollectible} />
+              <PendingTxn
+                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
+                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
+                to={isSendingCollectible.to}
+                amount={isSendingCollectible.amount}
+              />
             </Box>
           )}
 
@@ -381,11 +390,11 @@ function Wallet() {
         <Modal size="md" onClose={() => setIsSendTokenModalOpen(false)}>
           <SendToken
             tokenBalance={pendingSendToken}
-            onClose={(amount, to) => {
+            onClose={(to, amount) => {
               setIsSendTokenModalOpen(false)
 
-              if (amount && to) {
-                handleSendPendingTransaction(amount, to)
+              if (to && amount) {
+                handleSendPendingTransaction(to, amount)
               }
             }}
           />
@@ -395,11 +404,13 @@ function Wallet() {
         <Modal size="md" onClose={() => setIsSendCollectibleModalOpen(false)}>
           <SendCollectible
             collectibleInfo={pendingSendCollectible}
-            onClose={(amount, to) => {
+            onClose={(to, amount) => {
               setIsSendCollectibleModalOpen(false)
-
-              if (amount && to) {
-                handleSendPendingTransactionCollectibles(amount, to)
+              if (
+                (to && pendingSendCollectible?.collectibleInfoParams.contractType === 'ERC721') ||
+                (to && amount)
+              ) {
+                handleSendPendingTransactionCollectibles(to, amount)
               }
             }}
           />

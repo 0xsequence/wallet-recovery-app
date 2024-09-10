@@ -13,7 +13,7 @@ export default function SendToken({
   onClose
 }: {
   tokenBalance?: TokenBalance
-  onClose: (amount?: string, to?: string) => void
+  onClose: (to?: string, amount?: string) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
 
@@ -119,10 +119,10 @@ export default function SendToken({
             variant="primary"
             size="md"
             shape="square"
-            disabled={!amount || !address}
+            disabled={!address || !amount}
             onClick={() => {
-              if (amount && address) {
-                onClose(amount, address)
+              if (address && amount) {
+                onClose(address, amount)
               }
             }}
           />

@@ -14,7 +14,7 @@ export default function SendCollectible({
   onClose
 }: {
   collectibleInfo?: CollectibleInfo
-  onClose: (amount?: string, to?: string) => void
+  onClose: (to?: string, amount?: string) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
 
@@ -36,12 +36,7 @@ export default function SendCollectible({
     return null
   }
 
-  // Set amount to 1 for ERC721 to bypass send button condition
-  useEffect(() => {
-    if (collectibleInfo?.collectibleInfoParams.contractType === 'ERC721') {
-      setAmount('1')
-    }
-  }, [])
+  const isERC721 = collectibleInfo.collectibleInfoParams.contractType === 'ERC721'
 
   const networkTitle = getNetworkTitle(collectibleInfo.collectibleInfoParams.chainId)
 
@@ -67,7 +62,7 @@ export default function SendCollectible({
             labelLocation="top"
             name="amount"
             placeholder="Enter amount"
-            value={amount ?? ''}
+            value={isERC721 ? '1' : amount ?? ''}
             onChange={(ev: ChangeEvent<HTMLInputElement>) => {
               setAmount(ev.target.value)
             }}
@@ -138,11 +133,9 @@ export default function SendCollectible({
             variant="primary"
             size="md"
             shape="square"
-            disabled={!amount || !address}
+            disabled={(isERC721 && address) || (!isERC721 && address && amount) ? false : true}
             onClick={() => {
-              if (amount && address) {
-                onClose(amount, address)
-              }
+              onClose(address, amount)
             }}
           />
         </Box>
