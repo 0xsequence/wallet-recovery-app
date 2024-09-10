@@ -1,7 +1,9 @@
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig } from '@0xsequence/network'
 import { ethers } from 'ethers'
+import { c } from 'node_modules/vite/dist/node/types.d-aGj9QkWt'
 
+import { getGatewayAddress } from '~/utils/gateways'
 import { subscribeImmediately } from '~/utils/observable'
 
 import { ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
@@ -34,8 +36,6 @@ export type CollectibleInfo = {
   collectibleInfoParams: CollectibleInfoParams
   collectibleInfoResponse: CollectibleInfoResponse
 }
-
-const gateway = 'https://gateway.pinata.cloud/ipfs/'
 
 export class CollectibleStore {
   isFetchingBalances = observable(false)
@@ -92,6 +92,9 @@ export class CollectibleStore {
   }
 
   async getCollectibleInfo(params: CollectibleInfoParams): Promise<CollectibleInfoResponse> {
+    const gateway = await getGatewayAddress()
+    console.log(gateway)
+
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
     if (!accountAddress) {
