@@ -152,7 +152,7 @@ export class CollectibleStore {
     let metadata
 
     if (uri.startsWith('ipfs://')) {
-      metadata = this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
+      metadata = await this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
     } else {
       metadata = await fetch(uri).then(res => res.json())
     }

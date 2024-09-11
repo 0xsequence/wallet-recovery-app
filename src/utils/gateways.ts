@@ -18,40 +18,55 @@ const GATEWAYS = [
   'https://trustless-gateway.link/ipfs/'
 ]
 
+const TEST_HASH = 'QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1'
+
 export class IPFSGatewayHelper {
   private gatewayURL: string
+  private localStore: LocalStore<string>
 
   constructor() {
-    this.gatewayURL = GATEWAYS[0]
+    this.localStore = new LocalStore<string>(LocalStorageKey.GATEWAY_ADDRESS)
+    this.gatewayURL = this.localStore.get() || GATEWAYS[0]
     this.findAccessibleGateway()
   }
 
-  private findAccessibleGateway() {
-    for (const url of GATEWAYS) {
-      fetch(url)
-        .then(() => {
-          this.gatewayURL = url
-          return
-        })
-        .catch(() => {})
+  private async findAccessibleGateway(): Promise<void> {
+    const storedGateway = this.localStore.get()
+    if (storedGateway && (await this.isGatewayAccessible(storedGateway))) {
+      this.gatewayURL = storedGateway
+      return
     }
-    console.warn('No accessible IPFS gateway found')
+
+    for (const gateway of GATEWAYS) {
+      if (await this.isGatewayAccessible(gateway)) {
+        this.gatewayURL = gateway
+        this.localStore.set(gateway)
+        return
+      }
+    }
+
+    this.gatewayURL = GATEWAYS[0] // Fallback to the first gateway if none are accessible
+    console.warn('No accessible IPFS gateways found, falling back to default')
+  }
+
+  private async isGatewayAccessible(gateway: string): Promise<boolean> {
+    try {
+      await fetch(`${gateway}${TEST_HASH}`)
+      return true
+    } catch {
+      return false
+    }
   }
 
   async fetch(uri: string): Promise<Response> {
-    if (uri.startsWith('ipfs://')) {
-      uri = uri.replace('ipfs://', this.gatewayURL)
-      return fetch(uri)
-    } else {
-      throw new Error('Invalid IPFS URI')
-    }
+    const gatewayUri = this.getGatewayURL(uri)
+    return fetch(gatewayUri)
   }
 
   getGatewayURL(uri: string): string {
-    if (uri.startsWith('ipfs://')) {
-      return uri.replace('ipfs://', this.gatewayURL)
-    } else {
+    if (!uri.startsWith('ipfs://')) {
       throw new Error('Invalid IPFS URI')
     }
+    return uri.replace('ipfs://', this.gatewayURL)
   }
 }
