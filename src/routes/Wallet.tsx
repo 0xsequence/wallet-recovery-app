@@ -356,6 +356,10 @@ function Wallet() {
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles
             </Text>
+            {/* <Button
+              label="Remove All Collectibles"
+              onClick={() => collectibleStore.removeAllCollectibles()}
+            /> */}
             <CollectibleList onSendClick={handleCollectibleOnSendClick} />
           </Box>
         </Box>

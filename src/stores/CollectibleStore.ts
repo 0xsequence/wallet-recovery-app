@@ -58,7 +58,7 @@ export class CollectibleStore {
     userCollectibles: new LocalStore<CollectibleInfoParams[]>(LocalStorageKey.COLLECTIBLES)
   }
 
-  private async loadBalances(account: string) {
+  private async loadBalances(account?: string) {
     const userCollectibles = this.local.userCollectibles.get() ?? []
 
     if (userCollectibles.length === 0) {
@@ -93,6 +93,7 @@ export class CollectibleStore {
 
   async getCollectibleInfo(params: CollectibleInfoParams): Promise<CollectibleInfoResponse> {
     const gateway = await getGatewayAddress()
+    // const gateway = 'https://gateway.pinata.cloud/ipfs/'
     console.log(gateway)
 
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
@@ -188,7 +189,12 @@ export class CollectibleStore {
       ) {
         throw new Error('Collectible already added')
       }
+
       this.local.userCollectibles.set([...current, collectibleInfo.collectibleInfoParams])
+
+      this.isFetchingCollectibleInfo.set(true)
+      this.loadBalances()
+      this.isFetchingCollectibleInfo.set(false)
     }
   }
 
@@ -200,9 +206,13 @@ export class CollectibleStore {
         c.tokenId !== collectibleInfo.collectibleInfoParams.tokenId
     )
     this.local.userCollectibles.set(filtered)
+
+    this.isFetchingCollectibleInfo.set(true)
+    this.loadBalances()
+    this.isFetchingCollectibleInfo.set(false)
   }
 
-  async removeAllCollectibles() {
-    this.local.userCollectibles.set([])
-  }
+  // async removeAllCollectibles() {
+  //   this.local.userCollectibles.set([])
+  // }
 }

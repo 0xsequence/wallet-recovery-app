@@ -29,13 +29,14 @@ export const getGatewayAddress = async () => {
   var key = 0
   while (!accessible || !gatewayAddress) {
     gatewayAddress = GATEWAYS[key++]
-    if (key >= GATEWAYS.length) {
-      return GATEWAYS[0]
-    }
 
     accessible = await fetch(`${gatewayAddress}`)
       .then(() => true)
       .catch(() => false)
+
+    if (key >= GATEWAYS.length) {
+      return GATEWAYS[0]
+    }
   }
 
   local.set(gatewayAddress)
