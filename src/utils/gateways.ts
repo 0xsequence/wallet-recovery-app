@@ -18,27 +18,40 @@ const GATEWAYS = [
   'https://trustless-gateway.link/ipfs/'
 ]
 
-export const getGatewayAddress = async () => {
-  var local = new LocalStore<string>(LocalStorageKey.GATEWAY_ADDRESS)
-  var gatewayAddress = local.get()
+export class IPFSGatewayHelper {
+  private gatewayURL: string
 
-  var accessible = await fetch(`${gatewayAddress}`)
-    .then(() => true)
-    .catch(() => false)
+  constructor() {
+    this.gatewayURL = GATEWAYS[0]
+    this.findAccessibleGateway()
+  }
 
-  var key = 0
-  while (!accessible || !gatewayAddress) {
-    gatewayAddress = GATEWAYS[key++]
+  private findAccessibleGateway() {
+    for (const url of GATEWAYS) {
+      fetch(url)
+        .then(() => {
+          this.gatewayURL = url
+          return
+        })
+        .catch(() => {})
+    }
+    console.warn('No accessible IPFS gateway found')
+  }
 
-    accessible = await fetch(`${gatewayAddress}`)
-      .then(() => true)
-      .catch(() => false)
-
-    if (key >= GATEWAYS.length) {
-      return GATEWAYS[0]
+  async fetch(uri: string): Promise<Response> {
+    if (uri.startsWith('ipfs://')) {
+      uri = uri.replace('ipfs://', this.gatewayURL)
+      return fetch(uri)
+    } else {
+      throw new Error('Invalid IPFS URI')
     }
   }
 
-  local.set(gatewayAddress)
-  return gatewayAddress
+  getGatewayURL(uri: string): string {
+    if (uri.startsWith('ipfs://')) {
+      return uri.replace('ipfs://', this.gatewayURL)
+    } else {
+      throw new Error('Invalid IPFS URI')
+    }
+  }
 }

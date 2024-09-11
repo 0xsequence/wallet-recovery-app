@@ -1,9 +1,7 @@
 import { ContractType } from '@0xsequence/indexer'
-import { NetworkConfig } from '@0xsequence/network'
 import { ethers } from 'ethers'
-import { c } from 'node_modules/vite/dist/node/types.d-aGj9QkWt'
 
-import { getGatewayAddress } from '~/utils/gateways'
+import { IPFSGatewayHelper } from '~/utils/gateways'
 import { subscribeImmediately } from '~/utils/observable'
 
 import { ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
@@ -40,6 +38,8 @@ export type CollectibleInfo = {
 export class CollectibleStore {
   isFetchingBalances = observable(false)
   isFetchingCollectibleInfo = observable(false)
+
+  private ipfsGatewayHelper = new IPFSGatewayHelper()
 
   constructor(private store: Store) {
     const networkStore = this.store.get(NetworkStore)
@@ -92,10 +92,6 @@ export class CollectibleStore {
   }
 
   async getCollectibleInfo(params: CollectibleInfoParams): Promise<CollectibleInfoResponse> {
-    const gateway = await getGatewayAddress()
-    // const gateway = 'https://gateway.pinata.cloud/ipfs/'
-    console.log(gateway)
-
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
     if (!accountAddress) {
@@ -149,15 +145,17 @@ export class CollectibleStore {
       throw new Error('Could not get collectible URI')
     }
 
-    if (uri.startsWith('ipfs://')) {
-      uri = uri.replace('ipfs://', gateway)
-    }
-
     if (uri.includes('{id}')) {
       uri = uri.replace('{id}', params.tokenId.toString())
     }
 
-    const metadata = await fetch(uri).then(res => res.json())
+    let metadata
+
+    if (uri.startsWith('ipfs://')) {
+      metadata = this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
+    } else {
+      metadata = await fetch(uri).then(res => res.json())
+    }
 
     if (metadata) {
       decimals = metadata.decimals
@@ -166,7 +164,7 @@ export class CollectibleStore {
     }
 
     if (image?.startsWith('ipfs://')) {
-      image = image.replace('ipfs://', gateway)
+      image = this.ipfsGatewayHelper.getGatewayURL(image)
     }
 
     balance = balance ?? BigInt(1)
