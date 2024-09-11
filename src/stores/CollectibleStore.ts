@@ -209,8 +209,4 @@ export class CollectibleStore {
     this.loadBalances()
     this.isFetchingCollectibleInfo.set(false)
   }
-
-  // async removeAllCollectibles() {
-  //   this.local.userCollectibles.set([])
-  // }
 }

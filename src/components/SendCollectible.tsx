@@ -23,6 +23,7 @@ export default function SendCollectible({
   const [amount, setAmount] = useState<string | undefined>(undefined)
   const [address, setAddress] = useState<string | undefined>(undefined)
   const [sendToExternalWallet, setSendToExternalWallet] = useState(false)
+  const [isExternalWalletSelected, setIsExternalWalletSelected] = useState(false)
 
   useEffect(() => {
     const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
@@ -31,6 +32,10 @@ export default function SendCollectible({
       setAddress(walletStore.selectedExternalWalletAddress.get())
     }
   }, [sendToExternalWallet])
+
+  useEffect(() => {
+    setIsExternalWalletSelected(walletStore.selectedExternalWalletAddress.get() !== undefined)
+  }, [walletStore.selectedExternalWalletAddress])
 
   if (!collectibleInfo) {
     return null
@@ -111,10 +116,15 @@ export default function SendCollectible({
             disabled={sendToExternalWallet}
           />
           <Checkbox
-            label="Send to connected external wallet address"
+            label={
+              isExternalWalletSelected
+                ? 'Send to connected external wallet address'
+                : 'Connect external wallet to autofill address'
+            }
             checked={sendToExternalWallet}
             onCheckedChange={checked => setSendToExternalWallet(checked === true)}
             labelLocation="right"
+            disabled={!isExternalWalletSelected}
           />
         </Box>
 

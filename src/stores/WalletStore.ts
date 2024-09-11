@@ -30,11 +30,11 @@ export class WalletStore {
   selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
-  isSendingTransaction = observable<{ tokenBalance: TokenBalance; to: string; amount: string } | undefined>(
-    undefined
-  )
+  isSendingTokenTransaction = observable<
+    { tokenBalance: TokenBalance; to: string; amount?: string } | undefined
+  >(undefined)
 
-  isSendingTransactionCollectible = observable<
+  isSendingCollectibleTransaction = observable<
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
 
@@ -58,7 +58,7 @@ export class WalletStore {
     })
   }
 
-  sendToken = async (tokenBalance: TokenBalance, to: string, amount: string): Promise<{ hash: string }> => {
+  sendToken = async (tokenBalance: TokenBalance, to: string, amount?: string): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = tokenBalance.chainId
 
@@ -76,7 +76,7 @@ export class WalletStore {
       throw new Error(`No RPC URL found for network ${networkForToken.name}`)
     }
 
-    this.isSendingTransaction.set({ tokenBalance, to, amount })
+    this.isSendingTokenTransaction.set({ tokenBalance, to, amount })
 
     const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
@@ -92,6 +92,10 @@ export class WalletStore {
     await this.switchToChain(externalProvider, chainId)
 
     let txn: commons.transaction.Transactionish | undefined
+
+    if (!amount) {
+      return { hash: '' }
+    }
 
     if (tokenBalance.contractType === ContractType.NATIVE) {
       console.info('Sending native token with address, on chainId: ', tokenBalance.contractAddress, chainId)
@@ -111,7 +115,7 @@ export class WalletStore {
     }
 
     if (!txn) {
-      this.isSendingTransaction.set(undefined)
+      this.isSendingTokenTransaction.set(undefined)
       throw new Error('Could not create transaction')
     }
 
@@ -127,7 +131,7 @@ export class WalletStore {
       )
       hash = response.hash
     } catch (error) {
-      this.isSendingTransaction.set(undefined)
+      this.isSendingTokenTransaction.set(undefined)
       throw error
     }
 
@@ -156,7 +160,7 @@ export class WalletStore {
       throw new Error(`No RPC URL found for network ${networkForToken.name}`)
     }
 
-    this.isSendingTransactionCollectible.set({ collectibleInfo, to, amount })
+    this.isSendingCollectibleTransaction.set({ collectibleInfo, to, amount })
 
     const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
@@ -214,7 +218,7 @@ export class WalletStore {
     }
 
     if (!txn) {
-      this.isSendingTransactionCollectible.set(undefined)
+      this.isSendingCollectibleTransaction.set(undefined)
       throw new Error('Could not create transaction')
     }
 
@@ -230,7 +234,7 @@ export class WalletStore {
       )
       hash = response.hash
     } catch (error) {
-      this.isSendingTransactionCollectible.set(undefined)
+      this.isSendingCollectibleTransaction.set(undefined)
       throw error
     }
 

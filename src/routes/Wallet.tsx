@@ -9,7 +9,7 @@ import { useSyncProviders } from '~/hooks/useSyncProviders'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
-import { CollectibleInfo, CollectibleStore } from '~/stores/CollectibleStore'
+import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
@@ -39,15 +39,14 @@ function Wallet() {
 
   const authStore = useStore(AuthStore)
   const tokenStore = useStore(TokenStore)
-  const collectibleStore = useStore(CollectibleStore)
   const walletStore = useStore(WalletStore)
 
   const accountAddress = useObservable(authStore.accountAddress)
 
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
-  const isSendingTransaction = useObservable(walletStore.isSendingTransaction)
-  const isSendingCollectible = useObservable(walletStore.isSendingTransactionCollectible)
+  const isSendingTransaction = useObservable(walletStore.isSendingTokenTransaction)
+  const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
 
   const networkStore = useStore(NetworkStore)
 
@@ -64,84 +63,42 @@ function Wallet() {
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendToken(tokenBalance)
-
-    if (selectedExternalProvider) {
-      handleSelectAmountAndAddress(tokenBalance)
-    } else {
-      handleSelectProvider()
-    }
+    setIsSendTokenModalOpen(true)
   }
 
   const handleCollectibleOnSendClick = (collectibleInfo: CollectibleInfo) => {
     setPendingSendCollectible(collectibleInfo)
-
-    if (selectedExternalProvider) {
-      handleSelectAmountAndAddressCollectibles(collectibleInfo)
-    } else {
-      handleSelectProvider()
-    }
+    setIsSendCollectibleModalOpen(true)
   }
 
   // First step of sending txn
   const handleSelectProvider = async (isChange: boolean = false) => {
     if (selectedExternalProvider === undefined || isChange) {
       setIsSelectProviderModalOpen(true)
-    } else {
-      handleSelectAmountAndAddress()
     }
-  }
-
-  // Second step of sending txn
-  const handleSelectAmountAndAddress = async (balance?: TokenBalance) => {
-    if (!walletStore.selectedExternalProvider.get()) {
-      console.warn('No external provider selected')
-      return
-    }
-
-    if (!pendingSendToken) {
-      if (balance) {
-        setPendingSendToken(balance)
-      } else {
-        console.warn('No pending send found')
-        return
-      }
-    }
-
-    setIsSendTokenModalOpen(true)
-  }
-
-  const handleSelectAmountAndAddressCollectibles = async (collectibleInfo: CollectibleInfo) => {
-    if (!walletStore.selectedExternalProvider.get()) {
-      console.warn('No external provider selected')
-      return
-    }
-
-    if (!pendingSendCollectible) {
-      if (collectibleInfo) {
-        setPendingSendCollectible(collectibleInfo)
-      } else {
-        console.warn('No pending send found')
-        return
-      }
-    }
-
-    setIsSendCollectibleModalOpen(true)
   }
 
   // Third step of sending txn
-  const handleSendPendingTransaction = async (to: string, amount: string) => {
+  const handleSendPendingTransaction = async (to: string, amount?: string) => {
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
       return
     }
 
-    if (!pendingSendToken) {
-      console.warn('No pending send found')
-      return
-    }
+    var chainId: number
+
     let response: { hash: string } | undefined
     try {
-      response = await walletStore.sendToken(pendingSendToken, to, amount)
+      if (pendingSendToken) {
+        chainId = pendingSendToken.chainId
+        response = await walletStore.sendToken(pendingSendToken, to, amount)
+      } else if (pendingSendCollectible) {
+        chainId = pendingSendCollectible.collectibleInfoParams.chainId
+        response = await walletStore.sendCollectible(pendingSendCollectible, to, amount)
+      } else {
+        console.warn('No pending send found')
+        return
+      }
     } catch (error) {
       if ((error as any).code === 4001) {
         toast({
@@ -153,9 +110,9 @@ function Wallet() {
       return
     }
 
-    const network = networkStore.networkForChainId(pendingSendToken.chainId)
+    const network = networkStore.networkForChainId(chainId)
     if (!network) {
-      throw new Error(`No network found for chainId ${pendingSendToken.chainId}`)
+      throw new Error(`No network found for chainId ${chainId}`)
     }
 
     // TODO: add providerForChainId method to NetworkStore
@@ -171,58 +128,14 @@ function Wallet() {
       })
     }
 
-    tokenStore.updateTokenBalance(pendingSendToken)
+    if (pendingSendToken) {
+      tokenStore.updateTokenBalance(pendingSendToken)
+    }
+
     setPendingSendToken(undefined)
-    walletStore.isSendingTransaction.set(undefined)
-
-    console.log('receipt', receipt)
-  }
-
-  const handleSendPendingTransactionCollectibles = async (to: string, amount?: string) => {
-    if (!walletStore.selectedExternalProvider.get()) {
-      console.warn('No external provider selected')
-      return
-    }
-
-    if (!pendingSendCollectible) {
-      console.warn('No pending send found')
-      return
-    }
-    let response: { hash: string } | undefined
-    try {
-      response = await walletStore.sendCollectible(pendingSendCollectible, to, amount)
-    } catch (error) {
-      if ((error as any).code === 4001) {
-        toast({
-          variant: 'error',
-          title: 'User denied transaction signature.'
-        })
-      }
-      console.error(error)
-      return
-    }
-
-    const network = networkStore.networkForChainId(pendingSendCollectible.collectibleInfoParams.chainId)
-    if (!network) {
-      throw new Error(`No network found for chainId ${pendingSendCollectible.collectibleInfoParams.chainId}`)
-    }
-
-    // TODO: add providerForChainId method to NetworkStore
-    const provider = new ethers.JsonRpcProvider(network.rpcUrl)
-
-    const receipt = await getTransactionReceipt(provider, response.hash)
-
-    if (receipt) {
-      toast({
-        variant: 'success',
-        title: 'Transaction confirmed',
-        description: `You can view the transaction details on your connected external wallet`
-      })
-    }
-
-    // Update collectibleStore?
     setPendingSendCollectible(undefined)
-    walletStore.isSendingTransactionCollectible.set(undefined)
+    walletStore.isSendingTokenTransaction.set(undefined)
+    walletStore.isSendingCollectibleTransaction.set(undefined)
 
     console.log('receipt', receipt)
   }
@@ -356,10 +269,6 @@ function Wallet() {
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles
             </Text>
-            {/* <Button
-              label="Remove All Collectibles"
-              onClick={() => collectibleStore.removeAllCollectibles()}
-            /> */}
             <CollectibleList onSendClick={handleCollectibleOnSendClick} />
           </Box>
         </Box>
@@ -380,8 +289,6 @@ function Wallet() {
             onSelectProvider={async provider => {
               setIsSelectProviderModalOpen(false)
               walletStore.setExternalProvider(provider)
-
-              handleSelectAmountAndAddress()
             }}
           />
         </Modal>
@@ -410,7 +317,7 @@ function Wallet() {
                 (to && pendingSendCollectible?.collectibleInfoParams.contractType === 'ERC721') ||
                 (to && amount)
               ) {
-                handleSendPendingTransactionCollectibles(to, amount)
+                handleSendPendingTransaction(to, amount)
               }
             }}
           />

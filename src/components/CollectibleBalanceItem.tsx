@@ -1,4 +1,5 @@
 import { Box, Button, Card, Image, Text } from '@0xsequence/design-system'
+import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 
@@ -29,6 +30,20 @@ export default function CollectibleBalanceItem({
           width="full"
         />
       </Box>
+
+      <Box justifyContent="flex-end">
+        <Text variant="medium" color="text100">
+          {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
+            ? Number(
+                ethers.formatUnits(
+                  collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                  collectibleInfo.collectibleInfoResponse.decimals ?? 0
+                )
+              )
+            : 1}
+        </Text>
+      </Box>
+
       <Box flexDirection="row" justifyContent="space-between">
         <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
         <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
