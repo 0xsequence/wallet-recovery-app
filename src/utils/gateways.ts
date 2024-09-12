@@ -4,7 +4,6 @@ import { LocalStore } from '~/stores/LocalStore'
 
 const GATEWAYS = [
   'https://flk-ipfs.io/ipfs/',
-  'https://ipfs.cyou/ipfs/',
   'https://storry.tv/ipfs/',
   'https://ipfs.io/ipfs/',
   'https://dweb.link/ipfs/',
@@ -21,12 +20,12 @@ const GATEWAYS = [
 const TEST_HASH = 'QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1'
 
 export class IPFSGatewayHelper {
-  private gatewayURL: string
+  private gatewayURL?: string
   private localStore: LocalStore<string>
 
   constructor() {
     this.localStore = new LocalStore<string>(LocalStorageKey.GATEWAY_ADDRESS)
-    this.gatewayURL = this.localStore.get() || GATEWAYS[0]
+    this.gatewayURL = this.localStore.get()
     this.findAccessibleGateway()
   }
 
@@ -59,14 +58,20 @@ export class IPFSGatewayHelper {
   }
 
   async fetch(uri: string): Promise<Response> {
-    const gatewayUri = this.getGatewayURL(uri)
+    if (!this.gatewayURL) {
+      await this.findAccessibleGateway()
+    }
+    const gatewayUri = await this.getGatewayURL(uri)
     return fetch(gatewayUri)
   }
 
-  getGatewayURL(uri: string): string {
+  async getGatewayURL(uri: string): Promise<string> {
+    if (!this.gatewayURL) {
+      await this.findAccessibleGateway()
+    }
     if (!uri.startsWith('ipfs://')) {
       throw new Error('Invalid IPFS URI')
     }
-    return uri.replace('ipfs://', this.gatewayURL)
+    return uri.replace('ipfs://', this.gatewayURL!)
   }
 }
