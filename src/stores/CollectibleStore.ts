@@ -164,7 +164,7 @@ export class CollectibleStore {
     }
 
     if (image?.startsWith('ipfs://')) {
-      image = this.ipfsGatewayHelper.getGatewayURL(image)
+      image = await this.ipfsGatewayHelper.getGatewayURL(image)
     }
 
     balance = balance ?? BigInt(1)
