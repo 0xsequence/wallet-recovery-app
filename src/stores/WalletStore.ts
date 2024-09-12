@@ -1,14 +1,17 @@
 import { Account } from '@0xsequence/account'
 import { commons } from '@0xsequence/core'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
+import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 
 import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
 import { LocalStorageKey } from '~/constants/storage'
 
-import { EIP1193Provider, EIP6963ProviderDetail, EIP6963ProviderInfo } from '~/hooks/useSyncProviders'
+import { EIP1193Provider } from '~/hooks/useSyncProviders'
 
 import { observable } from '~/stores'
+
+import { ProviderDetail, ProviderInfo } from '~/components/SelectProvider'
 
 import { Store } from '.'
 import { AuthStore } from './AuthStore'
@@ -25,9 +28,9 @@ declare global {
 }
 
 export class WalletStore {
-  availableExternalProviders = observable<EIP6963ProviderDetail[]>([])
+  availableExternalProviders = observable<ProviderDetail[]>([])
 
-  selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
+  selectedExternalProvider = observable<ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
   isSendingTokenTransaction = observable<
@@ -39,7 +42,7 @@ export class WalletStore {
   >(undefined)
 
   private local = {
-    lastConnectedExternalProviderInfo: new LocalStore<EIP6963ProviderInfo>(
+    lastConnectedExternalProviderInfo: new LocalStore<ProviderInfo>(
       LocalStorageKey.LAST_CONNECTED_EXTERNAL_PROVIDER_INFO
     )
   }
@@ -241,22 +244,23 @@ export class WalletStore {
     return { hash }
   }
 
-  setExternalProvider = async (provider: EIP6963ProviderDetail) => {
-    const externalProviderAccounts = await this.getExternalProviderAccounts(provider.provider)
+  setExternalProvider = async (providerDetail: ProviderDetail) => {
+    const externalProviderAccounts = await this.getExternalProviderAccounts(providerDetail.provider)
     const externalProviderAddress = externalProviderAccounts[0]
 
-    this.local.lastConnectedExternalProviderInfo.set(provider.info)
-    this.selectedExternalProvider.set(provider)
+    this.local.lastConnectedExternalProviderInfo.set(providerDetail.info)
+
+    this.selectedExternalProvider.set(providerDetail)
     this.selectedExternalWalletAddress.set(externalProviderAddress)
 
-    provider.provider.on('accountsChanged', async accounts => {
+    providerDetail.provider.on('accountsChanged', async accounts => {
       if (accounts.length === 0) {
         this.selectedExternalProvider.set(undefined)
         this.selectedExternalWalletAddress.set(undefined)
         return
       }
       if (accounts[0] !== externalProviderAddress) {
-        const newExternalProviderAccounts = await this.getExternalProviderAccounts(provider.provider)
+        const newExternalProviderAccounts = await this.getExternalProviderAccounts(providerDetail.provider)
         const newExternalProviderAddress = newExternalProviderAccounts[0]
         this.selectedExternalWalletAddress.set(newExternalProviderAddress)
       }
@@ -265,7 +269,7 @@ export class WalletStore {
 
   private async sendTransaction(
     account: Account,
-    externalProvider: EIP1193Provider,
+    externalProvider: EIP1193Provider | EthereumProvider,
     externalProviderAddress: string,
     txn: commons.transaction.Transactionish,
     chainId: number
@@ -304,7 +308,7 @@ export class WalletStore {
     return { hash: hash as string }
   }
 
-  private async getExternalProviderAccounts(provider: EIP1193Provider): Promise<string[]> {
+  private async getExternalProviderAccounts(provider: EIP1193Provider | EthereumProvider): Promise<string[]> {
     return new Promise((resolve, reject) => {
       provider.sendAsync?.({ method: 'eth_requestAccounts', params: [] }, (error, accounts) => {
         if (error) {
@@ -318,7 +322,7 @@ export class WalletStore {
     })
   }
 
-  private async switchToChain(provider: EIP1193Provider, chainId: number) {
+  private async switchToChain(provider: EIP1193Provider | EthereumProvider, chainId: number) {
     return new Promise((resolve, reject) => {
       provider.sendAsync?.(
         { method: 'wallet_switchEthereumChain', params: [{ chainId: ethers.toQuantity(chainId) }] },
