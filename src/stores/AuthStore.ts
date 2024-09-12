@@ -10,6 +10,7 @@ import { IndexedDBKey } from '~/constants/storage'
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 
 import { Store, observable } from '.'
+import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 import { TokenStore } from './TokenStore'
 
@@ -132,5 +133,8 @@ export class AuthStore {
     const tokenStore = this.store.get(TokenStore)
     networkStore.clear()
     tokenStore.clear()
+
+    // Not sure if we should abstract this to LocalStore but we'd have to instantiate a LocalStore to access the class function
+    localStorage.clear()
   }
 }

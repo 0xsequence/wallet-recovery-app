@@ -64,7 +64,6 @@ export class TokenStore {
         const provider = new ethers.JsonRpcProvider(network.rpcUrl)
         try {
           const balance = await provider.getBalance(account)
-
           update.push({
             contractType: ContractType.NATIVE,
             contractAddress: ethers.ZeroAddress,
@@ -116,6 +115,12 @@ export class TokenStore {
       const balance = await erc20.balanceOf(accountAddress)
 
       const updatedBalances = this.balances.get()
+
+      // Remove token if balance is 0
+      if (!balance) {
+        this.removeToken(token)
+        return
+      }
 
       updatedBalances.push({
         contractType: token.contractType,
@@ -180,7 +185,7 @@ export class TokenStore {
     const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     try {
-      let balance: BigInt
+      let balance: bigint
 
       if (tokenBalance.contractType === ContractType.NATIVE) {
         balance = await provider.getBalance(accountAddress)
@@ -241,6 +246,14 @@ export class TokenStore {
       .filter(b => !(b.chainId === token.chainId && b.contractAddress === token.address))
 
     this.balances.set(filteredBalances)
+
+    const accountAddress = this.store.get(AuthStore).accountAddress.get()
+
+    if (accountAddress) {
+      this.isFetchingBalances.set(true)
+      await this.loadUserAddedTokenBalance(accountAddress, token)
+      this.isFetchingBalances.set(false)
+    }
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {

@@ -63,15 +63,22 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
       collectibleTokenId &&
       contractType
     ) {
-      collectibleStore.addCollectible(
-        {
+      await collectibleStore.addCollectible({
+        collectibleInfoParams: {
           chainId: selectedNetwork.chainId,
           address: collectibleAddress,
           tokenId: collectibleTokenId,
           contractType
         },
-        collectibleInfoResponse
-      )
+        collectibleInfoResponse: collectibleInfoResponse
+      })
+      setIsAddingCollectible(false)
+      toast({
+        variant: 'success',
+        title: 'Collectible added'
+      })
+      resetInputs()
+      onClose()
     }
   }
 
@@ -178,21 +185,23 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   <Text variant="medium" color="text100">
                     {collectibleInfoResponse.name ?? ''}
                   </Text>
-                  {collectibleInfoResponse.balance && (
-                    <>
-                      <Text variant="small" color="text80">
-                        Your Balance:
-                      </Text>
-                      <Text variant="medium" color="text100">
-                        {Number(
-                          ethers.formatUnits(
-                            collectibleInfoResponse.balance as BigNumberish,
-                            collectibleInfoResponse.decimals ?? 0
-                          )
-                        )}
-                      </Text>
-                    </>
-                  )}
+                  <>
+                    {collectibleInfoResponse.balance && (
+                      <>
+                        <Text variant="small" color="text80">
+                          Your Balance:
+                        </Text>
+                        <Text variant="medium" color="text100">
+                          {Number(
+                            ethers.formatUnits(
+                              collectibleInfoResponse.balance as BigNumberish,
+                              collectibleInfoResponse.decimals ?? 0
+                            )
+                          )}
+                        </Text>
+                      </>
+                    )}
+                  </>
                 </Box>
               </Box>
             </Card>

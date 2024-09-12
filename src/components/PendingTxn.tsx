@@ -4,13 +4,15 @@ import { TokenBalance } from '@0xsequence/indexer'
 import NetworkTag from './NetworkTag'
 
 export default function PendingTxn({
-  tokenBalance,
-  amount,
-  to
+  symbol,
+  chainId,
+  to,
+  amount
 }: {
-  tokenBalance: TokenBalance
-  amount: string
+  symbol: string
+  chainId: number
   to: string
+  amount?: string
 }) {
   return (
     <Box flexDirection="column" width="full" gap="4">
@@ -34,9 +36,9 @@ export default function PendingTxn({
         <Box flexDirection="column" gap="1">
           <Box flexDirection="row" alignItems="center" gap="1">
             <Text variant="small" color="text100">
-              Sending {amount} {tokenBalance?.contractInfo?.symbol} on
+              Sending {amount} {symbol} on
             </Text>
-            <NetworkTag chainId={tokenBalance.chainId} paddingTop="0" paddingBottom="1" />
+            <NetworkTag chainId={chainId} paddingTop="0" paddingBottom="1" />
 
             <Text variant="small" color="text80">
               to {to}

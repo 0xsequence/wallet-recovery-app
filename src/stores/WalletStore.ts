@@ -3,7 +3,7 @@ import { commons } from '@0xsequence/core'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 
-import { ERC20_ABI } from '~/constants/abi'
+import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
 import { LocalStorageKey } from '~/constants/storage'
 
 import { EIP1193Provider, EIP6963ProviderDetail, EIP6963ProviderInfo } from '~/hooks/useSyncProviders'
@@ -12,6 +12,7 @@ import { observable } from '~/stores'
 
 import { Store } from '.'
 import { AuthStore } from './AuthStore'
+import { CollectibleInfo } from './CollectibleStore'
 import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 
@@ -29,9 +30,13 @@ export class WalletStore {
   selectedExternalProvider = observable<EIP6963ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
-  isSendingTransaction = observable<{ tokenBalance: TokenBalance; amount: string; to: string } | undefined>(
-    undefined
-  )
+  isSendingTokenTransaction = observable<
+    { tokenBalance: TokenBalance; to: string; amount?: string } | undefined
+  >(undefined)
+
+  isSendingCollectibleTransaction = observable<
+    { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
+  >(undefined)
 
   private local = {
     lastConnectedExternalProviderInfo: new LocalStore<EIP6963ProviderInfo>(
@@ -53,7 +58,7 @@ export class WalletStore {
     })
   }
 
-  sendToken = async (tokenBalance: TokenBalance, amount: string, to: string): Promise<{ hash: string }> => {
+  sendToken = async (tokenBalance: TokenBalance, to: string, amount?: string): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = tokenBalance.chainId
 
@@ -71,7 +76,7 @@ export class WalletStore {
       throw new Error(`No RPC URL found for network ${networkForToken.name}`)
     }
 
-    this.isSendingTransaction.set({ tokenBalance, amount, to })
+    this.isSendingTokenTransaction.set({ tokenBalance, to, amount })
 
     const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
@@ -87,6 +92,10 @@ export class WalletStore {
     await this.switchToChain(externalProvider, chainId)
 
     let txn: commons.transaction.Transactionish | undefined
+
+    if (!amount) {
+      return { hash: '' }
+    }
 
     if (tokenBalance.contractType === ContractType.NATIVE) {
       console.info('Sending native token with address, on chainId: ', tokenBalance.contractAddress, chainId)
@@ -106,7 +115,7 @@ export class WalletStore {
     }
 
     if (!txn) {
-      this.isSendingTransaction.set(undefined)
+      this.isSendingTokenTransaction.set(undefined)
       throw new Error('Could not create transaction')
     }
 
@@ -122,7 +131,110 @@ export class WalletStore {
       )
       hash = response.hash
     } catch (error) {
-      this.isSendingTransaction.set(undefined)
+      this.isSendingTokenTransaction.set(undefined)
+      throw error
+    }
+
+    return { hash }
+  }
+
+  sendCollectible = async (
+    collectibleInfo: CollectibleInfo,
+    to: string,
+    amount?: string
+  ): Promise<{ hash: string }> => {
+    const account = this.store.get(AuthStore).account
+    const chainId = collectibleInfo.collectibleInfoParams.chainId
+
+    if (!account) {
+      throw new Error('No account found')
+    }
+
+    const networkForToken = this.store.get(NetworkStore).networkForChainId(chainId)
+
+    if (!networkForToken) {
+      throw new Error(`No network found for chainId ${chainId}`)
+    }
+
+    if (!networkForToken.rpcUrl) {
+      throw new Error(`No RPC URL found for network ${networkForToken.name}`)
+    }
+
+    this.isSendingCollectibleTransaction.set({ collectibleInfo, to, amount })
+
+    const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
+
+    const externalProvider = this.selectedExternalProvider.get()?.provider
+
+    if (!externalProvider) {
+      throw new Error('No external provider selected')
+    }
+
+    const externalProviderAccounts = await this.getExternalProviderAccounts(externalProvider)
+    const externalProviderAddress = externalProviderAccounts[0]
+
+    await this.switchToChain(externalProvider, chainId)
+
+    let txn: commons.transaction.Transactionish | undefined
+
+    if (collectibleInfo.collectibleInfoParams.contractType === 'ERC721') {
+      console.info(
+        'Sending ERC721 non-fungible token with address, on chainId: ',
+        collectibleInfo.collectibleInfoParams.address,
+        chainId
+      )
+
+      const erc721 = new ethers.Contract(collectibleInfo.collectibleInfoParams.address, ERC721_ABI, provider)
+
+      txn = await erc721.safeTransferFrom.populateTransaction(
+        account,
+        to,
+        collectibleInfo.collectibleInfoParams.tokenId
+      )
+    } else if (collectibleInfo.collectibleInfoParams.contractType === 'ERC1155') {
+      console.info(
+        'Sending ERC1155 token with address, on chainId: ',
+        collectibleInfo.collectibleInfoParams.address,
+        chainId
+      )
+
+      const erc1155 = new ethers.Contract(
+        collectibleInfo.collectibleInfoParams.address,
+        ERC1155_ABI,
+        provider
+      )
+
+      if (!amount) {
+        return { hash: '' }
+      }
+
+      txn = await erc1155.safeTransferFrom.populateTransaction(
+        account,
+        to,
+        collectibleInfo.collectibleInfoParams.tokenId,
+        ethers.parseUnits(amount, collectibleInfo?.collectibleInfoResponse?.decimals ?? 18),
+        '0x'
+      )
+    }
+
+    if (!txn) {
+      this.isSendingCollectibleTransaction.set(undefined)
+      throw new Error('Could not create transaction')
+    }
+
+    let hash: string | undefined
+
+    try {
+      const response = await this.sendTransaction(
+        account,
+        externalProvider,
+        externalProviderAddress,
+        txn,
+        chainId
+      )
+      hash = response.hash
+    } catch (error) {
+      this.isSendingCollectibleTransaction.set(undefined)
       throw error
     }
 

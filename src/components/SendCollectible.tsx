@@ -1,18 +1,19 @@
 import { Box, Button, Checkbox, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
-import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
+import { BigNumberish } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { getNetworkTitle } from '~/utils/network'
 
 import { useStore } from '~/stores'
+import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-export default function SendToken({
-  tokenBalance,
+export default function SendCollectible({
+  collectibleInfo,
   onClose
 }: {
-  tokenBalance?: TokenBalance
+  collectibleInfo?: CollectibleInfo
   onClose: (to?: string, amount?: string) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
@@ -36,16 +37,18 @@ export default function SendToken({
     setIsExternalWalletSelected(walletStore.selectedExternalWalletAddress.get() !== undefined)
   }, [walletStore.selectedExternalWalletAddress])
 
-  if (!tokenBalance) {
+  if (!collectibleInfo) {
     return null
   }
 
-  const networkTitle = getNetworkTitle(tokenBalance.chainId)
+  const isERC721 = collectibleInfo.collectibleInfoParams.contractType === 'ERC721'
+
+  const networkTitle = getNetworkTitle(collectibleInfo.collectibleInfoParams.chainId)
 
   return (
     <Box flexDirection="column" paddingY="5" alignItems="center">
       <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="1">
-        Sending {tokenBalance?.contractInfo?.symbol} on {networkTitle}
+        Sending {collectibleInfo?.collectibleInfoResponse?.name} on {networkTitle}
       </Text>
 
       <Divider color="gradientPrimary" width="full" height="px" />
@@ -64,28 +67,39 @@ export default function SendToken({
             labelLocation="top"
             name="amount"
             placeholder="Enter amount"
-            value={amount ?? ''}
+            value={isERC721 ? '1' : amount ?? ''}
             onChange={(ev: ChangeEvent<HTMLInputElement>) => {
               setAmount(ev.target.value)
             }}
+            disabled={collectibleInfo.collectibleInfoParams.contractType === 'ERC721'}
             controls={
-              <Button
-                label="Max"
-                variant="text"
-                size="md"
-                shape="square"
-                paddingRight="2"
-                onClick={() => {
-                  setAmount(
-                    ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)
-                  )
-                }}
-              />
+              <>
+                {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155' && (
+                  <Button
+                    label="Max"
+                    variant="text"
+                    size="md"
+                    shape="square"
+                    paddingRight="2"
+                    onClick={() => {
+                      setAmount(
+                        ethers.formatUnits(
+                          collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
+                          collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+                        )
+                      )
+                    }}
+                  />
+                )}
+              </>
             }
           />
           <Text variant="small" color="text50">
             Current balance:{' '}
-            {ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)}
+            {ethers.formatUnits(
+              collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
+              collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+            )}
           </Text>
         </Box>
 
@@ -129,11 +143,9 @@ export default function SendToken({
             variant="primary"
             size="md"
             shape="square"
-            disabled={!address || !amount}
+            disabled={(isERC721 && address) || (!isERC721 && address && amount) ? false : true}
             onClick={() => {
-              if (address && amount) {
-                onClose(address, amount)
-              }
+              onClose(address, amount)
             }}
           />
         </Box>

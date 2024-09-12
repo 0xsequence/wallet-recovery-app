@@ -1,23 +1,22 @@
 import { Box, Button, Card, Image, Text } from '@0xsequence/design-system'
+import { BigNumberish, ethers } from 'ethers'
 
-import { CollectibleInfoParams, CollectibleInfoResponse } from '~/stores/CollectibleStore'
+import { CollectibleInfo } from '~/stores/CollectibleStore'
 
 import NetworkTag from './NetworkTag'
 
 export default function CollectibleBalanceItem({
-  collectibleInfoParams,
-  collectibleInfoResponse,
+  collectibleInfo,
   onSendClick
 }: {
-  collectibleInfoParams: CollectibleInfoParams
-  collectibleInfoResponse: CollectibleInfoResponse
+  collectibleInfo: CollectibleInfo
   onSendClick: () => void
 }) {
   return (
     <Card width="full" flexDirection="column" gap="2" padding="4">
       <Box flexDirection="row" alignItems="center" gap="2">
         <Text variant="medium" color="text80">
-          {collectibleInfoResponse.name ?? 'Collectible'}
+          {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
         </Text>
       </Box>
       <Box style={{ height: '200px' }}>
@@ -27,12 +26,27 @@ export default function CollectibleBalanceItem({
             maxHeight: '100%',
             objectFit: 'contain'
           }}
-          src={collectibleInfoResponse.image ?? ''}
+          src={collectibleInfo.collectibleInfoResponse.image ?? ''}
           width="full"
         />
       </Box>
-      <Box flexDirection="row">
-        <NetworkTag chainId={collectibleInfoParams.chainId} />
+
+      <Box justifyContent="flex-end">
+        <Text variant="medium" color="text100">
+          {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
+            ? Number(
+                ethers.formatUnits(
+                  collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                  collectibleInfo.collectibleInfoResponse.decimals ?? 0
+                )
+              )
+            : 1}
+        </Text>
+      </Box>
+
+      <Box flexDirection="row" justifyContent="space-between">
+        <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
+        <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
       </Box>
     </Card>
   )

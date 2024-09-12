@@ -1,7 +1,7 @@
 import { ContractType } from '@0xsequence/indexer'
-import { NetworkConfig } from '@0xsequence/network'
 import { ethers } from 'ethers'
 
+import { IPFSGatewayHelper } from '~/utils/gateways'
 import { subscribeImmediately } from '~/utils/observable'
 
 import { ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
@@ -26,13 +26,20 @@ export type CollectibleInfoResponse = {
   uri: string
   image?: string
   name?: string
-  balance?: BigInt
+  balance?: bigint
   decimals?: number
+}
+
+export type CollectibleInfo = {
+  collectibleInfoParams: CollectibleInfoParams
+  collectibleInfoResponse: CollectibleInfoResponse
 }
 
 export class CollectibleStore {
   isFetchingBalances = observable(false)
   isFetchingCollectibleInfo = observable(false)
+
+  private ipfsGatewayHelper = new IPFSGatewayHelper()
 
   constructor(private store: Store) {
     const networkStore = this.store.get(NetworkStore)
@@ -45,15 +52,13 @@ export class CollectibleStore {
     })
   }
 
-  userCollectibles = observable<
-    { infoParams: CollectibleInfoParams; infoResponse: CollectibleInfoResponse }[]
-  >([])
+  userCollectibles = observable<CollectibleInfo[]>([])
 
   private local = {
     userCollectibles: new LocalStore<CollectibleInfoParams[]>(LocalStorageKey.COLLECTIBLES)
   }
 
-  private async loadBalances(account: string) {
+  private async loadBalances(account?: string) {
     const userCollectibles = this.local.userCollectibles.get() ?? []
 
     if (userCollectibles.length === 0) {
@@ -62,11 +67,21 @@ export class CollectibleStore {
 
     this.isFetchingBalances.set(true)
 
-    const balances: { infoParams: CollectibleInfoParams; infoResponse: CollectibleInfoResponse }[] = []
+    const balances: CollectibleInfo[] = []
 
     const promises = userCollectibles.map(async params => {
       const response = await this.getCollectibleInfo(params)
-      balances.push({ infoParams: params, infoResponse: response })
+
+      // Remove collectible if not owner
+      if (!response.isOwner) {
+        this.removeCollectible({ collectibleInfoParams: params, collectibleInfoResponse: response })
+        return
+      }
+
+      balances.push({
+        collectibleInfoParams: params,
+        collectibleInfoResponse: response
+      })
     })
 
     await Promise.allSettled(promises)
@@ -100,7 +115,7 @@ export class CollectibleStore {
     let uri: string | undefined
     let image: string | undefined
     let name: string | undefined
-    let balance: BigInt | undefined
+    let balance: bigint | undefined
     let decimals: number | undefined
 
     if (params.contractType === ContractType.ERC721) {
@@ -130,15 +145,17 @@ export class CollectibleStore {
       throw new Error('Could not get collectible URI')
     }
 
-    if (uri.startsWith('ipfs://')) {
-      uri = uri.replace('ipfs://', 'https://ipfs.io/ipfs/')
-    }
-
     if (uri.includes('{id}')) {
       uri = uri.replace('{id}', params.tokenId.toString())
     }
 
-    const metadata = await fetch(uri).then(res => res.json())
+    let metadata
+
+    if (uri.startsWith('ipfs://')) {
+      metadata = await this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
+    } else {
+      metadata = await fetch(uri).then(res => res.json())
+    }
 
     if (metadata) {
       decimals = metadata.decimals
@@ -147,21 +164,49 @@ export class CollectibleStore {
     }
 
     if (image?.startsWith('ipfs://')) {
-      image = image.replace('ipfs://', 'https://ipfs.io/ipfs/')
+      image = this.ipfsGatewayHelper.getGatewayURL(image)
     }
+
+    balance = balance ?? BigInt(1)
+    decimals = decimals ?? 0
 
     this.isFetchingCollectibleInfo.set(false)
 
     return { isOwner: true, uri, image, name, balance, decimals }
   }
 
-  async addCollectible(params: CollectibleInfoParams, info: CollectibleInfoResponse) {
-    if (info.isOwner) {
+  async addCollectible(collectibleInfo: CollectibleInfo) {
+    if (collectibleInfo.collectibleInfoResponse.isOwner) {
       const current = this.local.userCollectibles.get() ?? []
-      if (current.some(c => c.address === params.address && c.tokenId === params.tokenId)) {
+      if (
+        current.some(
+          c =>
+            c.address === collectibleInfo.collectibleInfoParams.address &&
+            c.tokenId === collectibleInfo.collectibleInfoParams.tokenId
+        )
+      ) {
         throw new Error('Collectible already added')
       }
-      this.local.userCollectibles.set([...current, params])
+
+      this.local.userCollectibles.set([...current, collectibleInfo.collectibleInfoParams])
+
+      this.isFetchingCollectibleInfo.set(true)
+      this.loadBalances()
+      this.isFetchingCollectibleInfo.set(false)
     }
+  }
+
+  async removeCollectible(collectibleInfo: CollectibleInfo) {
+    const current = this.local.userCollectibles.get() ?? []
+    const filtered = current.filter(
+      c =>
+        c.address !== collectibleInfo.collectibleInfoParams.address ||
+        c.tokenId !== collectibleInfo.collectibleInfoParams.tokenId
+    )
+    this.local.userCollectibles.set(filtered)
+
+    this.isFetchingCollectibleInfo.set(true)
+    this.loadBalances()
+    this.isFetchingCollectibleInfo.set(false)
   }
 }
