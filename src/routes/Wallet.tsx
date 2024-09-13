@@ -4,7 +4,10 @@ import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
+import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
+
+import { walletConnectProjectID } from '~/constants/wallet-context'
 
 import { useSyncProviders } from '~/hooks/useSyncProviders'
 
@@ -18,7 +21,7 @@ import { WalletStore } from '~/stores/WalletStore'
 import CollectibleList from '~/components/CollectibleList'
 import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
-import SelectProvider, { ProviderDetail } from '~/components/SelectProvider'
+import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
@@ -27,22 +30,50 @@ import TokenList from '~/components/TokenList'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
+export const getWalletConnectProviderDetail = (provider: EthereumProvider) => {
+  return {
+    info: {
+      walletId: '',
+      uuid: '',
+      name: 'WalletConnect',
+      icon: 'https://avatars.githubusercontent.com/u/37784886'
+    },
+    provider: provider
+  }
+}
+
 function Wallet() {
   const externalProviders = useSyncProviders()
-
-  const toast = useToast()
-
-  useEffect(() => {
-    if (externalProviders.length > 0) {
-      walletStore.availableExternalProviders.set(externalProviders)
-    }
-  }, [externalProviders])
 
   const authStore = useStore(AuthStore)
   const tokenStore = useStore(TokenStore)
   const walletStore = useStore(WalletStore)
 
   const accountAddress = useObservable(authStore.accountAddress)
+
+  const toast = useToast()
+
+  const provider = useWalletConnectProvider(walletConnectProjectID)
+
+  useEffect(() => {
+    if (provider && provider.connected) {
+      let walletConnectProviderDetail = getWalletConnectProviderDetail(provider)
+
+      let availableProviders = walletStore.availableExternalProviders.get()
+
+      if (availableProviders) {
+        walletStore.availableExternalProviders.set([walletConnectProviderDetail, ...availableProviders])
+      } else {
+        walletStore.availableExternalProviders.set([walletConnectProviderDetail])
+      }
+    }
+  }, [provider])
+
+  useEffect(() => {
+    if (externalProviders.length > 0) {
+      walletStore.availableExternalProviders.set(externalProviders)
+    }
+  }, [externalProviders])
 
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)

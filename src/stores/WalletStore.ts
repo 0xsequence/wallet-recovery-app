@@ -61,6 +61,10 @@ export class WalletStore {
     })
   }
 
+  getLastConnectedExternalProviderInfo = () => {
+    return this.local.lastConnectedExternalProviderInfo.get()
+  }
+
   sendToken = async (tokenBalance: TokenBalance, to: string, amount?: string): Promise<{ hash: string }> => {
     const account = this.store.get(AuthStore).account
     const chainId = tokenBalance.chainId

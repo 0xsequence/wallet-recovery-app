@@ -2,14 +2,16 @@ import { Box, Card, Divider, Text } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useMemo, useState } from 'react'
 
-import { LocalStorageKey } from '~/constants/storage'
+import { createProvider, useWalletConnectProvider } from '~/utils/ethereumprovider'
 
-import { EIP1193Provider, EIP6963ProviderDetail, useSyncProviders } from '~/hooks/useSyncProviders'
+import { walletConnectProjectID } from '~/constants/wallet-context'
+
+import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
 import { useObservable, useStore } from '~/stores'
-import { LocalStore } from '~/stores/LocalStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-import { WalletStore } from '~/stores/WalletStore'
+
+import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
 export interface ProviderInfo {
   walletId?: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask
@@ -23,18 +25,6 @@ export interface ProviderDetail {
   provider: EIP1193Provider | EthereumProvider
 }
 
-export const walletConnectProvider = await EthereumProvider.init({
-  projectId: '95777495732e7317ec3fd92b88a1b19c',
-  // metadata: {
-  //   name: 'My Website',
-  //   description: 'My Website Description',
-  //   url: 'https://mywebsite.com', // origin must match your domain & subdomain
-  //   icons: ['https://avatars.githubusercontent.com/u/37784886']
-  // },
-  showQrModal: true,
-  optionalChains: [1, 137]
-})
-
 export default function SelectProvider({
   onSelectProvider
 }: {
@@ -42,33 +32,30 @@ export default function SelectProvider({
 }) {
   const providers = useSyncProviders()
 
-  const walletStore = useStore(WalletStore)
-
   const networkStore = useStore(NetworkStore)
   const networks = useObservable(networkStore.networks)
   const walletConnectChains = useMemo(() => networks.map(network => Number(network.chainId)), [networks])
 
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
 
+  const existingWalletConnectProvider = useWalletConnectProvider(walletConnectProjectID)
+
   const handleWalletConnectModalOpen = async () => {
     try {
-      setIsWalletConnectModalOpen(true)
       if (!isWalletConnectModalOpen) {
-        await walletConnectProvider.connect({ optionalChains: walletConnectChains })
-        let walletConnectProviderDetail = {
-          info: {
-            walletId: undefined,
-            uuid: 'wallet-connect',
-            name: 'WalletConnect',
-            icon: 'https://avatars.githubusercontent.com/u/37784886'
-          },
-          provider: walletConnectProvider
+        setIsWalletConnectModalOpen(true)
+
+        if (existingWalletConnectProvider?.connected) {
+          let walletConnectProviderDetail = getWalletConnectProviderDetail(existingWalletConnectProvider)
+          onSelectProvider(walletConnectProviderDetail)
+        } else {
+          const walletConnectProvider = await createProvider(walletConnectProjectID, true)
+
+          await walletConnectProvider.connect({ optionalChains: walletConnectChains })
+
+          let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
+          onSelectProvider(walletConnectProviderDetail)
         }
-
-        let existingProviders = walletStore.availableExternalProviders.get()
-        walletStore.availableExternalProviders.set([...existingProviders, walletConnectProviderDetail])
-
-        onSelectProvider(walletConnectProviderDetail)
       }
     } catch (error) {
       console.error(error)
