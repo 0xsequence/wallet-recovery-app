@@ -150,6 +150,8 @@ export class WalletStore {
     to: string,
     amount?: string
   ): Promise<{ hash: string }> => {
+    console.log('Sending Collectible')
+
     const account = this.store.get(AuthStore).account
     const chainId = collectibleInfo.collectibleInfoParams.chainId
 

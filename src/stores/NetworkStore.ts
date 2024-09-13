@@ -1,6 +1,7 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers } from 'ethers'
+import { useMemo } from 'react'
 
 import { DEFAULT_PUBLIC_RPC_LIST, IGNORED_CHAIN_IDS } from '~/constants/network'
 import { LocalStorageKey } from '~/constants/storage'

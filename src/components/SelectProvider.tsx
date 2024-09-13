@@ -11,6 +11,7 @@ import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 
+// import { WalletStore } from '~/stores/WalletStore'
 import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
 export interface ProviderInfo {
@@ -35,6 +36,7 @@ export default function SelectProvider({
   const networkStore = useStore(NetworkStore)
   const networks = useObservable(networkStore.networks)
   const walletConnectChains = useMemo(() => networks.map(network => Number(network.chainId)), [networks])
+  // const walletStore = useStore(WalletStore)
 
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
 
@@ -53,7 +55,11 @@ export default function SelectProvider({
 
           await walletConnectProvider.connect({ optionalChains: walletConnectChains })
 
+          // console.log('provider', walletConnectProvider)
           let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
+          console.log('providerDetail', walletConnectProviderDetail)
+          // walletStore.setExternalProvider(walletConnectProviderDetail)
+
           onSelectProvider(walletConnectProviderDetail)
         }
       }

@@ -27,14 +27,13 @@ export function useWalletConnectProvider(projectId: string) {
   const lastConnectedWalletInfo = walletStore.getLastConnectedExternalProviderInfo()
 
   useEffect(() => {
+    console.log('Fetching Last Wallet Connect Provider')
     async function initProvider() {
       const p = await createProvider(projectId, false)
       setProvider(p)
 
-      await p.connect({ optionalChains: walletConnectChains })
-      await p.request({ method: 'eth_accounts' })
-
-      p.on('disconnect', () => {})
+      p.enable()
+      setProvider(p)
     }
 
     initProvider()
