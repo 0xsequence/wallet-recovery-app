@@ -1,17 +1,13 @@
 import { Box, Card, Divider, Text } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
-import { createProvider, useWalletConnectProvider } from '~/utils/ethereumprovider'
+import { createProvider } from '~/utils/ethereumprovider'
 
 import { walletConnectProjectID } from '~/constants/wallet-context'
 
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
-import { useObservable, useStore } from '~/stores'
-import { NetworkStore } from '~/stores/NetworkStore'
-
-// import { WalletStore } from '~/stores/WalletStore'
 import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
 export interface ProviderInfo {
@@ -33,11 +29,6 @@ export default function SelectProvider({
 }) {
   const providers = useSyncProviders()
 
-  const networkStore = useStore(NetworkStore)
-  const networks = useObservable(networkStore.networks)
-  const walletConnectChains = useMemo(() => networks.map(network => Number(network.chainId)), [networks])
-  // const walletStore = useStore(WalletStore)
-
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
 
   const handleWalletConnectModalOpen = async () => {
@@ -46,7 +37,7 @@ export default function SelectProvider({
         setIsWalletConnectModalOpen(true)
 
         const walletConnectProvider = await createProvider(walletConnectProjectID, true)
-        await walletConnectProvider.connect({ optionalChains: walletConnectChains })
+        await walletConnectProvider.connect()
         let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
         onSelectProvider(walletConnectProviderDetail)

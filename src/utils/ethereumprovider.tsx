@@ -35,7 +35,6 @@ export function useWalletConnectProvider(projectId: string) {
     }
 
     if (lastConnectedWalletInfo?.name === 'WalletConnect') {
-      console.log('Fetching Last Wallet Connect Provider')
       initProvider()
     }
   }, [projectId])
