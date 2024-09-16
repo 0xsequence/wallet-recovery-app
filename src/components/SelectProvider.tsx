@@ -37,7 +37,7 @@ export default function SelectProvider({
         setIsWalletConnectModalOpen(true)
 
         const walletConnectProvider = await createProvider(walletConnectProjectID, true)
-        await walletConnectProvider.connect()
+        await walletConnectProvider.enable()
         let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
         onSelectProvider(walletConnectProviderDetail)

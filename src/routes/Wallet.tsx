@@ -81,7 +81,7 @@ function Wallet() {
 
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
-  const isSendingTransaction = useObservable(walletStore.isSendingTokenTransaction)
+  const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
   const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
 
   const networkStore = useStore(NetworkStore)
@@ -99,12 +99,14 @@ function Wallet() {
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
+    walletStore.isSendingCollectibleTransaction.set(undefined)
     setPendingSendToken(tokenBalance)
     setIsSendTokenModalOpen(true)
   }
 
   const handleCollectibleOnSendClick = (collectibleInfo: CollectibleInfo) => {
     setPendingSendToken(undefined)
+    walletStore.isSendingTokenTransaction.set(undefined)
     setPendingSendCollectible(collectibleInfo)
     setIsSendCollectibleModalOpen(true)
   }
@@ -118,6 +120,12 @@ function Wallet() {
 
   const handleDisconnect = async () => {
     walletStore.setExternalProvider(undefined)
+
+    const extProvider = selectedExternalProvider
+    if (extProvider?.info.name === 'WalletConnect') {
+      const WCProvider = extProvider.provider as EthereumProvider
+      WCProvider.disconnect()
+    }
   }
 
   // Third step of sending txn
@@ -277,13 +285,13 @@ function Wallet() {
             )}
           </Card>
 
-          {isSendingTransaction && (
+          {isSendingToken && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
               <PendingTxn
-                symbol={isSendingTransaction.tokenBalance?.contractInfo?.symbol ?? ''}
-                chainId={isSendingTransaction.tokenBalance.chainId}
-                to={isSendingTransaction.to}
-                amount={isSendingTransaction.amount}
+                symbol={isSendingToken.tokenBalance?.contractInfo?.symbol ?? ''}
+                chainId={isSendingToken.tokenBalance.chainId}
+                to={isSendingToken.to}
+                amount={isSendingToken.amount}
               />
             </Box>
           )}
