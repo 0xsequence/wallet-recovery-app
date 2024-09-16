@@ -250,7 +250,14 @@ export class WalletStore {
     return { hash }
   }
 
-  setExternalProvider = async (providerDetail: ProviderDetail) => {
+  setExternalProvider = async (providerDetail: ProviderDetail | undefined) => {
+    if (!providerDetail) {
+      this.selectedExternalProvider.set(undefined)
+      this.selectedExternalWalletAddress.set(undefined)
+      this.local.lastConnectedExternalProviderInfo.set(undefined)
+      return
+    }
+
     const externalProviderAccounts = await this.getExternalProviderAccounts(providerDetail.provider)
     const externalProviderAddress = externalProviderAccounts[0]
 

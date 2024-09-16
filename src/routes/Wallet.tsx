@@ -56,7 +56,7 @@ function Wallet() {
   const provider = useWalletConnectProvider(walletConnectProjectID)
 
   useEffect(() => {
-    if (provider && provider.connected) {
+    if (provider && provider.connected && !walletStore.selectedExternalProvider.get()) {
       let walletConnectProviderDetail = getWalletConnectProviderDetail(provider)
 
       let availableProviders = walletStore.availableExternalProviders.get()
@@ -108,6 +108,10 @@ function Wallet() {
     if (selectedExternalProvider === undefined || isChange) {
       setIsSelectProviderModalOpen(true)
     }
+  }
+
+  const handleDisconnect = async () => {
+    walletStore.setExternalProvider(undefined)
   }
 
   // Third step of sending txn
@@ -236,13 +240,23 @@ function Wallet() {
                       ({selectedExternalWalletAddress})
                     </Text>
                   )}
-                  <Button
-                    size="xs"
-                    label="Change external wallet"
-                    variant="text"
-                    shape="square"
-                    onClick={() => handleSelectProvider(true)}
-                  />
+                  <Box flexDirection={'row'}>
+                    <Button
+                      size="xs"
+                      label="Change external wallet"
+                      variant="text"
+                      shape="square"
+                      marginRight="10"
+                      onClick={() => handleSelectProvider(true)}
+                    />
+                    <Button
+                      size="xs"
+                      label="Disconnect"
+                      variant="text"
+                      shape="square"
+                      onClick={() => handleDisconnect()}
+                    />
+                  </Box>
                 </Box>
               </Box>
             )}
@@ -296,7 +310,6 @@ function Wallet() {
               />
             </Box>
           )}
-
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles
