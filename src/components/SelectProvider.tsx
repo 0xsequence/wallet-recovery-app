@@ -40,28 +40,16 @@ export default function SelectProvider({
 
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
 
-  const existingWalletConnectProvider = useWalletConnectProvider(walletConnectProjectID)
-
   const handleWalletConnectModalOpen = async () => {
     try {
       if (!isWalletConnectModalOpen) {
         setIsWalletConnectModalOpen(true)
 
-        if (existingWalletConnectProvider?.connected) {
-          let walletConnectProviderDetail = getWalletConnectProviderDetail(existingWalletConnectProvider)
-          onSelectProvider(walletConnectProviderDetail)
-        } else {
-          const walletConnectProvider = await createProvider(walletConnectProjectID, true)
+        const walletConnectProvider = await createProvider(walletConnectProjectID, true)
+        await walletConnectProvider.connect({ optionalChains: walletConnectChains })
+        let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
-          await walletConnectProvider.connect({ optionalChains: walletConnectChains })
-
-          // console.log('provider', walletConnectProvider)
-          let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
-          console.log('providerDetail', walletConnectProviderDetail)
-          // walletStore.setExternalProvider(walletConnectProviderDetail)
-
-          onSelectProvider(walletConnectProviderDetail)
-        }
+        onSelectProvider(walletConnectProviderDetail)
       }
     } catch (error) {
       console.error(error)

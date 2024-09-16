@@ -21,20 +21,23 @@ export function useWalletConnectProvider(projectId: string) {
   const lastConnectedWalletInfo = walletStore.getLastConnectedExternalProviderInfo()
 
   useEffect(() => {
-    console.log('Fetching Last Wallet Connect Provider')
     async function initProvider() {
       const p = await createProvider(projectId, false)
 
-      if (!lastConnectedWalletInfo || lastConnectedWalletInfo.name !== 'WalletConnect') {
-        p.disconnect()
-        setProvider(null)
-      } else {
-        p.enable()
-        setProvider(p)
+      p.enable()
+      setProvider(p)
+
+      return () => {
+        if (provider) {
+          provider.disconnect()
+        }
       }
     }
 
-    initProvider()
+    if (lastConnectedWalletInfo?.name === 'WalletConnect') {
+      console.log('Fetching Last Wallet Connect Provider')
+      initProvider()
+    }
   }, [projectId])
 
   return provider

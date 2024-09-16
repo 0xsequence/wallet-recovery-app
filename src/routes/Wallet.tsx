@@ -56,7 +56,11 @@ function Wallet() {
   const provider = useWalletConnectProvider(walletConnectProjectID)
 
   useEffect(() => {
-    if (provider && provider.connected && !walletStore.selectedExternalProvider.get()) {
+    if (
+      provider &&
+      provider.connected &&
+      walletStore.selectedExternalProvider.get()?.info.name !== 'WalletConnect'
+    ) {
       let walletConnectProviderDetail = getWalletConnectProviderDetail(provider)
 
       let availableProviders = walletStore.availableExternalProviders.get()
@@ -94,11 +98,13 @@ function Wallet() {
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
+    setPendingSendCollectible(undefined)
     setPendingSendToken(tokenBalance)
     setIsSendTokenModalOpen(true)
   }
 
   const handleCollectibleOnSendClick = (collectibleInfo: CollectibleInfo) => {
+    setPendingSendToken(undefined)
     setPendingSendCollectible(collectibleInfo)
     setIsSendCollectibleModalOpen(true)
   }
@@ -281,6 +287,16 @@ function Wallet() {
               />
             </Box>
           )}
+          {isSendingCollectible && (
+            <Box marginTop="8" alignItems="center" justifyContent="center">
+              <PendingTxn
+                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
+                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
+                to={isSendingCollectible.to}
+                amount={isSendingCollectible.amount}
+              />
+            </Box>
+          )}
 
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
@@ -300,16 +316,6 @@ function Wallet() {
             <TokenList filterZeroBalances={filterZeroBalances} onSendClick={handleTokenOnSendClick} />
           </Box>
 
-          {isSendingCollectible && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
-                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
-                to={isSendingCollectible.to}
-                amount={isSendingCollectible.amount}
-              />
-            </Box>
-          )}
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
               Collectibles

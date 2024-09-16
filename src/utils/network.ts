@@ -45,10 +45,10 @@ const sETH: NativeTokenInfo = {
   name: 'Sepolia Ethereum'
 }
 
-const MATIC: NativeTokenInfo = {
+const POL: NativeTokenInfo = {
   chainId: ChainId.POLYGON,
   address: ZERO_ADDRESS,
-  symbol: 'MATIC',
+  symbol: 'POL',
   name: 'Polygon',
   decimals: 18,
   type: 'NATIVE',
@@ -119,10 +119,10 @@ const XDAI: NativeTokenInfo = {
   updatedAt: '2023-11-20T20:00:00.000000000Z'
 }
 
-const aMatic: NativeTokenInfo = {
-  ...MATIC,
+const aPol: NativeTokenInfo = {
+  ...POL,
   chainId: ChainId.POLYGON_AMOY,
-  symbol: 'aMATIC',
+  symbol: 'aPOL',
   name: 'Amoy Polygon'
 }
 
@@ -249,8 +249,8 @@ const tXR: NativeTokenInfo = {
 const nativeTokenInfo = {
   [ChainId.MAINNET]: ETH, // Mainnet
   [ChainId.SEPOLIA]: sETH, // Sepolia
-  [ChainId.POLYGON]: MATIC, // Matic
-  [ChainId.POLYGON_AMOY]: aMatic, // Amoy
+  [ChainId.POLYGON]: POL, // Pol
+  [ChainId.POLYGON_AMOY]: aPol, // Amoy
   [ChainId.POLYGON_ZKEVM]: { ...ETH, chainId: ChainId.POLYGON_ZKEVM }, // Polygon zkEVM
   [ChainId.BSC]: BNB, // BSC
   [ChainId.BSC_TESTNET]: tBNB, // BNB Testnet
