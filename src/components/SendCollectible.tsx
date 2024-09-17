@@ -71,7 +71,7 @@ export default function SendCollectible({
             onChange={(ev: ChangeEvent<HTMLInputElement>) => {
               setAmount(ev.target.value)
             }}
-            disabled={collectibleInfo.collectibleInfoParams.contractType === 'ERC721'}
+            disabled={isERC721}
             controls={
               <>
                 {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155' && (

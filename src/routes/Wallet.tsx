@@ -1,9 +1,13 @@
 import { Box, Button, Card, Modal, Switch, Text, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
+import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
+import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
+
+import { walletConnectProjectID } from '~/constants/wallet-context'
 
 import { useSyncProviders } from '~/hooks/useSyncProviders'
 
@@ -26,16 +30,20 @@ import TokenList from '~/components/TokenList'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
+export const getWalletConnectProviderDetail = (provider: EthereumProvider) => {
+  return {
+    info: {
+      walletId: '',
+      uuid: '',
+      name: 'WalletConnect',
+      icon: 'https://avatars.githubusercontent.com/u/37784886'
+    },
+    provider: provider
+  }
+}
+
 function Wallet() {
   const externalProviders = useSyncProviders()
-
-  const toast = useToast()
-
-  useEffect(() => {
-    if (externalProviders.length > 0) {
-      walletStore.availableExternalProviders.set(externalProviders)
-    }
-  }, [externalProviders])
 
   const authStore = useStore(AuthStore)
   const tokenStore = useStore(TokenStore)
@@ -43,9 +51,37 @@ function Wallet() {
 
   const accountAddress = useObservable(authStore.accountAddress)
 
+  const toast = useToast()
+
+  const provider = useWalletConnectProvider(walletConnectProjectID)
+
+  useEffect(() => {
+    if (
+      provider &&
+      provider.connected &&
+      walletStore.selectedExternalProvider.get()?.info.name !== 'WalletConnect'
+    ) {
+      let walletConnectProviderDetail = getWalletConnectProviderDetail(provider)
+
+      let availableProviders = walletStore.availableExternalProviders.get()
+
+      if (availableProviders) {
+        walletStore.availableExternalProviders.set([walletConnectProviderDetail, ...availableProviders])
+      } else {
+        walletStore.availableExternalProviders.set([walletConnectProviderDetail])
+      }
+    }
+  }, [provider])
+
+  useEffect(() => {
+    if (externalProviders.length > 0) {
+      walletStore.availableExternalProviders.set(externalProviders)
+    }
+  }, [externalProviders])
+
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
-  const isSendingTransaction = useObservable(walletStore.isSendingTokenTransaction)
+  const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
   const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
 
   const networkStore = useStore(NetworkStore)
@@ -62,11 +98,15 @@ function Wallet() {
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
+    setPendingSendCollectible(undefined)
+    walletStore.isSendingCollectibleTransaction.set(undefined)
     setPendingSendToken(tokenBalance)
     setIsSendTokenModalOpen(true)
   }
 
   const handleCollectibleOnSendClick = (collectibleInfo: CollectibleInfo) => {
+    setPendingSendToken(undefined)
+    walletStore.isSendingTokenTransaction.set(undefined)
     setPendingSendCollectible(collectibleInfo)
     setIsSendCollectibleModalOpen(true)
   }
@@ -75,6 +115,16 @@ function Wallet() {
   const handleSelectProvider = async (isChange: boolean = false) => {
     if (selectedExternalProvider === undefined || isChange) {
       setIsSelectProviderModalOpen(true)
+    }
+  }
+
+  const handleDisconnect = async () => {
+    walletStore.setExternalProvider(undefined)
+
+    const extProvider = selectedExternalProvider
+    if (extProvider?.info.name === 'WalletConnect') {
+      const WCProvider = extProvider.provider as EthereumProvider
+      WCProvider.disconnect()
     }
   }
 
@@ -204,13 +254,23 @@ function Wallet() {
                       ({selectedExternalWalletAddress})
                     </Text>
                   )}
-                  <Button
-                    size="xs"
-                    label="Change external wallet"
-                    variant="text"
-                    shape="square"
-                    onClick={() => handleSelectProvider(true)}
-                  />
+                  <Box flexDirection={'row'}>
+                    <Button
+                      size="xs"
+                      label="Change external wallet"
+                      variant="text"
+                      shape="square"
+                      marginRight="10"
+                      onClick={() => handleSelectProvider(true)}
+                    />
+                    <Button
+                      size="xs"
+                      label="Disconnect"
+                      variant="text"
+                      shape="square"
+                      onClick={() => handleDisconnect()}
+                    />
+                  </Box>
                 </Box>
               </Box>
             )}
@@ -225,13 +285,23 @@ function Wallet() {
             )}
           </Card>
 
-          {isSendingTransaction && (
+          {isSendingToken && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
               <PendingTxn
-                symbol={isSendingTransaction.tokenBalance?.contractInfo?.symbol ?? ''}
-                chainId={isSendingTransaction.tokenBalance.chainId}
-                to={isSendingTransaction.to}
-                amount={isSendingTransaction.amount}
+                symbol={isSendingToken.tokenBalance?.contractInfo?.symbol ?? ''}
+                chainId={isSendingToken.tokenBalance.chainId}
+                to={isSendingToken.to}
+                amount={isSendingToken.amount}
+              />
+            </Box>
+          )}
+          {isSendingCollectible && (
+            <Box marginTop="8" alignItems="center" justifyContent="center">
+              <PendingTxn
+                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
+                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
+                to={isSendingCollectible.to}
+                amount={isSendingCollectible.amount}
               />
             </Box>
           )}
@@ -253,17 +323,6 @@ function Wallet() {
 
             <TokenList filterZeroBalances={filterZeroBalances} onSendClick={handleTokenOnSendClick} />
           </Box>
-
-          {isSendingCollectible && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
-                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
-                to={isSendingCollectible.to}
-                amount={isSendingCollectible.amount}
-              />
-            </Box>
-          )}
 
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Text variant="large" color="text80" marginBottom="4">
