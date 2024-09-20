@@ -1,20 +1,28 @@
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useEffect, useState } from 'react'
 
+import { WALLET_CONNECT_PROJECT_ID } from '~/constants/wallet-context'
+
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-export async function createProvider(projectId: string, showQr: boolean): Promise<EthereumProvider> {
+export async function createProvider(showQr: boolean): Promise<EthereumProvider> {
   const provider = await EthereumProvider.init({
-    projectId: projectId,
+    projectId: WALLET_CONNECT_PROJECT_ID,
     showQrModal: showQr,
-    optionalChains: [1]
+    optionalChains: [1],
+    metadata: {
+      name: 'Sequence Recovery Wallet External Wallet',
+      description: '',
+      url: 'TODO_CHANGE_LATER',
+      icons: []
+    }
   })
 
   return provider
 }
 
-export function useWalletConnectProvider(projectId: string) {
+export function useWalletConnectProvider() {
   const [provider, setProvider] = useState<EthereumProvider | null>(null)
 
   const walletStore = useStore(WalletStore)
@@ -22,22 +30,22 @@ export function useWalletConnectProvider(projectId: string) {
 
   useEffect(() => {
     async function initProvider() {
-      const p = await createProvider(projectId, false)
+      const p = await createProvider(false)
 
-      p.enable()
+      await p.enable()
       setProvider(p)
-
-      return () => {
-        if (provider) {
-          provider.disconnect()
-        }
-      }
     }
 
     if (lastConnectedWalletInfo?.name === 'WalletConnect') {
       initProvider()
     }
-  }, [projectId])
+
+    return () => {
+      if (provider) {
+        provider.disconnect()
+      }
+    }
+  }, [])
 
   return provider
 }

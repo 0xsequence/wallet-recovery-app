@@ -1,6 +1,15 @@
 import { Account } from '@0xsequence/account'
 import { commons } from '@0xsequence/core'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
+import {
+  ConnectOptions,
+  MessageToSign,
+  NetworkedConnectOptions,
+  PromptConnectDetails,
+  WalletRequestHandler,
+  WalletUserPrompter,
+  validateTransactionRequest
+} from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 
@@ -9,7 +18,7 @@ import { LocalStorageKey } from '~/constants/storage'
 
 import { EIP1193Provider } from '~/hooks/useSyncProviders'
 
-import { observable } from '~/stores'
+import { observable, useStore } from '~/stores'
 
 import { ProviderDetail, ProviderInfo } from '~/components/SelectProvider'
 
@@ -28,18 +37,45 @@ declare global {
 }
 
 export class WalletStore {
-  availableExternalProviders = observable<ProviderDetail[]>([])
+  networkStore = useStore(NetworkStore)
+  authStore = useStore(AuthStore)
+  accountAddress = this.authStore.accountAddress.get()
 
+  availableExternalProviders = observable<ProviderDetail[]>([])
   selectedExternalProvider = observable<ProviderDetail | undefined>(undefined)
   selectedExternalWalletAddress = observable<string | undefined>(undefined)
 
   isSendingTokenTransaction = observable<
     { tokenBalance: TokenBalance; to: string; amount?: string } | undefined
   >(undefined)
-
   isSendingCollectibleTransaction = observable<
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
+  isSendingSignedTokenTransaction = observable<
+    | { txn: ethers.Transaction[] | ethers.TransactionRequest[]; chainId: number; options: ConnectOptions }
+    | undefined
+  >(undefined)
+
+  connectDetails = observable<PromptConnectDetails | undefined>(undefined)
+  connectOptions = observable<NetworkedConnectOptions | undefined>(undefined)
+
+  isSigningTxn = observable<boolean>(false)
+  isSigningMsg = observable<boolean>(false)
+  toSignPermission = observable<'approved' | 'cancelled' | undefined>(undefined)
+  toSignResult = observable<{ hash: string } | undefined>(undefined)
+
+  toSignTxnDetails = observable<
+    | { txn: ethers.Transaction[] | ethers.TransactionRequest[]; chainId: number; options: ConnectOptions }
+    | undefined
+  >(undefined)
+  toSignMsgDetails = observable<
+    { message: MessageToSign; chainId: number; options?: ConnectOptions } | undefined
+  >(undefined)
+
+  isCheckingWalletDeployment = observable<boolean>(false)
+  signClientWarningType = observable<'noProvider' | 'isWalletConnect' | 'notDeployed' | false>(false)
+
+  walletRequestHandler: WalletRequestHandler
 
   private local = {
     lastConnectedExternalProviderInfo: new LocalStore<ProviderInfo>(
@@ -47,7 +83,20 @@ export class WalletStore {
     )
   }
 
+  defaultNetwork = new LocalStore<number>(LocalStorageKey.DEFAULT_NETWORK)
+
   constructor(private store: Store) {
+    this.walletRequestHandler = new WalletRequestHandler(
+      undefined, // signer is set after wallet is initialized / signed in
+      new Prompter(store),
+      // WARNING: ignore error caused by version mismatch
+      this.networkStore.networks.get()
+    )
+
+    this.walletRequestHandler.onConnectOptionsChange = connectOptions => {
+      this.connectOptions.set(connectOptions)
+    }
+
     this.availableExternalProviders.subscribe(providers => {
       const lastConnected = this.local.lastConnectedExternalProviderInfo.get()
 
@@ -59,6 +108,10 @@ export class WalletStore {
         this.setExternalProvider(lastConnectedProvider)
       }
     })
+
+    const account = this.store.get(AuthStore).account
+    // WARNING: ignore error caused by version mismatch
+    this.walletRequestHandler.signIn(account ?? null)
   }
 
   getLastConnectedExternalProviderInfo = () => {
@@ -74,7 +127,7 @@ export class WalletStore {
         throw new Error('No account found')
       }
 
-      const networkForToken = this.store.get(NetworkStore).networkForChainId(chainId)
+      const networkForToken = this.networkStore.networkForChainId(chainId)
 
       if (!networkForToken) {
         throw new Error(`No network found for chainId ${chainId}`)
@@ -163,7 +216,7 @@ export class WalletStore {
         throw new Error('No account found')
       }
 
-      const networkForToken = this.store.get(NetworkStore).networkForChainId(chainId)
+      const networkForToken = this.networkStore.networkForChainId(chainId)
 
       if (!networkForToken) {
         throw new Error(`No network found for chainId ${chainId}`)
@@ -292,7 +345,25 @@ export class WalletStore {
     })
   }
 
-  private async sendTransaction(
+  resetSignObservables = () => {
+    this.isSigningTxn.set(false)
+    this.toSignTxnDetails.set(undefined)
+    this.toSignMsgDetails.set(undefined)
+    this.toSignPermission.set(undefined)
+    this.toSignResult.set(undefined)
+  }
+
+  checkWalletDeployment = async (chainId: number): Promise<boolean> => {
+    const account = this.store.get(AuthStore).account
+    if (!account) {
+      throw new Error('No account found')
+    }
+
+    const status = await account.status(chainId)
+    return status.onChain.deployed
+  }
+
+  async sendTransaction(
     account: Account,
     externalProvider: EIP1193Provider | EthereumProvider,
     externalProviderAddress: string,
@@ -303,6 +374,8 @@ export class WalletStore {
     const predecorated = await account.predecorateTransactions(txn, status, chainId)
     const signed = await account.signTransactions(predecorated, chainId, undefined, { serial: true })
     const decorated = await account.decorateTransactions(signed, status)
+
+    await this.switchToChain(externalProvider, chainId)
 
     // Calculating gas is not actually needed, but there can be a node issue which returns the following error:
     // MetaMask - RPC Error: Cannot destructure property 'gasLimit' of '(intermediate value)' as it is null.
@@ -347,6 +420,11 @@ export class WalletStore {
     })
   }
 
+  async getExternalProviderAddress(provider: EIP1193Provider | EthereumProvider): Promise<string> {
+    const accounts = await this.getExternalProviderAccounts(provider)
+    return accounts[0]
+  }
+
   private async switchToChain(provider: EIP1193Provider | EthereumProvider, chainId: number) {
     return new Promise((resolve, reject) => {
       provider.sendAsync?.(
@@ -359,5 +437,176 @@ export class WalletStore {
         }
       )
     })
+  }
+}
+
+// dependency injected into walletRequestHandler, do not directly access
+class Prompter implements WalletUserPrompter {
+  constructor(private store: Store) {}
+
+  getDefaultChainId(): number {
+    return this.store.get(WalletStore).defaultNetwork.get() ?? 1
+  }
+
+  async promptChangeNetwork(chainId: number): Promise<boolean> {
+    const supportedNetworks = this.store.get(NetworkStore).networks.get()
+    if (supportedNetworks.some(network => network.chainId === chainId)) {
+      this.store.get(WalletStore).defaultNetwork.set(chainId)
+      return true
+    }
+    return false
+  }
+
+  async promptConfirmWalletDeploy(chainId: number, options?: ConnectOptions): Promise<boolean> {
+    console.log('prompt confirm wallet deploy:', chainId, options)
+
+    if (!chainId) {
+      return Promise.resolve(false)
+    }
+
+    // checks if wallet is deployed on chain
+
+    const isDeployed = await this.store.get(WalletStore).checkWalletDeployment(chainId)
+
+    return new Promise((resolve, _) => {
+      if (isDeployed) {
+        resolve(true)
+      } else {
+        resolve(false)
+      }
+    })
+  }
+
+  async promptConnect(options?: ConnectOptions): Promise<PromptConnectDetails> {
+    console.log('promptconnect', options)
+
+    const account = this.store.get(AuthStore).account
+    // WARNING: ignore error caused by version mismatch
+    await this.store.get(WalletStore).walletRequestHandler.signIn(account ?? null)
+
+    if (options) {
+      this.store.get(WalletStore).walletRequestHandler.setConnectOptions(options)
+    }
+
+    return new Promise((resolve, reject) => {
+      const unsubscribe = this.store.get(WalletStore).connectDetails.subscribe(connectDetails => {
+        unsubscribe()
+
+        if (!connectDetails || !connectDetails.connected) {
+          reject(`connect cancelled by user`)
+        } else {
+          resolve(connectDetails)
+        }
+      })
+    })
+  }
+
+  async promptSignInConnect(options?: ConnectOptions): Promise<PromptConnectDetails> {
+    // I think we should be good with not implementing this since the recovery wallet requires the user to authenticate first
+    console.log('prompt sign in connect:', options)
+    return { connected: false }
+  }
+
+  async promptSignMessage(message: MessageToSign, options: ConnectOptions): Promise<string> {
+    console.log('prompt sign message:', message, options)
+
+    if (!message.chainId) {
+      return Promise.reject('No chainId found in message')
+    }
+
+    if (message.eip6492 !== true) {
+      // This means we aren't going to sign using EIP-6492
+      // so we need to make sure the wallet can sign onchain
+
+      // const status = await this.store.get(WalletStore).wallet!.status(chainid)
+
+      const status = await this.store.get(AuthStore).account!.status(message.chainId)
+
+      if (!status.canOnchainValidate) {
+        const res = await this.promptConfirmWalletDeploy(message.chainId, options)
+
+        if (!res) {
+          this.store.get(WalletStore).signClientWarningType.set('notDeployed')
+          return Promise.reject('User rejected wallet deploy request')
+        }
+      }
+    }
+
+    this.store.get(WalletStore).isSigningMsg.set(true)
+    this.store.get(WalletStore).toSignMsgDetails.set({ message, chainId: message.chainId, options })
+
+    return new Promise((resolve, reject) => {
+      const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
+        unsubscribe()
+        const status = this.store.get(WalletStore).toSignPermission.get()
+        this.store.get(WalletStore).toSignPermission.set(undefined)
+        if (!status || status === 'cancelled') {
+          reject('request failed')
+        } else {
+          const result = this.store.get(WalletStore).toSignResult.get()
+          if (result) {
+            resolve(result.hash)
+          }
+        }
+      })
+    })
+  }
+
+  promptSignTransaction(
+    txn: commons.transaction.Transactionish,
+    chainId: number,
+    options: ConnectOptions
+  ): Promise<string> {
+    console.log('prompt sign transaction:', txn, chainId, options)
+
+    let newTxn: ethers.Transaction[] | ethers.TransactionRequest[]
+    if (Array.isArray(txn)) {
+      newTxn = txn
+    } else {
+      newTxn = [txn]
+    }
+
+    const accountAddress = this.store.get(AuthStore).accountAddress.get()
+
+    if (!accountAddress) {
+      throw new Error('Unknown account address')
+    }
+
+    const transactions = commons.transaction.fromTransactionish(accountAddress, newTxn)
+
+    console.log('prompt sign txn:', transactions, chainId, options)
+
+    // TODO find out if we need to implement multiple transaction handling
+
+    validateTransactionRequest(accountAddress, newTxn)
+
+    return new Promise((resolve, reject) => {
+      this.store.get(WalletStore).toSignTxnDetails.set({ txn: newTxn, chainId, options })
+      this.store.get(WalletStore).isSigningTxn.set(true)
+
+      const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
+        unsubscribe()
+
+        const status = this.store.get(WalletStore).toSignPermission.get()
+        this.store.get(WalletStore).toSignPermission.set(undefined)
+
+        if (!status || status === 'cancelled') {
+          reject('request failed')
+        } else {
+          const result = this.store.get(WalletStore).toSignResult.get()
+          if (result) {
+            resolve(result.hash)
+          }
+        }
+      })
+    })
+  }
+
+  promptSendTransaction(
+    txn: commons.transaction.Transactionish,
+    chainId: number,
+    options: ConnectOptions
+  ): Promise<string> {
+    return this.promptSignTransaction(txn, chainId, options)
   }
 }

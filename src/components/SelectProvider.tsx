@@ -4,9 +4,10 @@ import { useState } from 'react'
 
 import { createProvider } from '~/utils/ethereumprovider'
 
-import { walletConnectProjectID } from '~/constants/wallet-context'
-
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
+
+import { useStore } from '~/stores'
+import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
 import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
@@ -25,19 +26,38 @@ export interface ProviderDetail {
 export default function SelectProvider({
   onSelectProvider
 }: {
-  onSelectProvider: (provider: ProviderDetail) => void
+  onSelectProvider: (provider?: ProviderDetail) => void
 }) {
+  const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
   const providers = useSyncProviders()
 
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
 
+  const confirmWalletConnectModalOpen = (): boolean => {
+    const confirmed = window.confirm(
+      'All WalletConnect Dapp sessions will be disconnected. If you would like to continue, click OK and connect to WalletConnect again.'
+    )
+    return confirmed
+  }
+
   const handleWalletConnectModalOpen = async () => {
     try {
       if (!isWalletConnectModalOpen) {
+        if (walletConnectSignClientStore.allSessions.get().length !== 0) {
+          const confirmed = confirmWalletConnectModalOpen()
+          if (!confirmed) {
+            throw new Error('User rejected wallet connect modal')
+          }
+          await walletConnectSignClientStore.disconnectAllSessions()
+          onSelectProvider()
+          return
+        }
+
         setIsWalletConnectModalOpen(true)
 
-        const walletConnectProvider = await createProvider(walletConnectProjectID, true)
-        await walletConnectProvider.enable()
+        const walletConnectProvider = await createProvider(true)
+        await walletConnectProvider.connect()
+
         let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
         onSelectProvider(walletConnectProviderDetail)
