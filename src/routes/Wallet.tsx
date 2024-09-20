@@ -1,13 +1,22 @@
-import { Box, Button, Card, Modal, Switch, Text, useToast } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Modal,
+  ScanIcon,
+  Switch,
+  Text,
+  useMediaQuery,
+  useToast
+} from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
+import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
-
-import { walletConnectProjectID } from '~/constants/wallet-context'
 
 import { useSyncProviders } from '~/hooks/useSyncProviders'
 
@@ -16,6 +25,7 @@ import { AuthStore } from '~/stores/AuthStore'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
+import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 import CollectibleList from '~/components/CollectibleList'
@@ -27,6 +37,12 @@ import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
+import ConnectDapp from '~/components/signing/ConnectDapp'
+import ConnectionList from '~/components/signing/ConnectionList'
+import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
+import SignClientTransactionRequest from '~/components/signing/SignClientTransactionRequest'
+import SignClientWarning from '~/components/signing/SignClientWarning'
+import WalletScan from '~/components/signing/WalletScan'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -48,20 +64,27 @@ function Wallet() {
   const authStore = useStore(AuthStore)
   const tokenStore = useStore(TokenStore)
   const walletStore = useStore(WalletStore)
+  const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
   const accountAddress = useObservable(authStore.accountAddress)
+  const isSigningTxn = useObservable(walletStore.isSigningTxn)
+  const isSigningMsg = useObservable(walletStore.isSigningMsg)
+
+  const sessionList = useObservable(walletConnectSignClientStore.allSessions)
 
   const toast = useToast()
 
-  const provider = useWalletConnectProvider(walletConnectProjectID)
+  const isMobile = useMediaQuery('isMobile')
+
+  const walletConnectProvider = useWalletConnectProvider()
 
   useEffect(() => {
     if (
-      provider &&
-      provider.connected &&
-      walletStore.selectedExternalProvider.get()?.info.name !== 'WalletConnect'
+      walletConnectProvider &&
+      walletConnectProvider.connected &&
+      !walletStore.selectedExternalProvider.get()
     ) {
-      let walletConnectProviderDetail = getWalletConnectProviderDetail(provider)
+      let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
       let availableProviders = walletStore.availableExternalProviders.get()
 
@@ -71,7 +94,7 @@ function Wallet() {
         walletStore.availableExternalProviders.set([walletConnectProviderDetail])
       }
     }
-  }, [provider])
+  }, [walletConnectProvider])
 
   useEffect(() => {
     if (externalProviders.length > 0) {
@@ -83,6 +106,7 @@ function Wallet() {
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
   const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
   const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
+  const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
 
   const networkStore = useStore(NetworkStore)
 
@@ -94,8 +118,12 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSettingsTokenListModalOpen, setIsSettingsTokenListModalOpen] = useState(false)
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
+  const [isConnectingDapp, setIsConnectingDapp] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
+  const [isScanningQrWalletConnect, setIsScanningQrWalletConnect] = useState(false)
+
+  const signClientWarningType = useObservable(walletStore.signClientWarningType)
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
@@ -190,6 +218,151 @@ function Wallet() {
     console.log('receipt', receipt)
   }
 
+  const handlePendingSignTransaction = async (hash: string, chainId: number) => {
+    const network = networkStore.networkForChainId(chainId!)
+    if (!network) {
+      throw new Error(`No network found for chainId ${chainId}`)
+    }
+    const rpcProvider = new ethers.JsonRpcProvider(network.rpcUrl)
+
+    const receipt = await getTransactionReceipt(rpcProvider, hash!)
+
+    if (receipt) {
+      walletStore.isSendingSignedTokenTransaction.set(undefined)
+
+      toast({
+        variant: 'success',
+        title: 'Sign transaction confirmed',
+        description: `You can view the transaction details on your connected external wallet`
+      })
+    }
+  }
+
+  const cancelRequest = () => {
+    walletConnectSignClientStore.rejectRequest()
+    walletStore.toSignPermission.set('cancelled')
+  }
+
+  async function handleSignTxn(details: {
+    txn: ethers.Transaction[] | ethers.TransactionRequest[]
+    chainId: number
+    options?: ConnectOptions
+  }) {
+    const signTransaction = async (
+      txn: ethers.Transaction[] | ethers.TransactionRequest[],
+      chainId: number,
+      options?: ConnectOptions
+    ): Promise<{ hash: string }> => {
+      // TODO do we need options?
+      try {
+        const providerAddress = await walletStore.getExternalProviderAddress(provider!)
+
+        if (!providerAddress) {
+          throw new Error('No provider address found')
+        }
+
+        console.log('sendTransaction chainId', chainId)
+
+        const response = await walletStore.sendTransaction(
+          account!,
+          provider!,
+          providerAddress,
+          txn,
+          chainId!
+        )
+
+        return response
+      } catch (error) {
+        walletStore.isSendingSignedTokenTransaction.set(undefined)
+        throw error
+      }
+    }
+
+    const provider = walletStore.selectedExternalProvider.get()?.provider
+    const account = authStore.account
+
+    let result: { hash: string } | undefined
+
+    if (details) {
+      try {
+        walletStore.isSendingSignedTokenTransaction.set(details)
+        result = await signTransaction(details.txn, details.chainId, details.options)
+        handlePendingSignTransaction(result.hash, details.chainId!)
+
+        walletStore.toSignResult.set(result)
+        walletStore.toSignPermission.set('approved')
+      } catch (error) {
+        walletStore.isSendingSignedTokenTransaction.set(undefined)
+        cancelRequest()
+        throw error
+      }
+    }
+  }
+
+  async function handleSignMsg(details: {
+    message: MessageToSign
+    chainId: number
+    options?: ConnectOptions
+  }) {
+    const signMessage = async (msg: MessageToSign, options?: ConnectOptions): Promise<{ hash: string }> => {
+      // TODO do we need options?
+      try {
+        let hash: string | undefined
+
+        if (msg.message) {
+          console.log('signMessage chainId', msg.chainId)
+          hash = await account!.signMessage(msg.message, msg.chainId!, msg.eip6492 ? 'eip6492' : 'throw')
+        } else if (msg.typedData) {
+          const typedData = msg.typedData
+          hash = await account!.signTypedData(
+            typedData.domain,
+            typedData.types,
+            typedData.message,
+            msg.chainId!,
+            msg.eip6492 ? 'eip6492' : 'throw'
+          )
+        }
+
+        if (!hash) {
+          throw new Error('Account sign method failed')
+        }
+
+        return { hash }
+      } catch (error) {
+        throw error
+      }
+    }
+
+    const account = authStore.account
+
+    let result: { hash: string } | undefined
+
+    if (details) {
+      try {
+        result = await signMessage(details.message)
+
+        walletStore.toSignResult.set(result)
+        walletStore.toSignPermission.set('approved')
+      } catch (error) {
+        walletStore.isSendingSignedTokenTransaction.set(undefined)
+        cancelRequest()
+        throw error
+      }
+    }
+  }
+
+  const handleConnectSignClient = async () => {
+    if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
+      walletStore.signClientWarningType.set('isWalletConnect')
+    } else {
+      setIsScanningQrWalletConnect(true)
+    }
+  }
+
+  const handleOnQrUri = async () => {
+    setIsConnectingDapp(true)
+  }
+
   return (
     <>
       <Box
@@ -220,14 +393,27 @@ function Wallet() {
             <SettingsDropdownMenu onTokenListClick={() => setIsSettingsTokenListModalOpen(true)} />
           </Box>
         </Box>
-        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
-          <Card alignItems="center" flexDirection="column" padding="6" marginTop="16">
+        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
+          <Card flexDirection="column" alignItems="center" padding="6" marginTop="10">
             <Text variant="large" color="text80" marginBottom="4">
               Your recovered wallet address
             </Text>
             <Text variant="normal" fontWeight="bold" color="text100">
               {accountAddress}
             </Text>
+
+            <ConnectionList sessionList={sessionList}></ConnectionList>
+            <Button
+              marginTop="4"
+              variant="primary"
+              size="sm"
+              shape="square"
+              label="Connect to a Dapp with WalletConnect"
+              leftIcon={ScanIcon}
+              onClick={() => {
+                handleConnectSignClient()
+              }}
+            />
           </Card>
 
           <Card alignItems="center" flexDirection="column" padding="6" marginTop="4">
@@ -305,7 +491,16 @@ function Wallet() {
               />
             </Box>
           )}
-
+          {isSendingSignedTokenTransaction && (
+            <Box marginTop="8" alignItems="center" justifyContent="center">
+              <PendingTxn
+                symbol={'tokens'}
+                chainId={isSendingSignedTokenTransaction.chainId!}
+                to={isSendingSignedTokenTransaction.txn[0].to as string}
+                amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
+              />
+            </Box>
+          )}
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
               <Text variant="large" color="text80">
@@ -346,10 +541,97 @@ function Wallet() {
         <Modal size="md" onClose={() => setIsSelectProviderModalOpen(false)}>
           <SelectProvider
             onSelectProvider={async provider => {
+              if (provider) {
+                if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
+                  const walletConnectProvider = walletStore.selectedExternalProvider.get()
+                    ?.provider as EthereumProvider
+                  await walletConnectProvider.disconnect()
+                }
+                walletStore.setExternalProvider(provider)
+              }
               setIsSelectProviderModalOpen(false)
-              walletStore.setExternalProvider(provider)
             }}
           />
+        </Modal>
+      )}
+      {isConnectingDapp && (
+        <Modal size="md" onClose={() => setIsConnectingDapp(false)}>
+          <ConnectDapp onClose={() => setIsConnectingDapp(false)} />
+        </Modal>
+      )}
+      {isScanningQrWalletConnect && (
+        <Modal
+          size="md"
+          contentProps={{
+            style: { width: !isMobile ? '600px' : '100%', height: !isMobile ? '750px' : '' }
+          }}
+          onClose={() => setIsScanningQrWalletConnect(false)}
+        >
+          <WalletScan
+            onQrUri={isPaired => {
+              if (isPaired) {
+                handleOnQrUri()
+              }
+              setIsScanningQrWalletConnect(false)
+            }}
+          />
+        </Modal>
+      )}
+      {isSigningTxn && (
+        <Modal
+          isDismissible={false}
+          size="md"
+          contentProps={{
+            style: { width: !isMobile ? '800px' : '100%', maxHeight: '100%', overflowY: 'auto' }
+          }}
+        >
+          <SignClientTransactionRequest
+            onClose={details => {
+              walletStore.isSigningTxn.set(false)
+              if (!details) {
+                cancelRequest()
+              } else if (walletStore.selectedExternalProvider.get() === undefined) {
+                cancelRequest()
+                walletStore.signClientWarningType.set('noProvider')
+              } else if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
+                cancelRequest()
+                walletStore.signClientWarningType.set('isWalletConnect')
+              } else {
+                handleSignTxn(details)
+              }
+            }}
+          />
+        </Modal>
+      )}
+      {isSigningMsg && (
+        <Modal
+          isDismissible={false}
+          size="md"
+          contentProps={{
+            style: { width: !isMobile ? '800px' : '100%', maxHeight: '90%', overflowY: 'auto' }
+          }}
+        >
+          <SignClientMessageRequest
+            onClose={details => {
+              walletStore.isSigningMsg.set(false)
+              if (!details) {
+                cancelRequest()
+              } else if (walletStore.selectedExternalProvider.get() === undefined) {
+                cancelRequest()
+                walletStore.signClientWarningType.set('noProvider')
+              } else if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
+                cancelRequest()
+                walletStore.signClientWarningType.set('isWalletConnect')
+              } else {
+                handleSignMsg(details)
+              }
+            }}
+          />
+        </Modal>
+      )}
+      {signClientWarningType && (
+        <Modal size="md" onClose={() => walletStore.signClientWarningType.set(false)}>
+          <SignClientWarning warningType={signClientWarningType} />
         </Modal>
       )}
       {isSendTokenModalOpen && (

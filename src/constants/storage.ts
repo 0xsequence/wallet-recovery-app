@@ -5,7 +5,8 @@ export enum LocalStorageKey {
   COLLECTIBLES = '@sequence-recovery.collectibles',
   GATEWAY_ADDRESS = '@sequence-recovery.gateway-address',
 
-  LAST_CONNECTED_EXTERNAL_PROVIDER_INFO = '@sequence-recovery.last-connected-external-provider-info'
+  LAST_CONNECTED_EXTERNAL_PROVIDER_INFO = '@sequence-recovery.last-connected-external-provider-info',
+  DEFAULT_NETWORK = '@sequence-recovery.default-network'
 }
 
 export enum IndexedDBKey {
