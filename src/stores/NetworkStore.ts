@@ -1,4 +1,5 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
+import { findNetworkConfig } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers } from 'ethers'
 
@@ -44,6 +45,11 @@ export class NetworkStore {
         this.prepareNetworks()
       }
     })
+  }
+
+  getChainIdByNetworkId = (networkId: string | number): number | undefined => {
+    const network = findNetworkConfig(this.networks.get(), networkId)
+    return network?.chainId
   }
 
   private async prepareNetworks() {
