@@ -10,7 +10,6 @@ import { IndexedDBKey } from '~/constants/storage'
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 
 import { Store, observable } from '.'
-import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 import { TokenStore } from './TokenStore'
 

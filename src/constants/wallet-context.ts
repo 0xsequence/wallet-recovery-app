@@ -28,4 +28,4 @@ export const NETWORK_FEE_ADDRESSES = [
 ]
 
 // TODO change to production WalletConnect project ID
-export const walletConnectProjectID = '95777495732e7317ec3fd92b88a1b19c'
+export const WALLET_CONNECT_PROJECT_ID = '95777495732e7317ec3fd92b88a1b19c'

@@ -4,8 +4,6 @@ import { useState } from 'react'
 
 import { createProvider } from '~/utils/ethereumprovider'
 
-import { walletConnectProjectID } from '~/constants/wallet-context'
-
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
 import { getWalletConnectProviderDetail } from '~/routes/Wallet'
@@ -36,7 +34,7 @@ export default function SelectProvider({
       if (!isWalletConnectModalOpen) {
         setIsWalletConnectModalOpen(true)
 
-        const walletConnectProvider = await createProvider(walletConnectProjectID, true)
+        const walletConnectProvider = await createProvider(true)
         await walletConnectProvider.enable()
         let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 

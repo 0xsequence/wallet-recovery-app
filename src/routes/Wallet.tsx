@@ -1,13 +1,11 @@
-import { Box, Button, Card, Modal, Switch, Text, useToast } from '@0xsequence/design-system'
+import { Box, Button, Card, Modal, Switch, Text, TextInput, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
-import { useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
-
-import { walletConnectProjectID } from '~/constants/wallet-context'
 
 import { useSyncProviders } from '~/hooks/useSyncProviders'
 
@@ -16,6 +14,7 @@ import { AuthStore } from '~/stores/AuthStore'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
+import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 import CollectibleList from '~/components/CollectibleList'
@@ -27,6 +26,8 @@ import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
+import ConnectDapp from '~/components/signing/ConnectDapp'
+import SignTransaction from '~/components/signing/SignTransaction'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -48,20 +49,22 @@ function Wallet() {
   const authStore = useStore(AuthStore)
   const tokenStore = useStore(TokenStore)
   const walletStore = useStore(WalletStore)
+  const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
   const accountAddress = useObservable(authStore.accountAddress)
+  const isSigningTransaction = useObservable(walletStore.isSigningTransaction)
 
   const toast = useToast()
 
-  const provider = useWalletConnectProvider(walletConnectProjectID)
+  const walletConnectProvider = useWalletConnectProvider()
 
   useEffect(() => {
     if (
-      provider &&
-      provider.connected &&
-      walletStore.selectedExternalProvider.get()?.info.name !== 'WalletConnect'
+      walletConnectProvider &&
+      walletConnectProvider.connected &&
+      !walletStore.selectedExternalProvider.get()
     ) {
-      let walletConnectProviderDetail = getWalletConnectProviderDetail(provider)
+      let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
       let availableProviders = walletStore.availableExternalProviders.get()
 
@@ -71,7 +74,7 @@ function Wallet() {
         walletStore.availableExternalProviders.set([walletConnectProviderDetail])
       }
     }
-  }, [provider])
+  }, [walletConnectProvider])
 
   useEffect(() => {
     if (externalProviders.length > 0) {
@@ -94,6 +97,7 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSettingsTokenListModalOpen, setIsSettingsTokenListModalOpen] = useState(false)
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
+  const [isConnectingDapp, setIsConnectingDapp] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
 
@@ -190,6 +194,15 @@ function Wallet() {
     console.log('receipt', receipt)
   }
 
+  const [signClientUri, setSignClientUri] = useState<string | undefined>(undefined)
+
+  const handleConnectSignClient = async (uri: string) => {
+    if (uri) {
+      walletConnectSignClientStore.pair(uri)
+    }
+    setIsConnectingDapp(true)
+  }
+
   return (
     <>
       <Box
@@ -221,6 +234,35 @@ function Wallet() {
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
+          <Card>
+            <Box marginBottom="4">
+              <TextInput
+                width="full"
+                label="Sign Client URI"
+                labelLocation="left"
+                name="signClientUri"
+                value={signClientUri ?? ''}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                  setSignClientUri(ev.target.value)
+                }}
+              />
+            </Box>
+            <Box justifyContent="flex-end">
+              <Button
+                marginTop="4"
+                variant="primary"
+                size="md"
+                shape="square"
+                label="Connect Sign Client"
+                disabled={!signClientUri}
+                onClick={() => {
+                  if (signClientUri) {
+                    handleConnectSignClient(signClientUri)
+                  }
+                }}
+              />
+            </Box>
+          </Card>
           <Card alignItems="center" flexDirection="column" padding="6" marginTop="16">
             <Text variant="large" color="text80" marginBottom="4">
               Your recovered wallet address
@@ -348,6 +390,24 @@ function Wallet() {
             onSelectProvider={async provider => {
               setIsSelectProviderModalOpen(false)
               walletStore.setExternalProvider(provider)
+            }}
+          />
+        </Modal>
+      )}
+      {isConnectingDapp && (
+        <Modal size="md" onClose={() => setIsConnectingDapp(false)}>
+          <ConnectDapp
+            onClose={() => {
+              setIsConnectingDapp(false)
+            }}
+          />
+        </Modal>
+      )}
+      {isSigningTransaction && (
+        <Modal size="md" onClose={() => walletStore.isSigningTransaction.set(false)}>
+          <SignTransaction
+            onClose={() => {
+              walletStore.isSigningTransaction.set(false)
             }}
           />
         </Modal>
