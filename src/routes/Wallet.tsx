@@ -27,7 +27,9 @@ import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
+import SignMessage from '~/components/signing/SignMessage'
 import SignTransaction from '~/components/signing/SignTransaction'
+import WalletNotDeployed from '~/components/signing/WalletNotDeployed'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -53,6 +55,9 @@ function Wallet() {
 
   const accountAddress = useObservable(authStore.accountAddress)
   const isSigningTransaction = useObservable(walletStore.isSigningTransaction)
+  const isSigningMessage = useObservable(walletStore.isSigningMessage)
+
+  const isWalletNotDeployed = useObservable(walletStore.isWalletNotDeployed)
 
   const toast = useToast()
 
@@ -407,9 +412,25 @@ function Wallet() {
         <Modal size="md" onClose={() => walletStore.isSigningTransaction.set(false)}>
           <SignTransaction
             onClose={() => {
+              walletStore.resetSignObservables()
               walletStore.isSigningTransaction.set(false)
             }}
           />
+        </Modal>
+      )}
+      {isSigningMessage && (
+        <Modal size="md" onClose={() => walletStore.isSigningMessage.set(false)}>
+          <SignMessage
+            onClose={() => {
+              walletStore.resetSignObservables()
+              walletStore.isSigningMessage.set(false)
+            }}
+          />
+        </Modal>
+      )}
+      {isWalletNotDeployed && (
+        <Modal size="md" onClose={() => walletStore.isWalletNotDeployed.set(false)}>
+          <WalletNotDeployed />
         </Modal>
       )}
       {isSendTokenModalOpen && (

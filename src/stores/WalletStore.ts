@@ -1,4 +1,5 @@
 import { Account } from '@0xsequence/account'
+import { AccountSignerOptions } from '@0xsequence/account/dist/declarations/src/signer'
 import { commons } from '@0xsequence/core'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import {
@@ -12,6 +13,7 @@ import {
 } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
+import { Connect } from 'vite'
 
 import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
 import { LocalStorageKey } from '~/constants/storage'
@@ -53,16 +55,24 @@ export class WalletStore {
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
 
-  isSigningTransaction = observable<boolean>(false)
-
   connectDetails = observable<PromptConnectDetails | undefined>(undefined)
   connectOptions = observable<NetworkedConnectOptions | undefined>(undefined)
 
+  isSigningTransaction = observable<boolean>(false)
   toSignTxnDetails = observable<
     { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
   >(undefined)
-  toSignTxnPermission = observable<'approved' | 'cancelled' | undefined>(undefined)
-  toSignTxnResult = observable<{ hash: string } | undefined>(undefined)
+
+  isSigningMessage = observable<boolean>(false)
+  toSignMsgDetails = observable<
+    { message: MessageToSign; chainId: number; options?: AccountSignerOptions } | undefined
+  >(undefined)
+
+  toSignPermission = observable<'approved' | 'cancelled' | undefined>(undefined)
+  toSignResult = observable<{ hash: string } | undefined>(undefined)
+
+  isCheckingWalletDeployment = observable<boolean>(false)
+  isWalletNotDeployed = observable<boolean>(false)
 
   walletRequestHandler: WalletRequestHandler
 
@@ -331,6 +341,25 @@ export class WalletStore {
     })
   }
 
+  resetSignObservables = () => {
+    this.isSigningTransaction.set(false)
+    this.toSignTxnDetails.set(undefined)
+    this.isSigningMessage.set(false)
+    this.toSignMsgDetails.set(undefined)
+    this.toSignPermission.set(undefined)
+    this.toSignResult.set(undefined)
+  }
+
+  checkWalletDeployment = async (chainId: number): Promise<boolean> => {
+    const account = this.store.get(AuthStore).account
+    if (!account) {
+      throw new Error('No account found')
+    }
+
+    const status = await account.status(chainId)
+    return status.onChain.deployed
+  }
+
   signTransaction = async (
     txn: commons.transaction.Transactionish,
     chainId?: number,
@@ -357,12 +386,65 @@ export class WalletStore {
 
       return response
     } catch (error) {
-      this.isSigningTransaction.set(false)
-      this.toSignTxnDetails.set(undefined)
-      this.toSignTxnPermission.set(undefined)
-      this.toSignTxnResult.set(undefined)
       throw error
     }
+  }
+
+  private toHexString(uint8: Uint8Array): string {
+    var hex = ''
+    for (const decimal of uint8) {
+      hex += ('0x' + decimal.toString(16)).slice(-4)
+    }
+    return hex
+  }
+
+  signMessage = async (
+    msg: MessageToSign,
+    chainId: number,
+    options?: AccountSignerOptions
+  ): Promise<{ hash: string }> => {
+    try {
+      const provider = this.selectedExternalProvider.get()?.provider
+      if (!provider) {
+        throw new Error('No external provider selected')
+      }
+
+      const account = this.store.get(AuthStore).account
+      if (!account) {
+        throw new Error('No account found')
+      }
+
+      if (msg.message) {
+        this.authStore.account?.signMessage(msg.message, msg.chainId!, msg.eip6492 ? 'eip6492' : 'throw')
+      } else if (msg.typedData) {
+        const typedData = msg.typedData
+        this.authStore.account?.signTypedData(
+          typedData.domain,
+          typedData.types,
+          typedData.message,
+          msg.chainId!,
+          msg.eip6492 ? 'eip6492' : 'throw'
+        )
+      } else {
+        throw new Error('invalid')
+      }
+
+      if (!msg.message) {
+        throw new Error('Empty message not allowed')
+      }
+
+      const hexMessage = this.toHexString(msg.message)
+      console.log('hexMessage:', hexMessage)
+
+      const signature = await provider.request({
+        method: 'personal_sign',
+        params: [hexMessage, account]
+      })
+      console.log('signature:', signature)
+    } catch (error) {
+      throw error
+    }
+    return { hash: '' }
   }
 
   private async sendTransaction(
@@ -447,8 +529,26 @@ class Prompter implements WalletUserPrompter {
     return true
   }
 
-  async promptConfirmWalletDeploy(): Promise<boolean> {
-    return true
+  async promptConfirmWalletDeploy(chainId: number, options?: ConnectOptions): Promise<boolean> {
+    console.log('prompt confirm wallet deploy:', chainId, options)
+
+    if (!chainId) {
+      return Promise.resolve(false)
+    }
+    // checks if external provider is connected to facilitate signing without eip6492
+    // or if wallet is deployed on chain
+    const isExternalProviderConnected = true
+      ? this.store.get(WalletStore).selectedExternalProvider.get()
+      : false
+    const isDeployed = await this.store.get(WalletStore).checkWalletDeployment(chainId)
+
+    return new Promise((resolve, _) => {
+      if (isDeployed || isExternalProviderConnected) {
+        resolve(true)
+      } else {
+        resolve(false)
+      }
+    })
   }
 
   async promptConnect(options?: ConnectOptions): Promise<PromptConnectDetails> {
@@ -486,15 +586,54 @@ class Prompter implements WalletUserPrompter {
     console.log('prompt sign in connect:', options)
 
     return new Promise((resolve, reject) => {
-      resolve({ connected: false })
+      resolve({ connected: true })
     })
   }
 
   async promptSignMessage(message: MessageToSign, options?: ConnectOptions): Promise<string> {
     console.log('prompt sign message:', message, options)
 
+    if (!message.chainId) {
+      return Promise.reject('No chainId found in message')
+    }
+
+    if (message.eip6492 !== true) {
+      // This means we aren't going to sign using EIP-6492
+      // so we need to make sure the wallet can sign onchain
+
+      // const status = await this.store.get(WalletStore).wallet!.status(chainid)
+
+      const status = await this.store.get(AuthStore).account!.status(message.chainId)
+
+      if (!status.canOnchainValidate) {
+        const res = await this.promptConfirmWalletDeploy(message.chainId, options)
+
+        if (!res) {
+          this.store.get(WalletStore).isWalletNotDeployed.set(true)
+          return Promise.reject('User rejected wallet deploy request')
+        }
+      }
+    }
+
+    this.store.get(WalletStore).isSigningMessage.set(true)
+    this.store.get(WalletStore).toSignMsgDetails.set({ message, chainId: message.chainId })
+
     return new Promise((resolve, reject) => {
-      resolve('')
+      const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
+        unsubscribe()
+
+        const status = this.store.get(WalletStore).toSignPermission.get()
+        this.store.get(WalletStore).toSignPermission.set(undefined)
+
+        if (!status || status === 'cancelled') {
+          reject('request failed')
+        } else {
+          const result = this.store.get(WalletStore).toSignResult.get()
+          if (result) {
+            resolve(result.hash)
+          }
+        }
+      })
     })
   }
 
@@ -522,16 +661,16 @@ class Prompter implements WalletUserPrompter {
       this.store.get(WalletStore).toSignTxnDetails.set({ txn, chainId, options })
       this.store.get(WalletStore).isSigningTransaction.set(true)
 
-      const unsubscribe = this.store.get(WalletStore).toSignTxnPermission.subscribe(() => {
+      const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
         unsubscribe()
 
-        const status = this.store.get(WalletStore).toSignTxnPermission.get()
-        this.store.get(WalletStore).toSignTxnPermission.set(undefined)
+        const status = this.store.get(WalletStore).toSignPermission.get()
+        this.store.get(WalletStore).toSignPermission.set(undefined)
 
         if (!status || status === 'cancelled') {
           reject('request failed')
         } else {
-          const result = this.store.get(WalletStore).toSignTxnResult.get()
+          const result = this.store.get(WalletStore).toSignResult.get()
           if (result) {
             resolve(result.hash)
           }
