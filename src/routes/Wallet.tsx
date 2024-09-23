@@ -27,8 +27,7 @@ import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
-import SignMessage from '~/components/signing/SignMessage'
-import SignTransaction from '~/components/signing/SignTransaction'
+import SignRequest from '~/components/signing/SignRequest'
 import WalletNotDeployed from '~/components/signing/WalletNotDeployed'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
@@ -54,8 +53,7 @@ function Wallet() {
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
   const accountAddress = useObservable(authStore.accountAddress)
-  const isSigningTransaction = useObservable(walletStore.isSigningTransaction)
-  const isSigningMessage = useObservable(walletStore.isSigningMessage)
+  const isSigning = useObservable(walletStore.isSigning)
 
   const isWalletNotDeployed = useObservable(walletStore.isWalletNotDeployed)
 
@@ -408,22 +406,12 @@ function Wallet() {
           />
         </Modal>
       )}
-      {isSigningTransaction && (
-        <Modal size="md" onClose={() => walletStore.isSigningTransaction.set(false)}>
-          <SignTransaction
+      {isSigning && (
+        <Modal isDismissible={false} size="md" onClose={() => walletStore.isSigning.set(false)}>
+          <SignRequest
+            isTxn={isSigning === 'txn'}
             onClose={() => {
-              walletStore.resetSignObservables()
-              walletStore.isSigningTransaction.set(false)
-            }}
-          />
-        </Modal>
-      )}
-      {isSigningMessage && (
-        <Modal size="md" onClose={() => walletStore.isSigningMessage.set(false)}>
-          <SignMessage
-            onClose={() => {
-              walletStore.resetSignObservables()
-              walletStore.isSigningMessage.set(false)
+              walletStore.isSigning.set(false)
             }}
           />
         </Modal>

@@ -58,12 +58,11 @@ export class WalletStore {
   connectDetails = observable<PromptConnectDetails | undefined>(undefined)
   connectOptions = observable<NetworkedConnectOptions | undefined>(undefined)
 
-  isSigningTransaction = observable<boolean>(false)
+  isSigning = observable<'txn' | 'msg' | false>(false)
+
   toSignTxnDetails = observable<
     { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
   >(undefined)
-
-  isSigningMessage = observable<boolean>(false)
   toSignMsgDetails = observable<
     { message: MessageToSign; chainId: number; options?: AccountSignerOptions } | undefined
   >(undefined)
@@ -342,9 +341,8 @@ export class WalletStore {
   }
 
   resetSignObservables = () => {
-    this.isSigningTransaction.set(false)
+    this.isSigning.set(false)
     this.toSignTxnDetails.set(undefined)
-    this.isSigningMessage.set(false)
     this.toSignMsgDetails.set(undefined)
     this.toSignPermission.set(undefined)
     this.toSignResult.set(undefined)
@@ -390,14 +388,6 @@ export class WalletStore {
     }
   }
 
-  private toHexString(uint8: Uint8Array): string {
-    var hex = ''
-    for (const decimal of uint8) {
-      hex += ('0x' + decimal.toString(16)).slice(-4)
-    }
-    return hex
-  }
-
   signMessage = async (
     msg: MessageToSign,
     chainId: number,
@@ -414,33 +404,30 @@ export class WalletStore {
         throw new Error('No account found')
       }
 
+      let hash: string | undefined
+
       if (msg.message) {
-        this.authStore.account?.signMessage(msg.message, msg.chainId!, msg.eip6492 ? 'eip6492' : 'throw')
+        hash = await this.authStore.account?.signMessage(
+          msg.message,
+          msg.chainId!,
+          msg.eip6492 ? 'eip6492' : 'throw'
+        )
       } else if (msg.typedData) {
         const typedData = msg.typedData
-        this.authStore.account?.signTypedData(
+        hash = await this.authStore.account?.signTypedData(
           typedData.domain,
           typedData.types,
           typedData.message,
           msg.chainId!,
           msg.eip6492 ? 'eip6492' : 'throw'
         )
-      } else {
-        throw new Error('invalid')
       }
 
-      if (!msg.message) {
-        throw new Error('Empty message not allowed')
+      if (!hash) {
+        throw new Error('Account sign method failed')
       }
 
-      const hexMessage = this.toHexString(msg.message)
-      console.log('hexMessage:', hexMessage)
-
-      const signature = await provider.request({
-        method: 'personal_sign',
-        params: [hexMessage, account]
-      })
-      console.log('signature:', signature)
+      return { hash }
     } catch (error) {
       throw error
     }
@@ -535,15 +522,13 @@ class Prompter implements WalletUserPrompter {
     if (!chainId) {
       return Promise.resolve(false)
     }
-    // checks if external provider is connected to facilitate signing without eip6492
-    // or if wallet is deployed on chain
-    const isExternalProviderConnected = true
-      ? this.store.get(WalletStore).selectedExternalProvider.get()
-      : false
+
+    // checks if wallet is deployed on chain
+
     const isDeployed = await this.store.get(WalletStore).checkWalletDeployment(chainId)
 
     return new Promise((resolve, _) => {
-      if (isDeployed || isExternalProviderConnected) {
+      if (isDeployed) {
         resolve(true)
       } else {
         resolve(false)
@@ -615,16 +600,14 @@ class Prompter implements WalletUserPrompter {
       }
     }
 
-    this.store.get(WalletStore).isSigningMessage.set(true)
+    this.store.get(WalletStore).isSigning.set('msg')
     this.store.get(WalletStore).toSignMsgDetails.set({ message, chainId: message.chainId })
 
     return new Promise((resolve, reject) => {
       const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
         unsubscribe()
-
         const status = this.store.get(WalletStore).toSignPermission.get()
         this.store.get(WalletStore).toSignPermission.set(undefined)
-
         if (!status || status === 'cancelled') {
           reject('request failed')
         } else {
@@ -659,7 +642,7 @@ class Prompter implements WalletUserPrompter {
 
     return new Promise((resolve, reject) => {
       this.store.get(WalletStore).toSignTxnDetails.set({ txn, chainId, options })
-      this.store.get(WalletStore).isSigningTransaction.set(true)
+      this.store.get(WalletStore).isSigning.set('txn')
 
       const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
         unsubscribe()
