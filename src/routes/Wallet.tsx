@@ -1,8 +1,8 @@
-import { Box, Button, Card, Modal, Switch, Text, TextInput, useToast } from '@0xsequence/design-system'
+import { Box, Button, Card, Modal, ScanIcon, Switch, Text, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
@@ -29,6 +29,7 @@ import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
 import SignRequest from '~/components/signing/SignRequest'
 import WalletNotDeployed from '~/components/signing/WalletNotDeployed'
+import WalletScan from '~/components/signing/WalletScan'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -56,6 +57,8 @@ function Wallet() {
   const isSigning = useObservable(walletStore.isSigning)
 
   const isWalletNotDeployed = useObservable(walletStore.isWalletNotDeployed)
+
+  const isSignClientConnected = useObservable(walletConnectSignClientStore.isConnected)
 
   const toast = useToast()
 
@@ -103,6 +106,7 @@ function Wallet() {
   const [isConnectingDapp, setIsConnectingDapp] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
+  const [isScanningQrWalletConnect, setIsScanningQrWalletConnect] = useState(false)
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
@@ -127,6 +131,7 @@ function Wallet() {
 
   const handleDisconnect = async () => {
     walletStore.setExternalProvider(undefined)
+    // walletStore.clearWalletConnectSession()
 
     const extProvider = selectedExternalProvider
     if (extProvider?.info.name === 'WalletConnect') {
@@ -197,12 +202,12 @@ function Wallet() {
     console.log('receipt', receipt)
   }
 
-  const [signClientUri, setSignClientUri] = useState<string | undefined>(undefined)
+  const handleConnectSignClient = async () => {
+    setIsScanningQrWalletConnect(true)
+  }
 
-  const handleConnectSignClient = async (uri: string) => {
-    if (uri) {
-      walletConnectSignClientStore.pair(uri)
-    }
+  const handleOnQrUri = async (uri: string) => {
+    walletConnectSignClientStore.pair(uri)
     setIsConnectingDapp(true)
   }
 
@@ -237,42 +242,36 @@ function Wallet() {
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
-          <Card>
-            <Box marginBottom="4">
-              <TextInput
-                width="full"
-                label="Sign Client URI"
-                labelLocation="left"
-                name="signClientUri"
-                value={signClientUri ?? ''}
-                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                  setSignClientUri(ev.target.value)
-                }}
-              />
-            </Box>
-            <Box justifyContent="flex-end">
-              <Button
-                marginTop="4"
-                variant="primary"
-                size="md"
-                shape="square"
-                label="Connect Sign Client"
-                disabled={!signClientUri}
-                onClick={() => {
-                  if (signClientUri) {
-                    handleConnectSignClient(signClientUri)
-                  }
-                }}
-              />
-            </Box>
-          </Card>
-          <Card alignItems="center" flexDirection="column" padding="6" marginTop="16">
+          <Card flexDirection="column" alignItems="center" padding="6" marginTop="16">
             <Text variant="large" color="text80" marginBottom="4">
               Your recovered wallet address
             </Text>
             <Text variant="normal" fontWeight="bold" color="text100">
               {accountAddress}
             </Text>
+            {isSignClientConnected ? (
+              <Box>
+                {isSignClientConnected.map(session => {
+                  return (
+                    <Text variant="normal" fontWeight="bold" color="text100">
+                      {session.name}
+                    </Text>
+                  )
+                })}
+              </Box>
+            ) : (
+              <Button
+                marginTop="4"
+                variant="primary"
+                size="md"
+                shape="square"
+                label="Scan with WalletConnect"
+                leftIcon={ScanIcon}
+                onClick={() => {
+                  handleConnectSignClient()
+                }}
+              />
+            )}
           </Card>
 
           <Card alignItems="center" flexDirection="column" padding="6" marginTop="4">
@@ -399,9 +398,15 @@ function Wallet() {
       )}
       {isConnectingDapp && (
         <Modal size="md" onClose={() => setIsConnectingDapp(false)}>
-          <ConnectDapp
-            onClose={() => {
-              setIsConnectingDapp(false)
+          <ConnectDapp onClose={() => setIsConnectingDapp(false)} />
+        </Modal>
+      )}
+      {isScanningQrWalletConnect && (
+        <Modal size="md" onClose={() => setIsScanningQrWalletConnect(false)}>
+          <WalletScan
+            onQrUri={uri => {
+              handleOnQrUri(uri)
+              setIsScanningQrWalletConnect(false)
             }}
           />
         </Modal>

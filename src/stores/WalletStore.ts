@@ -12,8 +12,8 @@ import {
   validateTransactionRequest
 } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
+import { SessionTypes } from '@walletconnect/types'
 import { ethers } from 'ethers'
-import { Connect } from 'vite'
 
 import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
 import { LocalStorageKey } from '~/constants/storage'
@@ -59,6 +59,8 @@ export class WalletStore {
   connectOptions = observable<NetworkedConnectOptions | undefined>(undefined)
 
   isSigning = observable<'txn' | 'msg' | false>(false)
+  toSignPermission = observable<'approved' | 'cancelled' | undefined>(undefined)
+  toSignResult = observable<{ hash: string } | undefined>(undefined)
 
   toSignTxnDetails = observable<
     { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
@@ -66,9 +68,6 @@ export class WalletStore {
   toSignMsgDetails = observable<
     { message: MessageToSign; chainId: number; options?: AccountSignerOptions } | undefined
   >(undefined)
-
-  toSignPermission = observable<'approved' | 'cancelled' | undefined>(undefined)
-  toSignResult = observable<{ hash: string } | undefined>(undefined)
 
   isCheckingWalletDeployment = observable<boolean>(false)
   isWalletNotDeployed = observable<boolean>(false)
@@ -78,7 +77,8 @@ export class WalletStore {
   private local = {
     lastConnectedExternalProviderInfo: new LocalStore<ProviderInfo>(
       LocalStorageKey.LAST_CONNECTED_EXTERNAL_PROVIDER_INFO
-    )
+    ),
+    walletConnectSession: new LocalStore<SessionTypes.Struct>(LocalStorageKey.WALLET_CONNECT_SESSION)
   }
 
   constructor(private store: Store) {
@@ -111,6 +111,18 @@ export class WalletStore {
 
   getLastConnectedExternalProviderInfo = () => {
     return this.local.lastConnectedExternalProviderInfo.get()
+  }
+
+  setWalletConnectSession = (session: SessionTypes.Struct) => {
+    this.local.walletConnectSession.set(session)
+  }
+
+  clearWalletConnectSession = () => {
+    this.local.walletConnectSession.del()
+  }
+
+  getWalletConnectSession = () => {
+    return this.local.walletConnectSession.get()
   }
 
   sendToken = async (tokenBalance: TokenBalance, to: string, amount?: string): Promise<{ hash: string }> => {
@@ -358,83 +370,7 @@ export class WalletStore {
     return status.onChain.deployed
   }
 
-  signTransaction = async (
-    txn: commons.transaction.Transactionish,
-    chainId?: number,
-    options?: ConnectOptions
-  ): Promise<{ hash: string }> => {
-    try {
-      const provider = this.selectedExternalProvider.get()?.provider
-      if (!provider) {
-        throw new Error('No external provider selected')
-      }
-
-      const account = this.store.get(AuthStore).account
-      if (!account) {
-        throw new Error('No account found')
-      }
-
-      const providerAccounts = await this.getExternalProviderAccounts(provider)
-      const providerAddress = providerAccounts[0]
-      if (!providerAddress) {
-        throw new Error('No provider address found')
-      }
-
-      const response = await this.sendTransaction(account, provider, providerAddress, txn, chainId ?? 1)
-
-      return response
-    } catch (error) {
-      throw error
-    }
-  }
-
-  signMessage = async (
-    msg: MessageToSign,
-    chainId: number,
-    options?: AccountSignerOptions
-  ): Promise<{ hash: string }> => {
-    try {
-      const provider = this.selectedExternalProvider.get()?.provider
-      if (!provider) {
-        throw new Error('No external provider selected')
-      }
-
-      const account = this.store.get(AuthStore).account
-      if (!account) {
-        throw new Error('No account found')
-      }
-
-      let hash: string | undefined
-
-      if (msg.message) {
-        hash = await this.authStore.account?.signMessage(
-          msg.message,
-          msg.chainId!,
-          msg.eip6492 ? 'eip6492' : 'throw'
-        )
-      } else if (msg.typedData) {
-        const typedData = msg.typedData
-        hash = await this.authStore.account?.signTypedData(
-          typedData.domain,
-          typedData.types,
-          typedData.message,
-          msg.chainId!,
-          msg.eip6492 ? 'eip6492' : 'throw'
-        )
-      }
-
-      if (!hash) {
-        throw new Error('Account sign method failed')
-      }
-
-      return { hash }
-    } catch (error) {
-      throw error
-    }
-    return { hash: '' }
-  }
-
-  private async sendTransaction(
+  async sendTransaction(
     account: Account,
     externalProvider: EIP1193Provider | EthereumProvider,
     externalProviderAddress: string,
@@ -489,6 +425,11 @@ export class WalletStore {
     })
   }
 
+  async getExternalProviderAddress(provider: EIP1193Provider | EthereumProvider): Promise<string> {
+    const accounts = await this.getExternalProviderAccounts(provider)
+    return accounts[0]
+  }
+
   private async switchToChain(provider: EIP1193Provider | EthereumProvider, chainId: number) {
     return new Promise((resolve, reject) => {
       provider.sendAsync?.(
@@ -509,10 +450,12 @@ class Prompter implements WalletUserPrompter {
   constructor(private store: Store) {}
 
   getDefaultChainId(): number {
+    // TODO I'm not sure if we need to change this
     return 1
   }
 
   async promptChangeNetwork(): Promise<boolean> {
+    // TODO I'm not sure if we need to change this
     return true
   }
 
@@ -547,8 +490,6 @@ class Prompter implements WalletUserPrompter {
       this.store.get(WalletStore).walletRequestHandler.setConnectOptions(options)
     }
 
-    // this.store.get(RouterStore).navigate('/connect', { state: { dappInitiatedRequest: true } })
-
     return new Promise((resolve, reject) => {
       const unsubscribe = this.store.get(WalletStore).connectDetails.subscribe(connectDetails => {
         unsubscribe()
@@ -556,11 +497,6 @@ class Prompter implements WalletUserPrompter {
         if (!connectDetails || !connectDetails.connected) {
           reject(`connect cancelled by user`)
         } else {
-          // if (options?.askForEmail) {
-          //   const userEmail = this.store.get(AuthStore).loginDetails.get()?.email
-          //   connectDetails.email = userEmail
-          // }
-
           resolve(connectDetails)
         }
       })
@@ -568,11 +504,9 @@ class Prompter implements WalletUserPrompter {
   }
 
   async promptSignInConnect(options?: ConnectOptions): Promise<PromptConnectDetails> {
+    // I think we should be good with not implementing this since the recovery wallet requires the user to authenticate first
     console.log('prompt sign in connect:', options)
-
-    return new Promise((resolve, reject) => {
-      resolve({ connected: true })
-    })
+    return { connected: false }
   }
 
   async promptSignMessage(message: MessageToSign, options?: ConnectOptions): Promise<string> {
@@ -636,7 +570,7 @@ class Prompter implements WalletUserPrompter {
 
     console.log('prompt sign txn:', transactions, chainId, options)
 
-    //TODO implement multiple transaction handling
+    // TODO find out if we need to implement multiple transaction handling
 
     validateTransactionRequest(accountAddress, txn)
 

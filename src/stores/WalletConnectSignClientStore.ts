@@ -14,6 +14,7 @@ export class WalletConnectSignClientStore {
   authStore = useStore(AuthStore)
   accountAddress = useObservable(this.authStore.accountAddress)
   isReady = observable(false)
+  isConnected = observable<any>(false)
 
   private signClient?: SignClient
   private currentRequestInfo?: { id: number; topic: string }
@@ -46,7 +47,18 @@ export class WalletConnectSignClientStore {
     this.signClient.on('session_update', this.onSessionUpdate)
     this.signClient.on('session_delete', this.onSessionDelete)
 
-    this._sessions.set(this.signClient?.session.getAll() ?? [])
+    const allSessions = this.signClient.session.getAll()
+    if (allSessions) {
+      this._sessions.set(allSessions)
+      console.log('hey', allSessions)
+      var sessionsData = [] as any[]
+      allSessions.map(session => {
+        sessionsData.push(session.peer.metadata)
+      })
+      this.isConnected.set(sessionsData)
+    } else {
+      this._sessions.set([])
+    }
 
     this.isReady.set(true)
   }
@@ -57,6 +69,7 @@ export class WalletConnectSignClientStore {
     }
 
     await this.signClient.core.pairing.pair({ uri })
+    this.isConnected.set(this.signClient.session.getAll()[0].controller)
   }
 
   rejectRequest = () => {
@@ -139,10 +152,6 @@ export class WalletConnectSignClientStore {
     if (connectDetails && connectDetails.connected) {
       const networkStore = this.store.get(NetworkStore)
 
-      // if (chainId) {
-      //   networkStore.setDefaultNetwork(chainId)
-      // }
-
       const chains = networkStore.networks.get()
       const requestedChains = chainsInRequiredNamespaces.map(chain => Number(chain.split(':').pop()))
       const optionalChains = chainsInOptionalNamespaces.map(chain => Number(chain.split(':').pop()))
@@ -157,8 +166,6 @@ export class WalletConnectSignClientStore {
           accounts,
           methods: [
             'eth_sendTransaction',
-            'eth_sendRawTransaction',
-            'eth_signTransaction',
             'eth_sign',
             'personal_sign',
             'eth_signTypedData',

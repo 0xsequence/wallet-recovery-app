@@ -6,6 +6,8 @@ import { createProvider } from '~/utils/ethereumprovider'
 
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
+// import { useStore } from '~/stores'
+// import { WalletStore } from '~/stores/WalletStore'
 import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
 export interface ProviderInfo {
@@ -25,6 +27,7 @@ export default function SelectProvider({
 }: {
   onSelectProvider: (provider: ProviderDetail) => void
 }) {
+  // const walletStore = useStore(WalletStore)
   const providers = useSyncProviders()
 
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
@@ -36,6 +39,9 @@ export default function SelectProvider({
 
         const walletConnectProvider = await createProvider(true)
         await walletConnectProvider.enable()
+
+        // walletStore.setWalletConnectSession(walletConnectProvider.session)
+
         let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 
         onSelectProvider(walletConnectProviderDetail)

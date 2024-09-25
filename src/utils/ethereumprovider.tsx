@@ -1,4 +1,5 @@
 import EthereumProvider from '@walletconnect/ethereum-provider'
+import { SessionTypes } from '@walletconnect/types'
 import { useEffect, useState } from 'react'
 
 import { WALLET_CONNECT_PROJECT_ID } from '~/constants/wallet-context'
@@ -23,21 +24,30 @@ export function useWalletConnectProvider() {
   const lastConnectedWalletInfo = walletStore.getLastConnectedExternalProviderInfo()
 
   useEffect(() => {
-    async function initProvider() {
+    async function initProvider(session?: SessionTypes.Struct) {
       const p = await createProvider(false)
 
       p.enable()
       setProvider(p)
 
-      return () => {
-        if (provider) {
-          provider.disconnect()
-        }
-      }
+      // p.connect(session)
+
+      // walletStore.setWalletConnectSession(p.session)
     }
+
+    // const walletConnectSession = walletStore.getWalletConnectSession()
+    // if (walletConnectSession) {
+    //   initProvider(walletConnectSession)
+    // }
 
     if (lastConnectedWalletInfo?.name === 'WalletConnect') {
       initProvider()
+    }
+
+    return () => {
+      if (provider) {
+        provider.disconnect()
+      }
     }
   }, [])
 

@@ -1,15 +1,92 @@
+import { AccountSignerOptions } from '@0xsequence/account/dist/declarations/src/signer'
+import { commons } from '@0xsequence/core'
 import { Box, Button, Divider, Text } from '@0xsequence/design-system'
-import { useState } from 'react'
+import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
+import { useEffect, useState } from 'react'
 
 import { useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 export default function SignRequest({ onClose, isTxn }: { onClose: () => void; isTxn: boolean }) {
   const walletStore = useStore(WalletStore)
+  const authStore = useStore(AuthStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
+  const provider = walletStore.selectedExternalProvider.get()?.provider
+  const account = authStore.account
+
+  useEffect(() => {
+    if (!provider) {
+      throw new Error('No external provider selected')
+    } else if (!account) {
+      throw new Error('No account found')
+    }
+  }, [])
+
   const [isPending, setPending] = useState(false)
+
+  const signTransaction = async (
+    txn: commons.transaction.Transactionish,
+    chainId?: number,
+    options?: ConnectOptions
+  ): Promise<{ hash: string }> => {
+    // TODO do we need options?
+    try {
+      const providerAddress = await walletStore.getExternalProviderAddress(provider!)
+      if (!providerAddress) {
+        throw new Error('No provider address found')
+      }
+
+      // TODO check if setting 1 (eth) as default chainId is okay
+
+      console.log('chainId', chainId)
+
+      const response = await walletStore.sendTransaction(
+        account!,
+        provider!,
+        providerAddress,
+        txn,
+        chainId ?? 1
+      )
+
+      return response
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const signMessage = async (
+    msg: MessageToSign,
+    options?: AccountSignerOptions
+  ): Promise<{ hash: string }> => {
+    // TODO do we need options?
+    try {
+      let hash: string | undefined
+
+      if (msg.message) {
+        hash = await account!.signMessage(msg.message, msg.chainId!, msg.eip6492 ? 'eip6492' : 'throw')
+      } else if (msg.typedData) {
+        const typedData = msg.typedData
+        hash = await account!.signTypedData(
+          typedData.domain,
+          typedData.types,
+          typedData.message,
+          msg.chainId!,
+          msg.eip6492 ? 'eip6492' : 'throw'
+        )
+      }
+
+      if (!hash) {
+        throw new Error('Account sign method failed')
+      }
+
+      return { hash }
+    } catch (error) {
+      throw error
+    }
+  }
 
   const cancelRequest = () => {
     walletStore.resetSignObservables()
@@ -30,8 +107,8 @@ export default function SignRequest({ onClose, isTxn }: { onClose: () => void; i
         cancelRequest()
       } else {
         const result = isTxn
-          ? await walletStore.signTransaction(details.txn, details.chainId, details.options)
-          : await walletStore.signMessage(details.message, details.chainId, details.options)
+          ? await signTransaction(details.txn, details.chainId, details.options)
+          : await signMessage(details.message)
         walletStore.toSignResult.set(result)
         walletStore.toSignPermission.set('approved')
       }
@@ -70,7 +147,6 @@ export default function SignRequest({ onClose, isTxn }: { onClose: () => void; i
             variant="primary"
             label={'Send'}
             disabled={isPending}
-            // disabled={isPending || canValidateOnchain === undefined}
             onClick={handleSign}
             data-id="signingContinue"
           />
