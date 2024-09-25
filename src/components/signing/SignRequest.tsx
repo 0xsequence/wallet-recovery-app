@@ -39,17 +39,9 @@ export default function SignRequest({ onClose, isTxn }: { onClose: () => void; i
         throw new Error('No provider address found')
       }
 
-      // TODO check if setting 1 (eth) as default chainId is okay
+      console.log('sendTransaction chainId', chainId)
 
-      console.log('chainId', chainId)
-
-      const response = await walletStore.sendTransaction(
-        account!,
-        provider!,
-        providerAddress,
-        txn,
-        chainId ?? 1
-      )
+      const response = await walletStore.sendTransaction(account!, provider!, providerAddress, txn, chainId!)
 
       return response
     } catch (error) {
@@ -66,6 +58,7 @@ export default function SignRequest({ onClose, isTxn }: { onClose: () => void; i
       let hash: string | undefined
 
       if (msg.message) {
+        console.log('signMessage chainId', msg.chainId)
         hash = await account!.signMessage(msg.message, msg.chainId!, msg.eip6492 ? 'eip6492' : 'throw')
       } else if (msg.typedData) {
         const typedData = msg.typedData

@@ -14,13 +14,12 @@ export class WalletConnectSignClientStore {
   authStore = useStore(AuthStore)
   accountAddress = useObservable(this.authStore.accountAddress)
   isReady = observable(false)
-  isConnected = observable<any>(false)
 
   private signClient?: SignClient
   private currentRequestInfo?: { id: number; topic: string }
-  private _sessions = observable<SessionTypes.Struct[]>([])
+  allSessions = observable<SessionTypes.Struct[]>([])
 
-  sessions = this._sessions.readOnly()
+  sessions = this.allSessions.readOnly()
 
   constructor(private store: Store) {
     this.createSignClient()
@@ -49,15 +48,9 @@ export class WalletConnectSignClientStore {
 
     const allSessions = this.signClient.session.getAll()
     if (allSessions) {
-      this._sessions.set(allSessions)
-      console.log('hey', allSessions)
-      var sessionsData = [] as any[]
-      allSessions.map(session => {
-        sessionsData.push(session.peer.metadata)
-      })
-      this.isConnected.set(sessionsData)
+      this.allSessions.set(allSessions)
     } else {
-      this._sessions.set([])
+      this.allSessions.set([])
     }
 
     this.isReady.set(true)
@@ -69,7 +62,7 @@ export class WalletConnectSignClientStore {
     }
 
     await this.signClient.core.pairing.pair({ uri })
-    this.isConnected.set(this.signClient.session.getAll()[0].controller)
+    this.allSessions.set(this.signClient.session.getAll())
   }
 
   rejectRequest = () => {
@@ -101,7 +94,7 @@ export class WalletConnectSignClientStore {
         }
       })
 
-      this._sessions.set(this.signClient?.session.getAll() ?? [])
+      this.allSessions.set(this.signClient?.session.getAll() ?? [])
     }
   }
 
@@ -117,7 +110,7 @@ export class WalletConnectSignClientStore {
       })
     })
 
-    this._sessions.set([])
+    this.allSessions.set([])
   }
 
   onSessionProposal = async (ev: SignClientTypes.EventArguments['session_proposal']) => {
@@ -184,7 +177,7 @@ export class WalletConnectSignClientStore {
 
       console.log('session', session)
 
-      this._sessions.set(this.signClient?.session.getAll() ?? [])
+      this.allSessions.set(this.signClient?.session.getAll() ?? [])
 
       this.signClient?.core.pairing
         .getPairings()
@@ -284,6 +277,6 @@ export class WalletConnectSignClientStore {
 
   onSessionDelete = async (ev: SignClientTypes.EventArguments['session_delete']) => {
     console.log('onSessionDelete', ev)
-    this._sessions.set(this.signClient?.session.getAll() ?? [])
+    this.allSessions.set(this.signClient?.session.getAll() ?? [])
   }
 }

@@ -27,6 +27,7 @@ import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
+import ConnectionList from '~/components/signing/ConnectionList'
 import SignRequest from '~/components/signing/SignRequest'
 import WalletNotDeployed from '~/components/signing/WalletNotDeployed'
 import WalletScan from '~/components/signing/WalletScan'
@@ -58,7 +59,7 @@ function Wallet() {
 
   const isWalletNotDeployed = useObservable(walletStore.isWalletNotDeployed)
 
-  const isSignClientConnected = useObservable(walletConnectSignClientStore.isConnected)
+  const sessionList = useObservable(walletConnectSignClientStore.allSessions)
 
   const toast = useToast()
 
@@ -249,29 +250,19 @@ function Wallet() {
             <Text variant="normal" fontWeight="bold" color="text100">
               {accountAddress}
             </Text>
-            {isSignClientConnected ? (
-              <Box>
-                {isSignClientConnected.map(session => {
-                  return (
-                    <Text variant="normal" fontWeight="bold" color="text100">
-                      {session.name}
-                    </Text>
-                  )
-                })}
-              </Box>
-            ) : (
-              <Button
-                marginTop="4"
-                variant="primary"
-                size="md"
-                shape="square"
-                label="Scan with WalletConnect"
-                leftIcon={ScanIcon}
-                onClick={() => {
-                  handleConnectSignClient()
-                }}
-              />
-            )}
+
+            <ConnectionList sessionList={sessionList}></ConnectionList>
+            <Button
+              marginTop="4"
+              variant="primary"
+              size="sm"
+              shape="square"
+              label="Connect to a Dapp with WalletConnect"
+              leftIcon={ScanIcon}
+              onClick={() => {
+                handleConnectSignClient()
+              }}
+            />
           </Card>
 
           <Card alignItems="center" flexDirection="column" padding="6" marginTop="4">
