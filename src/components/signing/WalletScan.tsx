@@ -1,6 +1,6 @@
 import { Box, Button, TextInput } from '@0xsequence/design-system'
+import QrReader from 'modern-react-qr-reader'
 import { ChangeEvent, useState } from 'react'
-import QrReader from 'react-qr-scanner'
 
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
@@ -21,12 +21,17 @@ export default function ScanWallet({ onQrUri }: { onQrUri: (uri: string) => void
       flexDirection="column"
       justifyContent="space-between"
       padding="6"
-      style={{ height: '625px', width: '600px' }}
+      style={{ height: '750px', width: '600px' }}
     >
       <QrReader
         style={{ transform: 'scaleX(-1)', borderRadius: '10px' }}
         height="full"
         width="full"
+        onScan={(result: string | null) => {
+          if (result) {
+            setSignClientUri(result)
+          }
+        }}
       ></QrReader>
       <Box>
         <TextInput
