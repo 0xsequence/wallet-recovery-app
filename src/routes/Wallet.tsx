@@ -544,6 +544,10 @@ function Wallet() {
               if (!details && !chainId && !options) {
                 cancelRequest()
               }
+              if (walletStore.selectedExternalProvider.get() === undefined) {
+                cancelRequest()
+                walletStore.isWalletNotDeployed.set(true)
+              }
             }}
           />
         </Modal>
