@@ -1,5 +1,8 @@
+import { AccountSignerOptions } from '@0xsequence/account/dist/declarations/src/signer'
+import { commons } from '@0xsequence/core'
 import { Box, Button, Card, Modal, ScanIcon, Switch, Text, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
+import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
@@ -93,6 +96,7 @@ function Wallet() {
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
   const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
   const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
+  const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
 
   const networkStore = useStore(NetworkStore)
 
@@ -201,6 +205,124 @@ function Wallet() {
     walletStore.isSendingCollectibleTransaction.set(undefined)
 
     console.log('receipt', receipt)
+  }
+
+  const handlePendingSignTransaction = async (hash: string, chainId: number) => {
+    const network = networkStore.networkForChainId(chainId!)
+    if (!network) {
+      throw new Error(`No network found for chainId ${chainId}`)
+    }
+    const rpcProvider = new ethers.JsonRpcProvider(network.rpcUrl)
+
+    const receipt = await getTransactionReceipt(rpcProvider, hash!)
+
+    if (receipt) {
+      walletStore.isSendingSignedTokenTransaction.set(undefined)
+
+      toast({
+        variant: 'success',
+        title: 'Sign transaction confirmed',
+        description: `You can view the transaction details on your connected external wallet`
+      })
+    }
+  }
+
+  const cancelRequest = () => {
+    walletConnectSignClientStore.rejectRequest()
+    walletStore.toSignPermission.set('cancelled')
+  }
+
+  async function handleSign(
+    isTxn: boolean,
+    details?: commons.transaction.Transactionish | MessageToSign | undefined,
+    chainId?: number,
+    options?: ConnectOptions | AccountSignerOptions,
+    hash?: string
+  ) {
+    const signTransaction = async (
+      txn: commons.transaction.Transactionish,
+      chainId: number,
+      options?: ConnectOptions
+    ): Promise<{ hash: string }> => {
+      // TODO do we need options?
+      try {
+        const providerAddress = await walletStore.getExternalProviderAddress(provider!)
+
+        if (!providerAddress) {
+          throw new Error('No provider address found')
+        }
+
+        console.log('sendTransaction chainId', chainId)
+
+        const response = await walletStore.sendTransaction(
+          account!,
+          provider!,
+          providerAddress,
+          txn,
+          chainId!
+        )
+
+        return response
+      } catch (error) {
+        walletStore.isSendingSignedTokenTransaction.set(undefined)
+        throw error
+      }
+    }
+    const signMessage = async (
+      msg: MessageToSign,
+      options?: AccountSignerOptions
+    ): Promise<{ hash: string }> => {
+      // TODO do we need options?
+      try {
+        let hash: string | undefined
+
+        if (msg.message) {
+          console.log('signMessage chainId', msg.chainId)
+          hash = await account!.signMessage(msg.message, msg.chainId!, msg.eip6492 ? 'eip6492' : 'throw')
+        } else if (msg.typedData) {
+          const typedData = msg.typedData
+          hash = await account!.signTypedData(
+            typedData.domain,
+            typedData.types,
+            typedData.message,
+            msg.chainId!,
+            msg.eip6492 ? 'eip6492' : 'throw'
+          )
+        }
+
+        if (!hash) {
+          throw new Error('Account sign method failed')
+        }
+
+        return { hash }
+      } catch (error) {
+        throw error
+      }
+    }
+
+    const provider = walletStore.selectedExternalProvider.get()?.provider
+    const account = authStore.account
+
+    let result: { hash: string } | undefined
+
+    if (details && chainId) {
+      try {
+        if (isTxn) {
+          walletStore.isSendingSignedTokenTransaction.set(details)
+          result = await signTransaction(details.txn, details.chainId, details.options)
+          handlePendingSignTransaction(result.hash, chainId!)
+        } else {
+          result = await signMessage(details.message)
+        }
+
+        walletStore.toSignResult.set(result)
+        walletStore.toSignPermission.set('approved')
+      } catch (error) {
+        walletStore.isSendingSignedTokenTransaction.set(undefined)
+        cancelRequest()
+        throw error
+      }
+    }
   }
 
   const handleConnectSignClient = async () => {
@@ -340,6 +462,16 @@ function Wallet() {
               />
             </Box>
           )}
+          {isSendingSignedTokenTransaction && (
+            <Box marginTop="8" alignItems="center" justifyContent="center">
+              <PendingTxn
+                symbol={'tokens'}
+                chainId={isSendingSignedTokenTransaction.chainId!}
+                to={isSendingSignedTokenTransaction.txn[0].to}
+                amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
+              />
+            </Box>
+          )}
 
           <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
             <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
@@ -403,11 +535,15 @@ function Wallet() {
         </Modal>
       )}
       {isSigning && (
-        <Modal isDismissible={false} size="md" onClose={() => walletStore.isSigning.set(false)}>
+        <Modal isDismissible={false} size="md">
           <SignRequest
             isTxn={isSigning === 'txn'}
-            onClose={() => {
+            onClose={(details, chainId, options) => {
+              handleSign(isSigning === 'txn', details, chainId, options)
               walletStore.isSigning.set(false)
+              if (!details && !chainId && !options) {
+                cancelRequest()
+              }
             }}
           />
         </Modal>

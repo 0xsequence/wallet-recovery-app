@@ -55,6 +55,10 @@ export class WalletStore {
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
 
+  isSendingSignedTokenTransaction = observable<
+    { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
+  >(undefined)
+
   connectDetails = observable<PromptConnectDetails | undefined>(undefined)
   connectOptions = observable<NetworkedConnectOptions | undefined>(undefined)
 

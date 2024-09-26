@@ -1,5 +1,4 @@
 import { Box, Spinner, Text } from '@0xsequence/design-system'
-import { TokenBalance } from '@0xsequence/indexer'
 
 import NetworkTag from './NetworkTag'
 
