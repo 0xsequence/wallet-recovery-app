@@ -66,7 +66,7 @@ export class WalletStore {
   toSignResult = observable<{ hash: string } | undefined>(undefined)
 
   toSignTxnDetails = observable<
-    { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
+    { txn: commons.transaction.Transactionish; chainId: number; options: ConnectOptions } | undefined
   >(undefined)
   toSignMsgDetails = observable<
     { message: MessageToSign; chainId: number; options?: AccountSignerOptions } | undefined

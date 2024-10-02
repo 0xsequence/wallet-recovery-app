@@ -1,17 +1,18 @@
 import { commons } from '@0xsequence/core'
-import { Box, Button, Card, Divider, Text } from '@0xsequence/design-system'
+import { Box, Button, Card, Collapsible, Divider, Text } from '@0xsequence/design-system'
 import { ConnectOptions } from '@0xsequence/provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
+
+import { getNetworkTitle } from '~/utils/network'
+
+import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi.ts'
 
 import { useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
 import { CollectibleContractType } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
-
-import NetworkTag from '../NetworkTag'
 
 export default function SignClientTransactionRequest({
   onClose
@@ -24,175 +25,185 @@ export default function SignClientTransactionRequest({
 }) {
   const walletStore = useStore(WalletStore)
   const networkStore = useStore(NetworkStore)
-  const tokenStore = useStore(TokenStore)
   const collectibleStore = useStore(CollectibleStore)
 
-  const [contractType, setContractType] = useState<string | null>(null)
+  const [contractType, setContractType] = useState<'native' | 'erc20' | 'erc721' | 'erc1155'>('native')
   const [tokenId, setTokenId] = useState<number | null>(null)
+  const [transactionInfo, setTransactionInfo] = useState<{
+    time: string
+    name: string | null
+  }>({
+    time: '',
+    name: null
+  })
+  const [amount, setAmount] = useState<number | null>(null)
 
   const details = walletStore.toSignTxnDetails.get()
 
   useEffect(() => {
     if (!details) return
+    console.log('details', details)
     const network = networkStore.networkForChainId(details.chainId ?? 0)
     const provider = new ethers.JsonRpcProvider(network?.rpcUrl)
-    detectTokenType(details.txn[0].to, provider, details.txn[0].data)
+    parseTransaction(details.txn[0].data, details.txn[0].to, provider)
   }, [details])
 
   useEffect(() => {
-    if (tokenId) {
-      const collectibleInfo = {
-        chainId: details.chainId,
-        address: details.txn[0].to,
-        tokenId: tokenId,
-        contractType: contractType as CollectibleContractType
-      }
-      collectibleStore.getCollectibleInfo(collectibleInfo)
-    } else {
-      const tokenInfo = tokenStore.getTokenInfo(details.chainId, details.txn[0].to)
-      console.log(tokenInfo)
+    const collectibleInfo = {
+      chainId: details.chainId,
+      address: details.txn[0].to,
+      tokenId: tokenId,
+      contractType: contractType as CollectibleContractType
     }
+    collectibleStore.getCollectibleInfo(collectibleInfo)
   }, [contractType, tokenId])
 
-  async function detectTokenType(
+  // Define the main function that parses transaction data
+  async function parseTransaction(
+    transactionData: string,
     contractAddress: string,
-    provider: ethers.JsonRpcProvider,
-    transactionData: string // Add transaction data
+    provider: ethers.JsonRpcProvider
   ) {
-    // Define ABIs for ERC-20, ERC-721, ERC-1155, and EIP-165
-    const erc20Abi = [
-      'function name() view returns (string)',
-      'function symbol() view returns (string)',
-      'function decimals() view returns (uint8)',
-      'function totalSupply() view returns (uint256)'
-    ]
-
-    const erc721Abi = [
-      'function ownerOf(uint256 tokenId) view returns (address)',
-      'function balanceOf(address owner) view returns (uint256)',
-      'function transferFrom(address from, address to, uint256 tokenId)', // Add transfer function to decode tokenId
-      'function safeTransferFrom(address from, address to, uint256 tokenId)'
-    ]
-
-    const erc1155Abi = [
-      'function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])',
-      'function uri(uint256 id) view returns (string)',
-      'function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data)' // For ERC-1155 tokenId
-    ]
-
     const eip165Abi = ['function supportsInterface(bytes4 interfaceID) external view returns (bool)']
 
-    // Default the tokenId to null initially
-    setTokenId(null)
-
     try {
-      // Check if it's ERC-20 by trying its specific methods
-      const erc20Contract = new ethers.Contract(contractAddress, erc20Abi, provider)
-      await erc20Contract.name() // If this works, it's an ERC-20 token
-      setContractType('ERC20')
-      return // Return early since we found the contract is ERC-20
-    } catch (err) {
-      // Not ERC-20, continue checking for other types
-    }
+      // 1. Check if ERC-20
+      const erc20Contract = new ethers.Contract(contractAddress, ERC20_ABI, provider)
+      try {
+        const tokenName = await erc20Contract.symbol()
+        setContractType('erc20')
+        setTransactionInfo({
+          time: new Date().toLocaleString(),
+          name: tokenName
+        })
+        const erc20Interface = new ethers.Interface(ERC20_ABI)
+        const decodedData = erc20Interface.parseTransaction({ data: transactionData })
+        const decimals = await erc20Contract.decimals()
+        setAmount(Number(ethers.formatUnits(decodedData?.args[1], decimals ?? 18)))
 
-    try {
-      // Check if it supports ERC-721 or ERC-1155 using EIP-165
+        return
+      } catch (err) {
+        // If it fails, it means it's not an ERC-20 token, continue checking
+      }
+
       const eip165Contract = new ethers.Contract(contractAddress, eip165Abi, provider)
 
+      // 2. Check if ERC-721
       const isErc721 = await eip165Contract.supportsInterface('0x80ac58cd') // ERC-721 interface ID
       if (isErc721) {
-        setContractType('ERC721')
+        setContractType('erc721')
 
-        // Decode the transaction data for ERC-721 to extract tokenId
-        const erc721Interface = new ethers.Interface(erc721Abi)
-        try {
-          const decodedData = erc721Interface.decodeFunctionData('transferFrom', transactionData)
-          const tokenId = decodedData.tokenId.toString() // Extract tokenId from decoded data
-          setTokenId(tokenId)
-        } catch (decodeErr) {
-          console.error('Failed to decode ERC-721 transaction data', decodeErr)
-        }
+        const erc721Contract = new ethers.Contract(contractAddress, ERC721_ABI, provider)
+        const decodedData = erc721Contract.interface.decodeFunctionData('safeTransferFrom', transactionData)
+        const tokenId = decodedData.tokenId.toString()
 
-        return // Return early since we found the contract is ERC-721
+        setTokenId(tokenId)
+
+        const tokenName = await erc721Contract.name()
+        setTransactionInfo({
+          time: new Date().toLocaleString(),
+          name: tokenName
+        })
+        return
       }
 
+      // 3. Check if ERC-1155
       const isErc1155 = await eip165Contract.supportsInterface('0xd9b67a26') // ERC-1155 interface ID
       if (isErc1155) {
-        setContractType('ERC1155')
+        setContractType('erc1155')
 
-        // Decode the transaction data for ERC-1155 to extract tokenId
-        const erc1155Interface = new ethers.Interface(erc1155Abi)
-        try {
-          const decodedData = erc1155Interface.decodeFunctionData('safeTransferFrom', transactionData)
-          const tokenId = decodedData.id.toString() // Extract tokenId from decoded data
-          setTokenId(tokenId)
-        } catch (decodeErr) {
-          console.error('Failed to decode ERC-1155 transaction data', decodeErr)
-        }
+        const erc1155Contract = new ethers.Contract(contractAddress, ERC1155_ABI, provider)
+        const decodedData = erc1155Contract.interface.decodeFunctionData('safeTransferFrom', transactionData)
+        const tokenId = decodedData.id.toString()
 
-        return // Return early since we found the contract is ERC-1155
+        setTokenId(tokenId)
+
+        const tokenUri = await erc1155Contract.uri(tokenId)
+        setTransactionInfo({
+          time: new Date().toLocaleString(),
+          name: tokenUri // For ERC-1155, you may have to use the URI instead of a name
+        })
+        return
       }
     } catch (err) {
-      // Not EIP-165 or doesn't support ERC-721/ERC-1155
+      console.error('Error parsing contract type:', err)
     }
 
-    // If no match, set contract type to null
-    setContractType(null)
-    setTokenId(null) // No tokenId found
+    // 4. If none of the above, it's a native transaction (ETH or MATIC)
+    setContractType('native')
+    setTransactionInfo({
+      time: new Date().toLocaleString(),
+      name: `${getNetworkTitle(details.chainId)} Native Token`
+    })
   }
 
   return (
     <Box>
-      <Box flexDirection="column" padding="10" alignItems="center">
-        <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="1">
-          {'Would you like to approve this transaction?'}
-        </Text>
-        <Divider color="gradientPrimary" width="full" height="px" />
-        <Text variant="md" color="text100" paddingY="3" paddingBottom="1">
-          <Box flexDirection="column" alignItems="center">
-            <Text variant="small" color="text100" marginBottom="2">
-              {details.options.origin}
+      {details && (
+        <Box style={{ minWidth: '600px' }}>
+          <Box flexDirection="column" padding="10" gap="4">
+            <Text alignSelf="center" variant="md" fontWeight="bold" color="text100">
+              {'Would you like to approve this transaction?'}
             </Text>
-            <Card flexDirection="row" alignItems="center" gap="1">
-              <Text variant="small" color="text100">
-                {`Sending`}
+            <Divider color="gradientPrimary" width="full" height="px" />
+            <Card flexDirection="row" justifyContent="space-between">
+              <Text variant="md" color="text100">
+                {`Requested at: `}
               </Text>
-              {details.txn[0].value ? (
-                <Text
-                  variant="small"
-                  color="text100"
-                >{`${ethers.formatUnits(details.txn[0].value)} native tokens on`}</Text>
-              ) : (
-                <Text
-                  variant="small"
-                  color="text100"
-                >{`non-native tokens with contract address of ${details.txn[0].to} on`}</Text>
-              )}
-              <NetworkTag chainId={details.chainId} paddingTop="0" paddingBottom="1" />
+              <Text variant="md" color="text100">
+                {`${transactionInfo.time}`}
+              </Text>
             </Card>
-          </Box>
-        </Text>
-        <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="10">
-          <Button
-            width="full"
-            label={`Cancel`}
-            onClick={() => {
-              onClose()
-            }}
-            data-id="signingCancel"
-          />
+            <Card flexDirection="row" justifyContent="space-between">
+              <Text variant="md" color="text100">
+                {`Origin:`}
+              </Text>
+              <Text variant="md" color="text100">
+                {`${details.options.origin?.split('//')[1]}`}
+              </Text>
+            </Card>
+            <Card flexDirection="row" justifyContent="space-between">
+              <Text variant="md" color="text100">
+                {`${transactionInfo.name}`}
+              </Text>
+              <Text variant="md" color="text100">
+                {`${amount} ${transactionInfo.name}`}
+              </Text>
+            </Card>
+            <Collapsible label={`Transaction Data`}>
+              <Box flexDirection="column" gap="2">
+                {details.txn.map((txn, idx) => (
+                  <Card key={idx}>
+                    <Text variant="code" color="text80" style={{ whiteSpace: 'pre-wrap' }}>
+                      {JSON.stringify(txn, null, 4) || `Native token transfer`}
+                    </Text>
+                  </Card>
+                ))}
+              </Box>
+            </Collapsible>
+            <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="10">
+              <Button
+                width="full"
+                label={`Cancel`}
+                onClick={() => {
+                  onClose()
+                }}
+                data-id="signingCancel"
+              />
 
-          <Button
-            width="full"
-            variant="primary"
-            label={'Send'}
-            onClick={() => {
-              onClose(details)
-            }}
-            data-id="signingContinue"
-          />
+              <Button
+                width="full"
+                variant="primary"
+                label={'Send'}
+                onClick={() => {
+                  onClose(details)
+                }}
+                data-id="signingContinue"
+              />
+            </Box>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   )
 }
