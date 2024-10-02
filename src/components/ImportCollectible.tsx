@@ -41,12 +41,8 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         .then(response => {
           setCollectibleInfoResponse(response)
         })
-
-      // tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
-      //   setTokenInfo(tokenInfo)
-      // })
     } else {
-      // setTokenInfo(undefined)
+      setCollectibleInfoResponse(undefined)
     }
   }, [selectedNetwork, collectibleAddress, collectibleTokenId, contractType])
 

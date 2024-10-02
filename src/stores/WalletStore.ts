@@ -50,11 +50,9 @@ export class WalletStore {
   isSendingTokenTransaction = observable<
     { tokenBalance: TokenBalance; to: string; amount?: string } | undefined
   >(undefined)
-
   isSendingCollectibleTransaction = observable<
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
-
   isSendingSignedTokenTransaction = observable<
     { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
   >(undefined)
@@ -62,7 +60,8 @@ export class WalletStore {
   connectDetails = observable<PromptConnectDetails | undefined>(undefined)
   connectOptions = observable<NetworkedConnectOptions | undefined>(undefined)
 
-  isSigning = observable<'txn' | 'msg' | false>(false)
+  isSigningTxn = observable<boolean>(false)
+  isSigningMsg = observable<boolean>(false)
   toSignPermission = observable<'approved' | 'cancelled' | undefined>(undefined)
   toSignResult = observable<{ hash: string } | undefined>(undefined)
 
@@ -74,7 +73,7 @@ export class WalletStore {
   >(undefined)
 
   isCheckingWalletDeployment = observable<boolean>(false)
-  isWalletNotDeployed = observable<boolean>(false)
+  signClientWarningType = observable<'noProvider' | 'isWalletConnect' | 'notDeployed' | false>(false)
 
   walletRequestHandler: WalletRequestHandler
 
@@ -357,7 +356,7 @@ export class WalletStore {
   }
 
   resetSignObservables = () => {
-    this.isSigning.set(false)
+    this.isSigningTxn.set(false)
     this.toSignTxnDetails.set(undefined)
     this.toSignMsgDetails.set(undefined)
     this.toSignPermission.set(undefined)
@@ -534,13 +533,13 @@ class Prompter implements WalletUserPrompter {
         const res = await this.promptConfirmWalletDeploy(message.chainId, options)
 
         if (!res) {
-          this.store.get(WalletStore).isWalletNotDeployed.set(true)
+          this.store.get(WalletStore).signClientWarningType.set('notDeployed')
           return Promise.reject('User rejected wallet deploy request')
         }
       }
     }
 
-    this.store.get(WalletStore).isSigning.set('msg')
+    this.store.get(WalletStore).isSigningMsg.set(true)
     this.store.get(WalletStore).toSignMsgDetails.set({ message, chainId: message.chainId })
 
     return new Promise((resolve, reject) => {
@@ -582,7 +581,7 @@ class Prompter implements WalletUserPrompter {
 
     return new Promise((resolve, reject) => {
       this.store.get(WalletStore).toSignTxnDetails.set({ txn, chainId, options })
-      this.store.get(WalletStore).isSigning.set('txn')
+      this.store.get(WalletStore).isSigningTxn.set(true)
 
       const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
         unsubscribe()

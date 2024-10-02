@@ -6,8 +6,9 @@ import { createProvider } from '~/utils/ethereumprovider'
 
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
-// import { useStore } from '~/stores'
-// import { WalletStore } from '~/stores/WalletStore'
+import { useStore } from '~/stores'
+import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
+
 import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
 export interface ProviderInfo {
@@ -25,16 +26,33 @@ export interface ProviderDetail {
 export default function SelectProvider({
   onSelectProvider
 }: {
-  onSelectProvider: (provider: ProviderDetail) => void
+  onSelectProvider: (provider?: ProviderDetail) => void
 }) {
-  // const walletStore = useStore(WalletStore)
+  const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
   const providers = useSyncProviders()
 
   const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
 
+  const confirmWalletConnectModalOpen = (): boolean => {
+    const confirmed = window.confirm(
+      'To continue, all WalletConnect Dapp sessions must and will be disconnected. Would you like to Continue?'
+    )
+    return confirmed
+  }
+
   const handleWalletConnectModalOpen = async () => {
     try {
       if (!isWalletConnectModalOpen) {
+        if (walletConnectSignClientStore.allSessions.get().length !== 0) {
+          const confirmed = confirmWalletConnectModalOpen()
+          if (!confirmed) {
+            throw new Error('User rejected wallet connect modal')
+          }
+          await walletConnectSignClientStore.disconnectAllSessions()
+          onSelectProvider()
+          return
+        }
+
         setIsWalletConnectModalOpen(true)
 
         const walletConnectProvider = await createProvider(true)
