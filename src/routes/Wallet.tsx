@@ -392,8 +392,8 @@ function Wallet() {
             <SettingsDropdownMenu onTokenListClick={() => setIsSettingsTokenListModalOpen(true)} />
           </Box>
         </Box>
-        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
-          <Card flexDirection="column" alignItems="center" padding="6" marginTop="16">
+        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
+          <Card flexDirection="column" alignItems="center" padding="6" marginTop="10">
             <Text variant="large" color="text80" marginBottom="4">
               Your recovered wallet address
             </Text>
