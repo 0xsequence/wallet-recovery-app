@@ -1,5 +1,14 @@
 import { commons } from '@0xsequence/core'
-import { Box, Button, Card, Collapsible, Divider, Text } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Collapsible,
+  Divider,
+  ExternalLinkIcon,
+  IconButton,
+  Text
+} from '@0xsequence/design-system'
 import { ConnectOptions } from '@0xsequence/provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
@@ -30,17 +39,18 @@ export default function SignClientTransactionRequest({
   const [contractType, setContractType] = useState<'native' | 'erc20' | 'erc721' | 'erc1155'>('native')
   const [tokenId, setTokenId] = useState<number | null>(null)
   const [transactionInfo, setTransactionInfo] = useState<{
-    time: string
     name: string | null
   }>({
-    time: '',
     name: null
   })
   const [amount, setAmount] = useState<number | null>(null)
+  const [timestamp, setTimestamp] = useState<string>('')
 
   const details = walletStore.toSignTxnDetails.get()
 
   useEffect(() => {
+    // TODO maybe set timestamp state in store or other persistent state
+    setTimestamp(new Date().toLocaleString())
     if (!details) return
     console.log('details', details)
     const network = networkStore.networkForChainId(details.chainId ?? 0)
@@ -48,15 +58,16 @@ export default function SignClientTransactionRequest({
     parseTransaction(details.txn[0].data, details.txn[0].to, provider)
   }, [details])
 
-  useEffect(() => {
-    const collectibleInfo = {
-      chainId: details.chainId,
-      address: details.txn[0].to,
-      tokenId: tokenId,
-      contractType: contractType as CollectibleContractType
-    }
-    collectibleStore.getCollectibleInfo(collectibleInfo)
-  }, [contractType, tokenId])
+  // useEffect(() => {
+  //   if (!details) return
+  //   const collectibleInfo = {
+  //     chainId: details.chainId,
+  //     address: details.txn[0].to,
+  //     tokenId: tokenId,
+  //     contractType: contractType as CollectibleContractType
+  //   }
+  //   collectibleStore.getCollectibleInfo(collectibleInfo)
+  // }, [details, contractType, tokenId])
 
   // Define the main function that parses transaction data
   async function parseTransaction(
@@ -73,7 +84,6 @@ export default function SignClientTransactionRequest({
         const tokenName = await erc20Contract.symbol()
         setContractType('erc20')
         setTransactionInfo({
-          time: new Date().toLocaleString(),
           name: tokenName
         })
         const erc20Interface = new ethers.Interface(ERC20_ABI)
@@ -101,7 +111,6 @@ export default function SignClientTransactionRequest({
 
         const tokenName = await erc721Contract.name()
         setTransactionInfo({
-          time: new Date().toLocaleString(),
           name: tokenName
         })
         return
@@ -120,7 +129,6 @@ export default function SignClientTransactionRequest({
 
         const tokenUri = await erc1155Contract.uri(tokenId)
         setTransactionInfo({
-          time: new Date().toLocaleString(),
           name: tokenUri // For ERC-1155, you may have to use the URI instead of a name
         })
         return
@@ -132,15 +140,14 @@ export default function SignClientTransactionRequest({
     // 4. If none of the above, it's a native transaction (ETH or MATIC)
     setContractType('native')
     setTransactionInfo({
-      time: new Date().toLocaleString(),
-      name: `${getNetworkTitle(details.chainId)} Native Token`
+      name: `${getNetworkTitle(details?.chainId ?? 1)} Native Token`
     })
   }
 
   return (
     <Box>
       {details && (
-        <Box style={{ minWidth: '600px' }}>
+        <Box>
           <Box flexDirection="column" padding="10" gap="4">
             <Text alignSelf="center" variant="md" fontWeight="bold" color="text100">
               {'Would you like to approve this transaction?'}
@@ -148,31 +155,38 @@ export default function SignClientTransactionRequest({
             <Divider color="gradientPrimary" width="full" height="px" />
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
-                {`Requested at: `}
+                {`Requested at`}
               </Text>
               <Text variant="md" color="text100">
-                {`${transactionInfo.time}`}
+                {timestamp}
               </Text>
             </Card>
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
-                {`Origin:`}
+                {`Origin`}
               </Text>
-              <Text variant="md" color="text100">
-                {`${details.options.origin?.split('//')[1]}`}
-              </Text>
+              <Box flexDirection="row" alignItems="center" gap="3">
+                <Text variant="md" color="text100">
+                  {details?.options?.origin?.split('//')[1]}
+                </Text>
+                <IconButton
+                  size="xs"
+                  icon={ExternalLinkIcon}
+                  onClick={() => window.open(details.options?.origin, '_blank')}
+                />
+              </Box>
             </Card>
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
                 {`${transactionInfo.name}`}
               </Text>
               <Text variant="md" color="text100">
-                {`${amount} ${transactionInfo.name}`}
+                {`${amount ?? 0} ${transactionInfo.name}`}
               </Text>
             </Card>
             <Collapsible label={`Transaction Data`}>
               <Box flexDirection="column" gap="2">
-                {details.txn.map((txn, idx) => (
+                {details.txn.map((txn: commons.transaction.Transactionish, idx: number) => (
                   <Card key={idx}>
                     <Text variant="code" color="text80" style={{ whiteSpace: 'pre-wrap' }}>
                       {JSON.stringify(txn, null, 4) || `Native token transfer`}

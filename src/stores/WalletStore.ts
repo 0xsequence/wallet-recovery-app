@@ -1,5 +1,4 @@
 import { Account } from '@0xsequence/account'
-import { AccountSignerOptions } from '@0xsequence/account/dist/declarations/src/signer'
 import { commons } from '@0xsequence/core'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import {
@@ -69,7 +68,7 @@ export class WalletStore {
     { txn: commons.transaction.Transactionish; chainId: number; options: ConnectOptions } | undefined
   >(undefined)
   toSignMsgDetails = observable<
-    { message: MessageToSign; chainId: number; options?: AccountSignerOptions } | undefined
+    { message: MessageToSign; chainId: number; options?: ConnectOptions } | undefined
   >(undefined)
 
   isCheckingWalletDeployment = observable<boolean>(false)
@@ -514,7 +513,7 @@ class Prompter implements WalletUserPrompter {
     return { connected: false }
   }
 
-  async promptSignMessage(message: MessageToSign, options?: ConnectOptions): Promise<string> {
+  async promptSignMessage(message: MessageToSign, options: ConnectOptions): Promise<string> {
     console.log('prompt sign message:', message, options)
 
     if (!message.chainId) {
@@ -540,7 +539,7 @@ class Prompter implements WalletUserPrompter {
     }
 
     this.store.get(WalletStore).isSigningMsg.set(true)
-    this.store.get(WalletStore).toSignMsgDetails.set({ message, chainId: message.chainId })
+    this.store.get(WalletStore).toSignMsgDetails.set({ message, chainId: message.chainId, options })
 
     return new Promise((resolve, reject) => {
       const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {

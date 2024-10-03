@@ -1,6 +1,15 @@
-import { AccountSignerOptions } from '@0xsequence/account/dist/declarations/src/signer'
 import { commons } from '@0xsequence/core'
-import { Box, Button, Card, Modal, ScanIcon, Switch, Text, useToast } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Modal,
+  ScanIcon,
+  Switch,
+  Text,
+  useMediaQuery,
+  useToast
+} from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
@@ -65,6 +74,8 @@ function Wallet() {
   const sessionList = useObservable(walletConnectSignClientStore.allSessions)
 
   const toast = useToast()
+
+  const isMobile = useMediaQuery('isMobile')
 
   const walletConnectProvider = useWalletConnectProvider()
 
@@ -293,12 +304,9 @@ function Wallet() {
   async function handleSignMsg(details: {
     message: MessageToSign
     chainId: number
-    options?: AccountSignerOptions
+    options?: ConnectOptions
   }) {
-    const signMessage = async (
-      msg: MessageToSign,
-      options?: AccountSignerOptions
-    ): Promise<{ hash: string }> => {
+    const signMessage = async (msg: MessageToSign, options?: ConnectOptions): Promise<{ hash: string }> => {
       // TODO do we need options?
       try {
         let hash: string | undefined
@@ -556,7 +564,13 @@ function Wallet() {
         </Modal>
       )}
       {isSigningTxn && (
-        <Modal isDismissible={false} size="md">
+        <Modal
+          isDismissible={false}
+          size="md"
+          contentProps={{
+            style: { width: !isMobile ? '800px' : '100%', maxHeight: '100vh', overflowY: 'auto' }
+          }}
+        >
           <SignClientTransactionRequest
             onClose={details => {
               walletStore.isSigningTxn.set(false)
@@ -576,7 +590,13 @@ function Wallet() {
         </Modal>
       )}
       {isSigningMsg && (
-        <Modal isDismissible={false} size="md">
+        <Modal
+          isDismissible={false}
+          size="md"
+          contentProps={{
+            style: { width: !isMobile ? '800px' : '100%', maxHeight: '90%', overflowY: 'auto' }
+          }}
+        >
           <SignClientMessageRequest
             onClose={details => {
               walletStore.isSigningMsg.set(false)
