@@ -246,12 +246,12 @@ function Wallet() {
   }
 
   async function handleSignTxn(details: {
-    txn: commons.transaction.Transactionish
+    txn: ethers.Transaction[] | ethers.TransactionRequest[]
     chainId: number
     options?: ConnectOptions
   }) {
     const signTransaction = async (
-      txn: commons.transaction.Transactionish,
+      txn: ethers.Transaction[] | ethers.TransactionRequest[],
       chainId: number,
       options?: ConnectOptions
     ): Promise<{ hash: string }> => {
@@ -357,8 +357,7 @@ function Wallet() {
     setIsScanningQrWalletConnect(true)
   }
 
-  const handleOnQrUri = async (uri: string) => {
-    walletConnectSignClientStore.pair(uri)
+  const handleOnQrUri = async () => {
     setIsConnectingDapp(true)
   }
 
@@ -495,7 +494,7 @@ function Wallet() {
               <PendingTxn
                 symbol={'tokens'}
                 chainId={isSendingSignedTokenTransaction.chainId!}
-                to={isSendingSignedTokenTransaction.txn[0].to}
+                to={isSendingSignedTokenTransaction.txn[0].to as string}
                 amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
               />
             </Box>
@@ -556,8 +555,8 @@ function Wallet() {
       {isScanningQrWalletConnect && (
         <Modal size="md" onClose={() => setIsScanningQrWalletConnect(false)}>
           <WalletScan
-            onQrUri={uri => {
-              handleOnQrUri(uri)
+            onQrUri={() => {
+              handleOnQrUri()
               setIsScanningQrWalletConnect(false)
             }}
           />

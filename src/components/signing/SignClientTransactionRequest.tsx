@@ -27,7 +27,7 @@ export default function SignClientTransactionRequest({
   onClose
 }: {
   onClose: (details?: {
-    txn: commons.transaction.Transactionish
+    txn: ethers.Transaction[] | ethers.TransactionRequest[]
     chainId: number
     options?: ConnectOptions
   }) => void
@@ -36,7 +36,9 @@ export default function SignClientTransactionRequest({
   const networkStore = useStore(NetworkStore)
   const collectibleStore = useStore(CollectibleStore)
 
-  const [contractType, setContractType] = useState<'native' | 'erc20' | 'erc721' | 'erc1155'>('native')
+  const [contractType, setContractType] = useState<'Native Token' | 'ERC20' | 'ERC721' | 'ERC1155'>(
+    'Native Token'
+  )
   const [tokenId, setTokenId] = useState<number | null>(null)
   const [transactionInfo, setTransactionInfo] = useState<{
     name: string | null
@@ -50,24 +52,33 @@ export default function SignClientTransactionRequest({
 
   useEffect(() => {
     // TODO maybe set timestamp state in store or other persistent state
-    setTimestamp(new Date().toLocaleString())
+    // TODO check if we need to account for multiple transactions in one request
     if (!details) return
-    console.log('details', details)
+
+    setTimestamp(new Date().toLocaleString())
+
     const network = networkStore.networkForChainId(details.chainId ?? 0)
     const provider = new ethers.JsonRpcProvider(network?.rpcUrl)
-    parseTransaction(details.txn[0].data, details.txn[0].to, provider)
+
+    const data = details.txn[0].data as string
+    const to = details.txn[0].to as string
+
+    parseTransaction(data, to, provider)
   }, [details])
 
-  // useEffect(() => {
-  //   if (!details) return
-  //   const collectibleInfo = {
-  //     chainId: details.chainId,
-  //     address: details.txn[0].to,
-  //     tokenId: tokenId,
-  //     contractType: contractType as CollectibleContractType
-  //   }
-  //   collectibleStore.getCollectibleInfo(collectibleInfo)
-  // }, [details, contractType, tokenId])
+  useEffect(() => {
+    if (!details || !details?.txn[0].to || !tokenId) return
+
+    const to = details.txn[0].to as string
+
+    const collectibleInfo = {
+      chainId: details.chainId,
+      address: to,
+      tokenId: tokenId,
+      contractType: contractType as CollectibleContractType
+    }
+    collectibleStore.getCollectibleInfo(collectibleInfo)
+  }, [contractType, tokenId])
 
   // Define the main function that parses transaction data
   async function parseTransaction(
@@ -82,7 +93,7 @@ export default function SignClientTransactionRequest({
       const erc20Contract = new ethers.Contract(contractAddress, ERC20_ABI, provider)
       try {
         const tokenName = await erc20Contract.symbol()
-        setContractType('erc20')
+        setContractType('ERC20')
         setTransactionInfo({
           name: tokenName
         })
@@ -101,7 +112,7 @@ export default function SignClientTransactionRequest({
       // 2. Check if ERC-721
       const isErc721 = await eip165Contract.supportsInterface('0x80ac58cd') // ERC-721 interface ID
       if (isErc721) {
-        setContractType('erc721')
+        setContractType('ERC721')
 
         const erc721Contract = new ethers.Contract(contractAddress, ERC721_ABI, provider)
         const decodedData = erc721Contract.interface.decodeFunctionData('safeTransferFrom', transactionData)
@@ -119,7 +130,7 @@ export default function SignClientTransactionRequest({
       // 3. Check if ERC-1155
       const isErc1155 = await eip165Contract.supportsInterface('0xd9b67a26') // ERC-1155 interface ID
       if (isErc1155) {
-        setContractType('erc1155')
+        setContractType('ERC1155')
 
         const erc1155Contract = new ethers.Contract(contractAddress, ERC1155_ABI, provider)
         const decodedData = erc1155Contract.interface.decodeFunctionData('safeTransferFrom', transactionData)
@@ -138,7 +149,7 @@ export default function SignClientTransactionRequest({
     }
 
     // 4. If none of the above, it's a native transaction (ETH or MATIC)
-    setContractType('native')
+    setContractType('Native Token')
     setTransactionInfo({
       name: `${getNetworkTitle(details?.chainId ?? 1)} Native Token`
     })
@@ -176,6 +187,25 @@ export default function SignClientTransactionRequest({
                 />
               </Box>
             </Card>
+            <Card flexDirection="row" justifyContent="space-between">
+              <Text variant="md" color="text100">
+                {`Token Standard`}
+              </Text>
+              <Text variant="md" color="text100">
+                {`${contractType}`}
+              </Text>
+            </Card>
+            {contractType === 'ERC721' ||
+              (contractType === 'ERC1155' && (
+                <Card flexDirection="row" justifyContent="space-between">
+                  <Text variant="md" color="text100">
+                    {`Token ID`}
+                  </Text>
+                  <Text variant="md" color="text100">
+                    {`${tokenId}`}
+                  </Text>
+                </Card>
+              ))}
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
                 {`${transactionInfo.name}`}

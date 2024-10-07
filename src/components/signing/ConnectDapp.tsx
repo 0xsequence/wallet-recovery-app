@@ -4,12 +4,10 @@ import { useState } from 'react'
 import { getNetworkTitle } from '~/utils/network'
 
 import { useObservable, useStore } from '~/stores'
-import { NetworkStore } from '~/stores/NetworkStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 export default function ConnectDapp({ onClose }: { onClose: () => void }) {
   const walletStore = useStore(WalletStore)
-  const networkStore = useStore(NetworkStore)
   const connectOptions = useObservable(walletStore.connectOptions)
 
   const [isPending, setPending] = useState(false)
@@ -23,11 +21,10 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
     if (connectOptions?.networkId === undefined) {
       throw new Error('no network in connect options')
     }
-    const chainId = networkStore.getChainIdByNetworkId(connectOptions.networkId)
+    const chainId = connectOptions.networkId
     if (chainId === undefined) {
       throw new Error(`no network ${connectOptions.networkId} found`)
     }
-    connectOptions.networkId = chainId
 
     const connectDetails = await walletStore.walletRequestHandler.connect(connectOptions)
     console.log('connectDetails:', connectDetails)

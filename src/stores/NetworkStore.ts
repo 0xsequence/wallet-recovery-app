@@ -47,11 +47,6 @@ export class NetworkStore {
     })
   }
 
-  getChainIdByNetworkId = (networkId: string | number): number | undefined => {
-    const network = findNetworkConfig(this.networks.get(), networkId)
-    return network?.chainId
-  }
-
   private async prepareNetworks() {
     const updatedNetworkConfigs: NetworkConfig[] = []
 

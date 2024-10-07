@@ -53,7 +53,8 @@ export class WalletStore {
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
   isSendingSignedTokenTransaction = observable<
-    { txn: commons.transaction.Transactionish; chainId?: number; options?: ConnectOptions } | undefined
+    | { txn: ethers.Transaction[] | ethers.TransactionRequest[]; chainId?: number; options?: ConnectOptions }
+    | undefined
   >(undefined)
 
   connectDetails = observable<PromptConnectDetails | undefined>(undefined)
@@ -65,7 +66,8 @@ export class WalletStore {
   toSignResult = observable<{ hash: string } | undefined>(undefined)
 
   toSignTxnDetails = observable<
-    { txn: commons.transaction.Transactionish; chainId: number; options: ConnectOptions } | undefined
+    | { txn: ethers.Transaction[] | ethers.TransactionRequest[]; chainId: number; options: ConnectOptions }
+    | undefined
   >(undefined)
   toSignMsgDetails = observable<
     { message: MessageToSign; chainId: number; options?: ConnectOptions } | undefined
@@ -87,6 +89,7 @@ export class WalletStore {
     this.walletRequestHandler = new WalletRequestHandler(
       undefined, // signer is set after wallet is initialized / signed in
       new Prompter(store),
+      // WARNING: ignore error caused by version mismatch
       this.networkStore.networks.get()
     )
 
@@ -107,7 +110,7 @@ export class WalletStore {
     })
 
     const account = this.store.get(AuthStore).account
-    // Ignore error as likely caused by versioning of @0xsequence/account
+    // WARNING: ignore error caused by version mismatch
     this.walletRequestHandler.signIn(account ?? null)
   }
 
@@ -487,7 +490,7 @@ class Prompter implements WalletUserPrompter {
     console.log('promptconnect', options)
 
     const account = this.store.get(AuthStore).account
-    // Ignore error as likely caused by versioning of @0xsequence/account
+    // WARNING: ignore error caused by version mismatch
     await this.store.get(WalletStore).walletRequestHandler.signIn(account ?? null)
 
     if (options) {
@@ -560,26 +563,34 @@ class Prompter implements WalletUserPrompter {
 
   promptSignTransaction(
     txn: commons.transaction.Transactionish,
-    chainId?: number,
-    options?: ConnectOptions
+    chainId: number,
+    options: ConnectOptions
   ): Promise<string> {
     console.log('prompt sign transaction:', txn, chainId, options)
+
+    let newTxn: ethers.Transaction[] | ethers.TransactionRequest[]
+    if (Array.isArray(txn)) {
+      newTxn = txn
+    } else {
+      newTxn = [txn]
+    }
+
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
     if (!accountAddress) {
       throw new Error('Unknown account address')
     }
 
-    const transactions = commons.transaction.fromTransactionish(accountAddress, txn)
+    const transactions = commons.transaction.fromTransactionish(accountAddress, newTxn)
 
     console.log('prompt sign txn:', transactions, chainId, options)
 
     // TODO find out if we need to implement multiple transaction handling
 
-    validateTransactionRequest(accountAddress, txn)
+    validateTransactionRequest(accountAddress, newTxn)
 
     return new Promise((resolve, reject) => {
-      this.store.get(WalletStore).toSignTxnDetails.set({ txn, chainId, options })
+      this.store.get(WalletStore).toSignTxnDetails.set({ txn: newTxn, chainId, options })
       this.store.get(WalletStore).isSigningTxn.set(true)
 
       const unsubscribe = this.store.get(WalletStore).toSignPermission.subscribe(() => {
@@ -602,8 +613,8 @@ class Prompter implements WalletUserPrompter {
 
   promptSendTransaction(
     txn: commons.transaction.Transactionish,
-    chainId?: number,
-    options?: ConnectOptions
+    chainId: number,
+    options: ConnectOptions
   ): Promise<string> {
     return this.promptSignTransaction(txn, chainId, options)
   }
