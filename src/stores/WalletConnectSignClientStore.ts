@@ -46,7 +46,9 @@ export class WalletConnectSignClientStore {
     this.signClient.on('session_update', this.onSessionUpdate)
     this.signClient.on('session_delete', this.onSessionDelete)
 
-    const allSessions = this.signClient.session.getAll()
+    const allSessions = this.getSignClientSessions()
+    console.log('allWCSessions', this.signClient.session.getAll())
+
     if (allSessions) {
       this.allSessions.set(allSessions)
     } else {
@@ -56,13 +58,20 @@ export class WalletConnectSignClientStore {
     this.isReady.set(true)
   }
 
+  private getSignClientSessions = () => {
+    const sessions = this.signClient!.session.getAll().filter(
+      session => session.self.metadata.name !== 'Sequence Recovery Wallet External Wallet'
+    )
+    return sessions
+  }
+
   pair = async (uri: string) => {
     if (!this.signClient) {
       throw new Error('WalletConnect signClient not initialized.')
     }
 
     await this.signClient.core.pairing.pair({ uri })
-    this.allSessions.set(this.signClient.session.getAll())
+    this.allSessions.set(this.getSignClientSessions())
   }
 
   rejectRequest = () => {
@@ -84,7 +93,6 @@ export class WalletConnectSignClientStore {
 
   disconnectSession = async (topic: string) => {
     const session = this.signClient?.session.get(topic)
-
     if (session) {
       await this.signClient?.engine.client.disconnect({
         topic: session.topic,
@@ -94,7 +102,7 @@ export class WalletConnectSignClientStore {
         }
       })
 
-      this.allSessions.set(this.signClient?.session.getAll() ?? [])
+      this.allSessions.set(this.getSignClientSessions() ?? [])
     }
   }
 
@@ -177,7 +185,7 @@ export class WalletConnectSignClientStore {
 
       console.log('session', session)
 
-      this.allSessions.set(this.signClient?.session.getAll() ?? [])
+      this.allSessions.set(this.getSignClientSessions() ?? [])
 
       this.signClient?.core.pairing
         .getPairings()
@@ -277,6 +285,6 @@ export class WalletConnectSignClientStore {
 
   onSessionDelete = async (ev: SignClientTypes.EventArguments['session_delete']) => {
     console.log('onSessionDelete', ev)
-    this.allSessions.set(this.signClient?.session.getAll() ?? [])
+    this.allSessions.set(this.getSignClientSessions() ?? [])
   }
 }

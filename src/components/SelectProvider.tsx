@@ -35,7 +35,7 @@ export default function SelectProvider({
 
   const confirmWalletConnectModalOpen = (): boolean => {
     const confirmed = window.confirm(
-      'To continue, all WalletConnect Dapp sessions must and will be disconnected. Would you like to Continue?'
+      'All WalletConnect Dapp sessions must and will be disconnected. If you would like to continue, click YES and connect to WalletConnect again.'
     )
     return confirmed
   }
@@ -56,9 +56,7 @@ export default function SelectProvider({
         setIsWalletConnectModalOpen(true)
 
         const walletConnectProvider = await createProvider(true)
-        await walletConnectProvider.enable()
-
-        // walletStore.setWalletConnectSession(walletConnectProvider.session)
+        await walletConnectProvider.connect()
 
         let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
 

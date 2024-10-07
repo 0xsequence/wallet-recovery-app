@@ -34,6 +34,9 @@ export default function WalletScan({ onQrUri }: { onQrUri: () => void }) {
             setSignClientUri(result)
           }
         }}
+        onError={(err: any) => {
+          throw new Error(err)
+        }}
       ></QrReader>
       <Box>
         <TextInput

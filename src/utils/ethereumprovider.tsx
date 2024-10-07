@@ -11,7 +11,13 @@ export async function createProvider(showQr: boolean): Promise<EthereumProvider>
   const provider = await EthereumProvider.init({
     projectId: WALLET_CONNECT_PROJECT_ID,
     showQrModal: showQr,
-    optionalChains: [1]
+    optionalChains: [1],
+    metadata: {
+      name: 'Sequence Recovery Wallet External Wallet',
+      description: '',
+      url: 'TODO_CHANGE_LATER',
+      icons: []
+    }
   })
 
   return provider
@@ -27,18 +33,9 @@ export function useWalletConnectProvider() {
     async function initProvider(session?: SessionTypes.Struct) {
       const p = await createProvider(false)
 
-      p.enable()
+      await p.enable()
       setProvider(p)
-
-      // p.connect(session)
-
-      // walletStore.setWalletConnectSession(p.session)
     }
-
-    // const walletConnectSession = walletStore.getWalletConnectSession()
-    // if (walletConnectSession) {
-    //   initProvider(walletConnectSession)
-    // }
 
     if (lastConnectedWalletInfo?.name === 'WalletConnect') {
       initProvider()

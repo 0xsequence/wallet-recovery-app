@@ -1,4 +1,3 @@
-import { commons } from '@0xsequence/core'
 import {
   Box,
   Button,
@@ -354,7 +353,11 @@ function Wallet() {
   }
 
   const handleConnectSignClient = async () => {
-    setIsScanningQrWalletConnect(true)
+    if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
+      walletStore.signClientWarningType.set('isWalletConnect')
+    } else {
+      setIsScanningQrWalletConnect(true)
+    }
   }
 
   const handleOnQrUri = async () => {
@@ -540,6 +543,11 @@ function Wallet() {
           <SelectProvider
             onSelectProvider={async provider => {
               if (provider) {
+                if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
+                  const walletConnectProvider = walletStore.selectedExternalProvider.get()
+                    ?.provider as EthereumProvider
+                  await walletConnectProvider.disconnect()
+                }
                 walletStore.setExternalProvider(provider)
               }
               setIsSelectProviderModalOpen(false)

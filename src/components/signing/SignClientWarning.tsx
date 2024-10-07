@@ -1,4 +1,4 @@
-import { Box, Text } from '@0xsequence/design-system'
+import { Box, Card, Text } from '@0xsequence/design-system'
 
 export default function SignClientWarning({
   warningType
@@ -7,18 +7,21 @@ export default function SignClientWarning({
 }) {
   return (
     <Box>
-      <Box flexDirection="column" padding="10" alignItems="center">
-        <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="4">
-          Please ensure that:
+      <Box flexDirection="column" padding="10" alignItems="center" gap="6">
+        <Text variant="md" fontWeight="bold" color="text100">
+          Warning:
         </Text>
         <Box flexDirection="column">
-          <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="1">
-            {warningType === 'noProvider' && 'An external wallet is connected via the "Connect" button'}
-            {warningType === 'isWalletConnect' &&
-              'The external wallet you are using to sign messages cannot be WalletConnect'}
-            {warningType === 'notDeployed' &&
-              'Your wallet is deployed on the required network before trying to sign messages'}
-          </Text>
+          <Card>
+            <Text variant="md" fontWeight="bold" color="text100" paddingX="2">
+              {warningType === 'noProvider' &&
+                'Please ensure that an external wallet is connected via the "Connect" button'}
+              {warningType === 'isWalletConnect' &&
+                'Please switch your external wallet to an option other than WalletConnect'}
+              {warningType === 'notDeployed' &&
+                'Please deploy our wallet on the required network before trying to sign messages'}
+            </Text>
+          </Card>
         </Box>
       </Box>
     </Box>
