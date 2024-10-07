@@ -64,11 +64,11 @@ export default function SignClientMessageRequest({
               {timestamp}
             </Text>
           </Card>
-          <Card flexDirection="row" justifyContent="space-between">
+          <Card flexDirection="row" justifyContent="space-between" alignItems="center">
             <Text variant="md" color="text100">
               {`Origin`}
             </Text>
-            <Box flexDirection="row" alignItems="center" gap="3">
+            <Box alignItems="center" gap="3">
               <Text variant="md" color="text100">
                 {details?.options?.origin?.split('//')[1]}
               </Text>

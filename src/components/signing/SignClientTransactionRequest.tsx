@@ -40,6 +40,7 @@ export default function SignClientTransactionRequest({
     'Native Token'
   )
   const [tokenId, setTokenId] = useState<number | null>(null)
+  // Keep as transactionInfo for now since we may want to add more info in the future
   const [transactionInfo, setTransactionInfo] = useState<{
     name: string | null
   }>({
@@ -172,11 +173,11 @@ export default function SignClientTransactionRequest({
                 {timestamp}
               </Text>
             </Card>
-            <Card flexDirection="row" justifyContent="space-between">
+            <Card flexDirection="row" justifyContent="space-between" alignItems="center">
               <Text variant="md" color="text100">
                 {`Origin`}
               </Text>
-              <Box flexDirection="row" alignItems="center" gap="3">
+              <Box alignItems="center" gap="3">
                 <Text variant="md" color="text100">
                   {details?.options?.origin?.split('//')[1]}
                 </Text>
@@ -208,7 +209,7 @@ export default function SignClientTransactionRequest({
               ))}
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
-                {`${transactionInfo.name}`}
+                {`Amount`}
               </Text>
               <Text variant="md" color="text100">
                 {`${amount ?? 0} ${transactionInfo.name}`}
