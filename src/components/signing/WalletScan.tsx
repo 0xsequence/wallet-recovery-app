@@ -19,7 +19,7 @@ export default function WalletScan({ onQrUri }: { onQrUri: () => void }) {
   }
 
   return (
-    <Box flexDirection="column" justifyContent="space-between" padding="6" gap="3">
+    <Box flexDirection="column" justifyContent="space-between" padding="12" gap="3">
       <Scanner
         onScan={result => {
           if (!!result[0].rawValue) {
@@ -27,7 +27,10 @@ export default function WalletScan({ onQrUri }: { onQrUri: () => void }) {
           }
         }}
         styles={{
-          video: { transform: 'scaleX(-1)', borderRadius: '10px' }
+          video: {
+            transform: 'scaleX(-1)',
+            borderRadius: '10px'
+          }
         }}
       />
       <Box>

@@ -562,7 +562,9 @@ function Wallet() {
       {isScanningQrWalletConnect && (
         <Modal
           size="md"
-          contentProps={{ style: { maxHeight: '100vh', width: !isMobile ? '600px' : '100%' } }}
+          contentProps={{
+            style: { width: !isMobile ? '600px' : '100%', height: !isMobile ? '750px' : '' }
+          }}
           onClose={() => setIsScanningQrWalletConnect(false)}
         >
           <WalletScan
@@ -578,7 +580,7 @@ function Wallet() {
           isDismissible={false}
           size="md"
           contentProps={{
-            style: { width: !isMobile ? '800px' : '100%', maxHeight: '100vh', overflowY: 'auto' }
+            style: { width: !isMobile ? '800px' : '100%', maxHeight: '100%', overflowY: 'auto' }
           }}
         >
           <SignClientTransactionRequest

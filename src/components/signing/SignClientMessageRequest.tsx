@@ -53,12 +53,12 @@ export default function SignClientMessageRequest({
       {details && (
         <Box flexDirection="column" padding="10" alignItems="center" gap="4">
           <Text variant="md" fontWeight="bold" color="text100">
-            {'Would you like to sign this message?'}
+            Would you like to sign this message?
           </Text>
           <Divider color="gradientPrimary" width="full" height="px" />
           <Card flexDirection="row" justifyContent="space-between">
             <Text variant="md" color="text100">
-              {`Requested at`}
+              Requested at
             </Text>
             <Text variant="md" color="text100">
               {timestamp}
@@ -66,7 +66,7 @@ export default function SignClientMessageRequest({
           </Card>
           <Card flexDirection="row" justifyContent="space-between" alignItems="center">
             <Text variant="md" color="text100">
-              {`Origin`}
+              Origin
             </Text>
             <Box alignItems="center" gap="3">
               <Text variant="md" color="text100">
@@ -81,7 +81,7 @@ export default function SignClientMessageRequest({
           </Card>
           <Card flexDirection="row" justifyContent="space-between">
             <Text variant="md" color="text100">
-              {`Network`}
+              Network
             </Text>
             <Text variant="md" color="text100">
               {`${getNetworkTitle(details.chainId)}`}

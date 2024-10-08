@@ -83,6 +83,8 @@ export class WalletStore {
     )
   }
 
+  defaultNetwork = new LocalStore<number>(LocalStorageKey.DEFAULT_NETWORK)
+
   constructor(private store: Store) {
     this.walletRequestHandler = new WalletRequestHandler(
       undefined, // signer is set after wallet is initialized / signed in
@@ -443,12 +445,11 @@ class Prompter implements WalletUserPrompter {
   constructor(private store: Store) {}
 
   getDefaultChainId(): number {
-    // TODO I'm not sure if we need to change this
-    return 1
+    return this.store.get(WalletStore).defaultNetwork.get() ?? 1
   }
 
-  async promptChangeNetwork(): Promise<boolean> {
-    // TODO I'm not sure if we need to change this
+  async promptChangeNetwork(chainId: number): Promise<boolean> {
+    this.store.get(WalletStore).defaultNetwork.set(chainId)
     return true
   }
 

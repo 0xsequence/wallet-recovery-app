@@ -144,14 +144,24 @@ export default function SignClientTransactionRequest({
         return
       }
     } catch (err) {
-      console.error('Error parsing contract type:', err)
+      console.error(
+        'Error parsing contract type. The transaction is either using a smart contract that doesnt support ERC165 or the token is native:',
+        err
+      )
     }
 
-    // 4. If none of the above, it's a native transaction (ETH or MATIC)
-    setContractType('Native Token')
-    setTransactionInfo({
-      name: `${getNetworkTitle(details?.chainId ?? 1)} Native Token`
-    })
+    // 4. If value field is non-zero, then it's a native token transfer
+    if (!!details?.txn[0].value) {
+      setContractType('Native Token')
+      setTransactionInfo({
+        name: `${getNetworkTitle(details?.chainId ?? 1)} Native Token`
+      })
+      return
+    }
+
+    // 5. If we reach here, its a token we don't support
+    console.error('Token type not supported')
+    onClose()
   }
 
   return (
@@ -160,12 +170,12 @@ export default function SignClientTransactionRequest({
         <Box>
           <Box flexDirection="column" padding="10" gap="4">
             <Text alignSelf="center" variant="md" fontWeight="bold" color="text100">
-              {'Would you like to approve this transaction?'}
+              Would you like to approve this transaction?
             </Text>
             <Divider color="gradientPrimary" width="full" height="px" />
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
-                {`Requested at`}
+                Requested at
               </Text>
               <Text variant="md" color="text100">
                 {timestamp}
@@ -173,7 +183,7 @@ export default function SignClientTransactionRequest({
             </Card>
             <Card flexDirection="row" justifyContent="space-between" alignItems="center">
               <Text variant="md" color="text100">
-                {`Origin`}
+                Origin
               </Text>
               <Box alignItems="center" gap="3">
                 <Text variant="md" color="text100">
@@ -188,7 +198,7 @@ export default function SignClientTransactionRequest({
             </Card>
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
-                {`Token Standard`}
+                Token Standard
               </Text>
               <Text variant="md" color="text100">
                 {`${contractType}`}
@@ -198,7 +208,7 @@ export default function SignClientTransactionRequest({
               (contractType === 'ERC1155' && (
                 <Card flexDirection="row" justifyContent="space-between">
                   <Text variant="md" color="text100">
-                    {`Token ID`}
+                    Token ID
                   </Text>
                   <Text variant="md" color="text100">
                     {`${tokenId}`}
@@ -207,7 +217,7 @@ export default function SignClientTransactionRequest({
               ))}
             <Card flexDirection="row" justifyContent="space-between">
               <Text variant="md" color="text100">
-                {`Amount`}
+                Amount
               </Text>
               <Text variant="md" color="text100">
                 {`${amount ?? 0} ${transactionInfo.name}`}

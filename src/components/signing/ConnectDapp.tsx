@@ -69,7 +69,6 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
               variant="primary"
               label={isPending ? `Authorizing…` : `Connect`}
               disabled={isPending}
-              // disabled={isPending || canValidateOnchain === undefined}
               onClick={handleConnect}
               data-id="signingContinue"
             />
