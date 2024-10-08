@@ -560,7 +560,11 @@ function Wallet() {
         </Modal>
       )}
       {isScanningQrWalletConnect && (
-        <Modal size="md" onClose={() => setIsScanningQrWalletConnect(false)}>
+        <Modal
+          size="md"
+          contentProps={{ style: { maxHeight: '100vh', width: !isMobile ? '600px' : '100%' } }}
+          onClose={() => setIsScanningQrWalletConnect(false)}
+        >
           <WalletScan
             onQrUri={() => {
               handleOnQrUri()

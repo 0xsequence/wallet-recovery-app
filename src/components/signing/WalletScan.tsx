@@ -1,5 +1,5 @@
 import { Box, Button, TextInput } from '@0xsequence/design-system'
-import QrReader from 'modern-react-qr-reader'
+import { Scanner } from '@yudiel/react-qr-scanner'
 import { ChangeEvent, useState } from 'react'
 
 import { useStore } from '~/stores'
@@ -19,25 +19,17 @@ export default function WalletScan({ onQrUri }: { onQrUri: () => void }) {
   }
 
   return (
-    <Box
-      flexDirection="column"
-      justifyContent="space-between"
-      padding="6"
-      style={{ height: '750px', width: '600px' }}
-    >
-      <QrReader
-        style={{ transform: 'scaleX(-1)', borderRadius: '10px' }}
-        height="full"
-        width="full"
-        onScan={(result: string | null) => {
-          if (result) {
-            setSignClientUri(result)
+    <Box flexDirection="column" justifyContent="space-between" padding="6" gap="3">
+      <Scanner
+        onScan={result => {
+          if (!!result[0].rawValue) {
+            setSignClientUri(result[0].rawValue)
           }
         }}
-        onError={(err: any) => {
-          throw new Error(err)
+        styles={{
+          video: { transform: 'scaleX(-1)', borderRadius: '10px' }
         }}
-      ></QrReader>
+      />
       <Box>
         <TextInput
           label="Paste Connection String"
