@@ -148,7 +148,6 @@ function Wallet() {
 
   const handleDisconnect = async () => {
     walletStore.setExternalProvider(undefined)
-    // walletStore.clearWalletConnectSession()
 
     const extProvider = selectedExternalProvider
     if (extProvider?.info.name === 'WalletConnect') {

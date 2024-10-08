@@ -1,5 +1,4 @@
 import EthereumProvider from '@walletconnect/ethereum-provider'
-import { SessionTypes } from '@walletconnect/types'
 import { useEffect, useState } from 'react'
 
 import { WALLET_CONNECT_PROJECT_ID } from '~/constants/wallet-context'
@@ -30,7 +29,7 @@ export function useWalletConnectProvider() {
   const lastConnectedWalletInfo = walletStore.getLastConnectedExternalProviderInfo()
 
   useEffect(() => {
-    async function initProvider(session?: SessionTypes.Struct) {
+    async function initProvider() {
       const p = await createProvider(false)
 
       await p.enable()

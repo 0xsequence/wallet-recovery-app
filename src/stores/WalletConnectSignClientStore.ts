@@ -8,11 +8,11 @@ import { WALLET_CONNECT_PROJECT_ID } from '~/constants/wallet-context'
 import { AuthStore } from './AuthStore'
 import { NetworkStore } from './NetworkStore'
 import { WalletStore } from './WalletStore'
-import { Store, observable, useObservable, useStore } from './index'
+import { Store, observable, useStore } from './index'
 
 export class WalletConnectSignClientStore {
   authStore = useStore(AuthStore)
-  accountAddress = useObservable(this.authStore.accountAddress)
+  accountAddress = this.authStore.accountAddress.get()
   isReady = observable(false)
 
   private signClient?: SignClient
@@ -47,7 +47,6 @@ export class WalletConnectSignClientStore {
     this.signClient.on('session_delete', this.onSessionDelete)
 
     const allSessions = this.getSignClientSessions()
-    console.log('allWCSessions', this.signClient.session.getAll())
 
     if (allSessions) {
       this.allSessions.set(allSessions)

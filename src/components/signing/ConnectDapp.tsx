@@ -18,16 +18,7 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
     }
     setPending(true)
 
-    if (connectOptions?.networkId === undefined) {
-      throw new Error('no network in connect options')
-    }
-    const chainId = connectOptions.networkId
-    if (chainId === undefined) {
-      throw new Error(`no network ${connectOptions.networkId} found`)
-    }
-
     const connectDetails = await walletStore.walletRequestHandler.connect(connectOptions)
-    console.log('connectDetails:', connectDetails)
     walletStore.connectDetails.set(connectDetails)
 
     setPending(false)

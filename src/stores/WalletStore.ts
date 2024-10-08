@@ -11,7 +11,6 @@ import {
   validateTransactionRequest
 } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
-import { SessionTypes } from '@walletconnect/types'
 import { ethers } from 'ethers'
 
 import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
@@ -19,7 +18,7 @@ import { LocalStorageKey } from '~/constants/storage'
 
 import { EIP1193Provider } from '~/hooks/useSyncProviders'
 
-import { observable, useObservable, useStore } from '~/stores'
+import { observable, useStore } from '~/stores'
 
 import { ProviderDetail, ProviderInfo } from '~/components/SelectProvider'
 
@@ -40,7 +39,7 @@ declare global {
 export class WalletStore {
   networkStore = useStore(NetworkStore)
   authStore = useStore(AuthStore)
-  accountAddress = useObservable(this.authStore.accountAddress)
+  accountAddress = this.authStore.accountAddress.get()
 
   availableExternalProviders = observable<ProviderDetail[]>([])
   selectedExternalProvider = observable<ProviderDetail | undefined>(undefined)
@@ -53,7 +52,7 @@ export class WalletStore {
     { collectibleInfo: CollectibleInfo; to: string; amount?: string } | undefined
   >(undefined)
   isSendingSignedTokenTransaction = observable<
-    | { txn: ethers.Transaction[] | ethers.TransactionRequest[]; chainId?: number; options?: ConnectOptions }
+    | { txn: ethers.Transaction[] | ethers.TransactionRequest[]; chainId: number; options: ConnectOptions }
     | undefined
   >(undefined)
 
@@ -81,8 +80,7 @@ export class WalletStore {
   private local = {
     lastConnectedExternalProviderInfo: new LocalStore<ProviderInfo>(
       LocalStorageKey.LAST_CONNECTED_EXTERNAL_PROVIDER_INFO
-    ),
-    walletConnectSession: new LocalStore<SessionTypes.Struct>(LocalStorageKey.WALLET_CONNECT_SESSION)
+    )
   }
 
   constructor(private store: Store) {
@@ -116,18 +114,6 @@ export class WalletStore {
 
   getLastConnectedExternalProviderInfo = () => {
     return this.local.lastConnectedExternalProviderInfo.get()
-  }
-
-  setWalletConnectSession = (session: SessionTypes.Struct) => {
-    this.local.walletConnectSession.set(session)
-  }
-
-  clearWalletConnectSession = () => {
-    this.local.walletConnectSession.del()
-  }
-
-  getWalletConnectSession = () => {
-    return this.local.walletConnectSession.get()
   }
 
   sendToken = async (tokenBalance: TokenBalance, to: string, amount?: string): Promise<{ hash: string }> => {

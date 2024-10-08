@@ -1,5 +1,4 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
-import { findNetworkConfig } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers } from 'ethers'
 

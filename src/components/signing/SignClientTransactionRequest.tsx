@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react'
 
 import { getNetworkTitle } from '~/utils/network'
 
-import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi.ts'
+import { ERC20_ABI, ERC165_ABI, ERC721_ABI, ERC1155_ABI } from '~/constants/abi.ts'
 
 import { useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
@@ -87,8 +87,6 @@ export default function SignClientTransactionRequest({
     contractAddress: string,
     provider: ethers.JsonRpcProvider
   ) {
-    const eip165Abi = ['function supportsInterface(bytes4 interfaceID) external view returns (bool)']
-
     try {
       // 1. Check if ERC-20
       const erc20Contract = new ethers.Contract(contractAddress, ERC20_ABI, provider)
@@ -108,10 +106,10 @@ export default function SignClientTransactionRequest({
         // If it fails, it means it's not an ERC-20 token, continue checking
       }
 
-      const eip165Contract = new ethers.Contract(contractAddress, eip165Abi, provider)
+      const erc165Contract = new ethers.Contract(contractAddress, ERC165_ABI, provider)
 
       // 2. Check if ERC-721
-      const isErc721 = await eip165Contract.supportsInterface('0x80ac58cd') // ERC-721 interface ID
+      const isErc721 = await erc165Contract.supportsInterface('0x80ac58cd') // ERC-721 interface ID
       if (isErc721) {
         setContractType('ERC721')
 
@@ -129,7 +127,7 @@ export default function SignClientTransactionRequest({
       }
 
       // 3. Check if ERC-1155
-      const isErc1155 = await eip165Contract.supportsInterface('0xd9b67a26') // ERC-1155 interface ID
+      const isErc1155 = await erc165Contract.supportsInterface('0xd9b67a26') // ERC-1155 interface ID
       if (isErc1155) {
         setContractType('ERC1155')
 
