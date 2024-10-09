@@ -449,8 +449,12 @@ class Prompter implements WalletUserPrompter {
   }
 
   async promptChangeNetwork(chainId: number): Promise<boolean> {
-    this.store.get(WalletStore).defaultNetwork.set(chainId)
-    return true
+    const supportedNetworks = this.store.get(NetworkStore).networks.get()
+    if (supportedNetworks.some(network => network.chainId === chainId)) {
+      this.store.get(WalletStore).defaultNetwork.set(chainId)
+      return true
+    }
+    return false
   }
 
   async promptConfirmWalletDeploy(chainId: number, options?: ConnectOptions): Promise<boolean> {

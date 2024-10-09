@@ -5,17 +5,21 @@ import { ChangeEvent, useState } from 'react'
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
-export default function WalletScan({ onQrUri }: { onQrUri: () => void }) {
+export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) => void }) {
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
   const [signClientUri, setSignClientUri] = useState<string>('')
 
-  const handleSignClientUri = () => {
+  const handleSignClientUri = async () => {
     if (signClientUri) {
       console.log(signClientUri)
-
-      walletConnectSignClientStore.pair(signClientUri)
+      try {
+        await walletConnectSignClientStore.pair(signClientUri)
+      } catch (error) {
+        console.error(error)
+        onQrUri(false)
+      }
     }
-    onQrUri()
+    onQrUri(true)
   }
 
   return (

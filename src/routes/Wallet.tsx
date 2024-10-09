@@ -568,8 +568,10 @@ function Wallet() {
           onClose={() => setIsScanningQrWalletConnect(false)}
         >
           <WalletScan
-            onQrUri={() => {
-              handleOnQrUri()
+            onQrUri={isPaired => {
+              if (isPaired) {
+                handleOnQrUri()
+              }
               setIsScanningQrWalletConnect(false)
             }}
           />

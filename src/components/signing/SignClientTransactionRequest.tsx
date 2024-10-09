@@ -36,9 +36,9 @@ export default function SignClientTransactionRequest({
   const networkStore = useStore(NetworkStore)
   const collectibleStore = useStore(CollectibleStore)
 
-  const [contractType, setContractType] = useState<'Native Token' | 'ERC20' | 'ERC721' | 'ERC1155'>(
-    'Native Token'
-  )
+  const [contractType, setContractType] = useState<
+    'Unknown' | 'Native Token' | 'ERC20' | 'ERC721' | 'ERC1155'
+  >('Unknown')
   const [tokenId, setTokenId] = useState<number | null>(null)
   // Keep as transactionInfo for now since we may want to add more info in the future
   const [transactionInfo, setTransactionInfo] = useState<{
@@ -159,8 +159,8 @@ export default function SignClientTransactionRequest({
       return
     }
 
-    // 5. If we reach here, its a token we don't support
-    console.error('Token type not supported')
+    // 5. If we reach here, its a token we couldn't decode the contract type
+    console.info('Token info could not be decoded for this transaction')
     onClose()
   }
 
