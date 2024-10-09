@@ -161,7 +161,6 @@ export default function SignClientTransactionRequest({
 
     // 5. If we reach here, its a token we couldn't decode the contract type
     console.info('Token info could not be decoded for this transaction')
-    onClose()
   }
 
   return (
