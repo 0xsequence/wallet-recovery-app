@@ -134,6 +134,7 @@ export class AuthStore {
 
     // Store encrypted data in indexed db
     const db = await getIndexedDB(IndexedDBKey.SECURITY)
+    await db.put(IndexedDBKey.SECURITY, key, 'key')
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
   }
 

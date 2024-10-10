@@ -32,7 +32,6 @@ export const PasswordInput: React.FC<TextInputWrapperProps> = ({
         labelLocation={labelLocation}
         value={value}
         onChange={onChange}
-        style={{ paddingRight: '40px' }}
       />
       <button
         type="button"
@@ -44,8 +43,7 @@ export const PasswordInput: React.FC<TextInputWrapperProps> = ({
           transform: 'translateY(5%)',
           background: 'none',
           border: 'none',
-          cursor: 'pointer',
-          padding: 0
+          cursor: 'pointer'
         }}
       >
         {showPassword ? (
