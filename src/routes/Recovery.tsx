@@ -1,17 +1,29 @@
-import { Box, Button, Card, Spinner, Text, TextArea } from '@0xsequence/design-system'
-import { useState } from 'react'
+import { Box, Button, Card, Checkbox, Spinner, Text, TextArea } from '@0xsequence/design-system'
+import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
+
+import { PasswordInput } from '~/components/PasswordInput'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
   const [mnemonic, setMnemonic] = useState('')
+  const [password, setPassword] = useState('')
+  const [usingPassword, setUsingPassword] = useState(false)
 
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
+
+  const handleSignInWithRecoveryMnemonic = () => {
+    if (usingPassword) {
+      authStore.signInWithRecoveryMnemonic(mnemonic, password)
+    } else {
+      authStore.signInWithRecoveryMnemonic(mnemonic)
+    }
+  }
 
   return (
     <Box
@@ -21,6 +33,7 @@ function Recovery() {
       paddingX="8"
       alignItems="center"
       justifyContent="center"
+      marginBottom="16"
     >
       <Box width="full" style={{ maxWidth: '800px' }}>
         <Box padding="6" marginTop="16">
@@ -51,7 +64,7 @@ function Recovery() {
             </Text>
           </Box>
 
-          <Box marginTop="12">
+          <Box flexDirection="column" marginTop="12" gap="8">
             <TextArea
               name="mnemonic"
               label="Recovery Phrase"
@@ -59,6 +72,23 @@ function Recovery() {
               value={mnemonic}
               onChange={ev => setMnemonic(ev.target.value)}
             />
+
+            <Checkbox
+              labelLocation="right"
+              label="Use Password to Encrypt Mnemonic (Optional)"
+              checked={usingPassword}
+              onCheckedChange={checked => {
+                setUsingPassword(checked === true)
+              }}
+            ></Checkbox>
+
+            {usingPassword && (
+              <PasswordInput
+                label="Create Password (min 8 characters)"
+                value={password}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
+              ></PasswordInput>
+            )}
           </Box>
         </Box>
 
@@ -78,8 +108,9 @@ function Recovery() {
                   size="lg"
                   shape="square"
                   label="Continue"
+                  disabled={!mnemonic || (usingPassword && (!password || password.length < 8))}
                   onClick={() => {
-                    authStore.signInWithRecoveryMnemonic(mnemonic)
+                    handleSignInWithRecoveryMnemonic()
                   }}
                   width="full"
                   marginTop="16"

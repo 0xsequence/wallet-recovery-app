@@ -1,14 +1,35 @@
-import { Box, Button, Card, Spinner, Text } from '@0xsequence/design-system'
+import { Box, Button, Card, Modal, Spinner, Text } from '@0xsequence/design-system'
+import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
+
+import { PasswordInput } from '~/components/PasswordInput'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Landing() {
   const authStore = useStore(AuthStore)
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
+  const isPromptingForPassword = useObservable(authStore.isPromptingForPassword)
+
+  const [password, setPassword] = useState('')
+  const [isReseting, setIsReseting] = useState(false)
+
+  const handleUnlock = () => {
+    authStore.loadAccount(password)
+  }
+
+  const handleResetConfirmation = () => {
+    setIsReseting(true)
+  }
+
+  const handleReset = () => {
+    authStore.logout()
+    setIsReseting(false)
+    authStore.isLoadingAccount.set(false)
+  }
 
   return (
     <Box
@@ -77,13 +98,76 @@ function Landing() {
         )}
 
         {isLoadingAccount && (
-          <Box marginTop="8" alignItems="center" justifyContent="center">
-            <Card width="16" alignItems="center" justifyContent="center">
-              <Spinner size="lg" />
-            </Card>
-          </Box>
+          <>
+            {isPromptingForPassword ? (
+              <Box flexDirection="column" marginTop="8" justifyContent="center" alignItems="center" gap="4">
+                <Text variant="large" color="text100" marginBottom="4">
+                  Weclome back!
+                </Text>
+                <PasswordInput
+                  label="Password"
+                  value={password}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
+                ></PasswordInput>
+                <Button
+                  marginTop="4"
+                  variant="primary"
+                  size="lg"
+                  shape="square"
+                  label="Unlock"
+                  onClick={() => {
+                    handleUnlock()
+                  }}
+                />
+                <Box>
+                  <Button
+                    variant="text"
+                    label="The dog ate my password (Forgot Password)"
+                    onClick={() => {
+                      handleResetConfirmation()
+                    }}
+                  />
+                </Box>
+              </Box>
+            ) : (
+              <Box marginTop="8" alignItems="center" justifyContent="center">
+                <Card width="16" alignItems="center" justifyContent="center">
+                  <Spinner size="lg" />
+                </Card>
+              </Box>
+            )}
+          </>
         )}
       </Box>
+      {isReseting && (
+        <Modal size="md" onClose={() => setIsReseting(false)}>
+          <Card flexDirection="column" alignItems="center" padding="16">
+            <Text variant="md" fontWeight="bold" color="text100">
+              Click "Reset" to START OVER and re-enter your mnemonic
+            </Text>
+            <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="10">
+              <Button
+                width="full"
+                label={`Cancel`}
+                onClick={() => {
+                  setIsReseting(false)
+                }}
+                data-id="signingCancel"
+              />
+
+              <Button
+                width="full"
+                variant="primary"
+                label={'Reset'}
+                onClick={() => {
+                  handleReset()
+                }}
+                data-id="signingContinue"
+              />
+            </Box>
+          </Card>
+        </Modal>
+      )}
     </Box>
   )
 }
