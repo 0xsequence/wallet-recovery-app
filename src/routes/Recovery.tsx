@@ -19,10 +19,18 @@ function Recovery() {
 
   const handleSignInWithRecoveryMnemonic = () => {
     if (usingPassword) {
-      authStore.signInWithRecoveryMnemonic(mnemonic, password)
+      authStore.signInWithRecoveryMnemonic(mnemonic.trim(), password)
     } else {
-      authStore.signInWithRecoveryMnemonic(mnemonic)
+      authStore.signInWithRecoveryMnemonic(mnemonic.trim())
     }
+  }
+
+  const notValidMnemonic = () => {
+    return mnemonic && mnemonic.replace(/\s+/g, ' ').trim().split(' ').length !== 12
+  }
+
+  const notValidPassword = () => {
+    return password && password.length < 8
   }
 
   return (
@@ -65,13 +73,20 @@ function Recovery() {
           </Box>
 
           <Box flexDirection="column" marginTop="12" gap="8">
-            <TextArea
-              name="mnemonic"
-              label="Recovery Phrase"
-              labelLocation="top"
-              value={mnemonic}
-              onChange={ev => setMnemonic(ev.target.value)}
-            />
+            <Box>
+              <TextArea
+                name="mnemonic"
+                label="Recovery Phrase"
+                labelLocation="top"
+                value={mnemonic}
+                onChange={ev => setMnemonic(ev.target.value)}
+              />
+              {notValidMnemonic() && (
+                <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                  Mnemonic must be 12 words
+                </Text>
+              )}
+            </Box>
 
             <Checkbox
               labelLocation="right"
@@ -83,11 +98,18 @@ function Recovery() {
             ></Checkbox>
 
             {usingPassword && (
-              <PasswordInput
-                label="Create Password (min 8 characters)"
-                value={password}
-                onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
-              ></PasswordInput>
+              <Box>
+                <PasswordInput
+                  label="Create Password (min 8 characters)"
+                  value={password}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
+                ></PasswordInput>
+                {notValidPassword() && (
+                  <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                    Password not long enough
+                  </Text>
+                )}
+              </Box>
             )}
           </Box>
         </Box>
