@@ -16,9 +16,15 @@ function Landing() {
 
   const [password, setPassword] = useState('')
   const [isReseting, setIsReseting] = useState(false)
+  const [wrongPassword, setWrongPassword] = useState(false)
 
-  const handleUnlock = () => {
-    authStore.loadAccount(password)
+  const handleUnlock = async () => {
+    try {
+      await authStore.loadAccount(password)
+    } catch (e) {
+      console.warn(e)
+      setWrongPassword(true)
+    }
   }
 
   const handleResetConfirmation = () => {
@@ -100,17 +106,28 @@ function Landing() {
         {isLoadingAccount && (
           <>
             {isPromptingForPassword ? (
-              <Box flexDirection="column" marginTop="8" justifyContent="center" alignItems="center" gap="4">
-                <Text variant="large" color="text100" marginBottom="4">
+              <Box flexDirection="column" marginTop="8" justifyContent="center" alignItems="center">
+                <Text variant="large" color="text100" marginBottom="8">
                   Weclome back!
                 </Text>
                 <PasswordInput
                   label="Password"
                   value={password}
-                  onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                    setPassword(ev.target.value)
+                    setWrongPassword(false)
+                  }}
                 ></PasswordInput>
+
+                <Box alignSelf="flex-start" height="6">
+                  {wrongPassword && (
+                    <Text variant="small" color="negative" marginLeft="2" marginTop="1">
+                      Incorrect password
+                    </Text>
+                  )}
+                </Box>
                 <Button
-                  marginTop="4"
+                  marginBottom="3"
                   variant="primary"
                   size="lg"
                   shape="square"
