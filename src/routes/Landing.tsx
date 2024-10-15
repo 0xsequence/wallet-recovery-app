@@ -118,18 +118,16 @@ function Landing() {
                     setWrongPassword(false)
                   }}
                 ></PasswordInput>
-                {wrongPassword ? (
-                  <Text alignSelf="flex-start" variant="small" color="negative" marginLeft="2" marginTop="1">
-                    Incorrect password
-                  </Text>
-                ) : (
-                  <Text variant="small" color="backgroundPrimary" marginTop="1">
-                    I
-                  </Text>
-                )}
+
+                <Box alignSelf="flex-start" height="6">
+                  {wrongPassword && (
+                    <Text variant="small" color="negative" marginLeft="2" marginTop="1">
+                      Incorrect password
+                    </Text>
+                  )}
+                </Box>
                 <Button
                   marginBottom="3"
-                  width="1/4"
                   variant="primary"
                   size="lg"
                   shape="square"
