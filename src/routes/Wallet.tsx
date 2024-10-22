@@ -246,7 +246,7 @@ function Wallet() {
   async function handleSignTxn(details: {
     txn: ethers.Transaction[] | ethers.TransactionRequest[]
     chainId: number
-    options?: ConnectOptions
+    options: ConnectOptions
   }) {
     const signTransaction = async (
       txn: ethers.Transaction[] | ethers.TransactionRequest[],

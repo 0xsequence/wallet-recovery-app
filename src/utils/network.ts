@@ -265,8 +265,6 @@ const nativeTokenInfo = {
   [ChainId.BASE_SEPOLIA]: { ...ETH, chainId: ChainId.BASE_SEPOLIA },
   [ChainId.XAI]: XAI,
   [ChainId.XAI_SEPOLIA]: tXAI,
-  [ChainId.ASTAR_ZKEVM]: { ...ETH, chainId: ChainId.ASTAR_ZKEVM },
-  [ChainId.ASTAR_ZKYOTO]: { ...ETH, chainId: ChainId.ASTAR_ZKYOTO },
   [ChainId.HOMEVERSE]: HomeverseOAS,
   [ChainId.HOMEVERSE_TESTNET]: tHomeVerseOAS,
   [ChainId.XR_SEPOLIA]: tXR

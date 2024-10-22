@@ -73,7 +73,9 @@ export class TokenStore {
             chainId: network.chainId,
             blockHash: ethers.ZeroHash,
             blockNumber: 0,
-            contractInfo: getNativeTokenInfo(getChainId(network.chainId))
+            contractInfo: getNativeTokenInfo(getChainId(network.chainId)),
+            uniqueCollectibles: '0',
+            isSummary: true
           })
         } catch (err) {
           console.error(err)
@@ -153,7 +155,9 @@ export class TokenStore {
             featured: false
           },
           updatedAt: '0'
-        }
+        },
+        uniqueCollectibles: '0',
+        isSummary: true
       })
 
       this.balances.set(updatedBalances)

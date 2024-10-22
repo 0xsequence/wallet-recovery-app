@@ -29,7 +29,7 @@ export default function SignClientTransactionRequest({
   onClose: (details?: {
     txn: ethers.Transaction[] | ethers.TransactionRequest[]
     chainId: number
-    options?: ConnectOptions
+    options: ConnectOptions
   }) => void
 }) {
   const walletStore = useStore(WalletStore)

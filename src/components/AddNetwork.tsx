@@ -14,6 +14,8 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
   const [networkName, setNetworkName] = useState<string | undefined>()
   const [rpcUrl, setRpcUrl] = useState<string | undefined>()
   const [blockExplorerUrl, setBlockExplorerUrl] = useState<string | undefined>()
+  const [tokenName, setTokenName] = useState<string | undefined>()
+  const [tokenSymbol, setTokenSymbol] = useState<string | undefined>()
 
   const handleAdd = async () => {
     // TODO: add form validation
@@ -24,7 +26,12 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
         title: networkName,
         type: NetworkType.MAINNET,
         rpcUrl,
-        blockExplorer: { rootUrl: blockExplorerUrl }
+        blockExplorer: { rootUrl: blockExplorerUrl },
+        nativeToken: {
+          name: tokenName || 'Ether',
+          symbol: tokenSymbol || 'ETH',
+          decimals: 18
+        }
       })
     }
   }
@@ -34,6 +41,8 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
     setNetworkName(undefined)
     setRpcUrl(undefined)
     setBlockExplorerUrl(undefined)
+    setTokenName(undefined)
+    setTokenSymbol(undefined)
   }
 
   return (
@@ -76,6 +85,26 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
         value={blockExplorerUrl ?? ''}
         onChange={(ev: ChangeEvent<HTMLInputElement>) => {
           setBlockExplorerUrl(ev.target.value)
+        }}
+      />
+      <TextInput
+        width="full"
+        label="Native Token Name"
+        labelLocation="left"
+        name="tokenName"
+        value={tokenName ?? ''}
+        onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+          setTokenName(ev.target.value)
+        }}
+      />
+      <TextInput
+        width="full"
+        label="Native Token Symbol"
+        labelLocation="left"
+        name="tokenSymbol"
+        value={tokenSymbol ?? ''}
+        onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+          setTokenSymbol(ev.target.value)
         }}
       />
       <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">

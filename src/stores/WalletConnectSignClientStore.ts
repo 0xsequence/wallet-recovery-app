@@ -253,7 +253,7 @@ export class WalletConnectSignClientStore {
           result
         }
       })
-    } catch (err) {
+    } catch (err: any) {
       this.signClient?.respond({
         topic: ev.topic,
         response: {
