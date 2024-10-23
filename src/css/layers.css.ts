@@ -1,3 +1,3 @@
-import { globalLayer } from "@vanilla-extract/css";
+import { globalLayer } from '@vanilla-extract/css'
 
-export const reset = globalLayer("reset");
+export const reset = globalLayer('reset')

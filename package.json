@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc && vite build",
     "dev": "pnpm typecheck && vite",
+    "format": "prettier -w '**/*.ts'",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
