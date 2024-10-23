@@ -58,7 +58,7 @@ export class CollectibleStore {
     userCollectibles: new LocalStore<CollectibleInfoParams[]>(LocalStorageKey.COLLECTIBLES)
   }
 
-  private async loadBalances(account?: string) {
+  private async loadBalances(_account?: string) {
     const userCollectibles = this.local.userCollectibles.get() ?? []
 
     if (userCollectibles.length === 0) {

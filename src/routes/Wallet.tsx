@@ -251,7 +251,7 @@ function Wallet() {
     const signTransaction = async (
       txn: ethers.Transaction[] | ethers.TransactionRequest[],
       chainId: number,
-      options?: ConnectOptions
+      _options?: ConnectOptions
     ): Promise<{ hash: string }> => {
       // TODO do we need options?
       try {
@@ -304,7 +304,7 @@ function Wallet() {
     chainId: number
     options?: ConnectOptions
   }) {
-    const signMessage = async (msg: MessageToSign, options?: ConnectOptions): Promise<{ hash: string }> => {
+    const signMessage = async (msg: MessageToSign, _options?: ConnectOptions): Promise<{ hash: string }> => {
       // TODO do we need options?
       try {
         let hash: string | undefined

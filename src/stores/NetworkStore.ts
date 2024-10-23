@@ -36,7 +36,7 @@ export class NetworkStore {
     networksUserAdditions: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_ADDITIONS)
   }
 
-  constructor(private store: Store) {
+  constructor(_store: Store) {
     this.prepareNetworks()
 
     this.accountLoaded.subscribe(loaded => {

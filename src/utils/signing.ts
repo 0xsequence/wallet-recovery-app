@@ -1,12 +1,12 @@
-import { BytesLike, ethers } from 'ethers'
+// import { BytesLike, ethers } from 'ethers'
 
-const messageToBytes = (message: BytesLike): Uint8Array => {
-  if (ethers.isBytesLike(message)) {
-    return ethers.getBytes(message)
-  }
-
-  return ethers.toUtf8Bytes(message)
-}
+// const messageToBytes = (message: BytesLike): Uint8Array => {
+//   if (ethers.isBytesLike(message)) {
+//     return ethers.getBytes(message)
+//   }
+//
+//   return ethers.toUtf8Bytes(message)
+// }
 
 // export const prefixEIP191Message = (message: BytesLike): Uint8Array => {
 //   const messageBytes = messageToBytes(message)
