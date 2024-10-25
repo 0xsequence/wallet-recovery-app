@@ -44,15 +44,11 @@ export class AuthStore {
   accountAddress = observable<string | undefined>(undefined)
   isPromptingForPassword = observable<boolean>(false)
 
-  async signInWithRecoveryMnemonic(mnemonic: string, password?: string) {
+  async signInWithRecoveryMnemonic(wallet: string, mnemonic: string, password?: string) {
     try {
       this.isLoadingAccount.set(true)
 
       const recoverySigner = ethers.Wallet.fromPhrase(mnemonic)
-
-      const wallets = await TRACKER.walletsOfSigner({ signer: recoverySigner.address })
-
-      const wallet = wallets[0]
 
       const orchestrator = new Orchestrator([recoverySigner])
 
@@ -60,7 +56,7 @@ export class AuthStore {
       const networks = networkStore.networks.get()
 
       const account = new Account({
-        address: wallet.wallet,
+        address: wallet,
         tracker: TRACKER,
         contexts: SEQUENCE_CONTEXT,
         orchestrator: orchestrator,
@@ -95,7 +91,7 @@ export class AuthStore {
     const encryptedMnemonic = await db.get(IndexedDBKey.SECURITY, 'mnemonic')
     var key = await db.get(IndexedDBKey.SECURITY, 'key')
 
-    let mnemonic: string | undefined = undefined
+    let mnemonic: { wallet: string; mnemonic: string } | undefined = undefined
 
     // Check if mnemonic is stored in IndexedDB, key is not stored (meaning password needed), and flow is from constructor not from login
     if (encryptedMnemonic && !key && !password) {
@@ -113,9 +109,9 @@ export class AuthStore {
 
     if (mnemonic) {
       if (password) {
-        this.signInWithRecoveryMnemonic(mnemonic, password)
+        this.signInWithRecoveryMnemonic(mnemonic.wallet, mnemonic.mnemonic, password)
       } else {
-        this.signInWithRecoveryMnemonic(mnemonic)
+        this.signInWithRecoveryMnemonic(mnemonic.wallet, mnemonic.mnemonic)
       }
     } else {
       setTimeout(() => {
@@ -129,7 +125,8 @@ export class AuthStore {
     const key = await createKey()
 
     // Encrypt private key
-    const encrypted = await encrypt(key, mnemonic)
+    const plaintext = JSON.stringify({ wallet: address, mnemonic })
+    const encrypted = await encrypt(key, plaintext)
     encrypted.salt = createSaltFromAddress(address)
 
     // Store encrypted data in indexed db
@@ -144,7 +141,8 @@ export class AuthStore {
     const key = await createKeyFromPassword(password, salt)
 
     // Encrypt private key
-    const encrypted = await encrypt(key, mnemonic)
+    const plaintext = JSON.stringify({ wallet: address, mnemonic })
+    const encrypted = await encrypt(key, plaintext)
     encrypted.salt = salt
 
     // Store encrypted data (minus key) in indexed db
@@ -152,15 +150,16 @@ export class AuthStore {
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
   }
 
-  async decryptRecoveryMnemonic(encryptedMnemonic: any, key: CryptoKey) {
-    return decrypt(key, encryptedMnemonic)
+  async decryptRecoveryMnemonic(encryptedMnemonic: any, key: CryptoKey): Promise<{ wallet: string; mnemonic: string }> {
+    const plaintext = await decrypt(key, encryptedMnemonic)
+    return JSON.parse(plaintext)
   }
 
-  async decryptRecoveryMnemonicWithPassword(encryptedMnemonic: any, password: string) {
+  async decryptRecoveryMnemonicWithPassword(encryptedMnemonic: any, password: string): Promise<{ wallet: string; mnemonic: string }> {
     const salt = encryptedMnemonic.salt
     const key = await createKeyFromPassword(password, salt!)
-
-    return decrypt(key, encryptedMnemonic)
+    const plaintext = await decrypt(key, encryptedMnemonic)
+    return JSON.parse(plaintext)
   }
 
   logout() {

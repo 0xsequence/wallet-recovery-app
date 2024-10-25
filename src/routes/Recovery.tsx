@@ -1,4 +1,5 @@
-import { Box, Button, Card, Checkbox, Spinner, Text, TextArea } from '@0xsequence/design-system'
+import { Box, Button, Card, Checkbox, Spinner, Text, TextArea, TextInput } from '@0xsequence/design-system'
+import { ethers } from 'ethers'
 import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -11,6 +12,7 @@ import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
+  const [wallet, setWallet] = useState('')
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
@@ -19,9 +21,9 @@ function Recovery() {
 
   const handleSignInWithRecoveryMnemonic = () => {
     if (usingPassword) {
-      authStore.signInWithRecoveryMnemonic(mnemonic.trim(), password)
+      authStore.signInWithRecoveryMnemonic(ethers.getAddress(wallet), mnemonic.trim(), password)
     } else {
-      authStore.signInWithRecoveryMnemonic(mnemonic.trim())
+      authStore.signInWithRecoveryMnemonic(ethers.getAddress(wallet), mnemonic.trim())
     }
   }
 
@@ -111,6 +113,14 @@ function Recovery() {
                 )}
               </Box>
             )}
+
+            <TextInput
+              name="wallet"
+              label="Sequence Wallet Address"
+              labelLocation="left"
+              value={wallet}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => setWallet(ev.target.value)}
+            />
           </Box>
         </Box>
 
