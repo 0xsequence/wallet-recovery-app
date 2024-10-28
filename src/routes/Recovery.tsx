@@ -3,20 +3,25 @@ import { ethers } from 'ethers'
 import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
-import { PasswordInput } from '~/components/PasswordInput'
+import { TRACKER } from '~/utils/tracker'
+import { truncateMiddle } from '~/utils/truncate'
+
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
-import { TRACKER } from '~/utils/tracker'
+
+import { PasswordInput } from '~/components/PasswordInput'
+
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
   const [wallet, setWallet] = useState('')
-  const [wallets, setWallets] = useState([] as string[])
+  const [possibleWallets, setPossibleWallets] = useState([] as string[])
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
 
+  const [isLoadingWallets, setIsLoadingWallets] = useState(false)
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
   const handleSignInWithRecoveryMnemonic = () => {
@@ -36,8 +41,10 @@ function Recovery() {
   }
 
   const updateMnemonic = async (mnemonic: string) => {
-    setWallets([])
+    setWallet('')
+    setPossibleWallets([])
     setMnemonic(mnemonic)
+    setIsLoadingWallets(true)
 
     if (notValidMnemonic()) {
       return
@@ -48,10 +55,16 @@ function Recovery() {
 
       const wallets = await TRACKER.walletsOfSigner({ signer: signer.address })
 
-      setWallets(wallets.map(({ wallet }) => wallet))
+      if (wallets.length === 1) {
+        setWallet(wallets[0].wallet)
+      } else {
+        setPossibleWallets(wallets.map(({ wallet }) => wallet))
+      }
     } catch (error) {
       console.error(error)
     }
+
+    setIsLoadingWallets(false)
   }
 
   return (
@@ -62,9 +75,8 @@ function Recovery() {
       paddingX="8"
       alignItems="center"
       justifyContent="center"
-      marginBottom="16"
     >
-      <Box width="full" style={{ maxWidth: '800px' }}>
+      <Box width="full" style={{ maxWidth: '800px' }} marginBottom="16">
         <Box padding="6" marginTop="16">
           <Box flexDirection="column" alignItems="center" justifyContent="center" gap="6">
             <img src={sequenceLogo} alt="Sequence Logo" style={{ width: '100px', height: '100px' }} />
@@ -137,17 +149,41 @@ function Recovery() {
               name="wallet"
               label="Sequence Wallet Address"
               labelLocation="left"
+              disabled={true}
               value={wallet}
               onChange={(ev: ChangeEvent<HTMLInputElement>) => setWallet(ev.target.value)}
             />
 
-            <Text variant="small" color="text100">Possible Wallets</Text>
+            {possibleWallets.length >= 1 && (
+              <Box flexDirection="column" gap="4">
+                <Text variant="normal" marginTop="4" color="text100" textAlign="center">
+                  Select your wallet
+                </Text>
 
-            <Box flexDirection="column">
-              {wallets.map(wallet => (
-                <Button marginBottom="2" shape="square" label={wallet} onClick={() => setWallet(wallet)} />
-              ))}
-            </Box>
+                <Box display="grid" gap="4" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                  {possibleWallets.map(walletAddress => {
+                    return (
+                      <Button
+                        size="lg"
+                        shape="square"
+                        label={truncateMiddle(walletAddress, 18, 4)}
+                        onClick={() => {
+                          setWallet(walletAddress)
+                        }}
+                      />
+                    )
+                  })}
+                </Box>
+              </Box>
+            )}
+
+            {isLoadingWallets && (
+              <Box alignItems="center" justifyContent="center">
+                <Card width="16" alignItems="center" justifyContent="center">
+                  <Spinner size="lg" />
+                </Card>
+              </Box>
+            )}
           </Box>
         </Box>
 
@@ -167,7 +203,11 @@ function Recovery() {
                   size="lg"
                   shape="square"
                   label="Continue"
-                  disabled={!mnemonic || !ethers.isAddress(wallet) || (usingPassword && (!password || password.length < 8))}
+                  disabled={
+                    !mnemonic ||
+                    !ethers.isAddress(wallet) ||
+                    (usingPassword && (!password || password.length < 8))
+                  }
                   onClick={() => {
                     handleSignInWithRecoveryMnemonic()
                   }}
