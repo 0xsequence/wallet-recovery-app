@@ -31,11 +31,14 @@ function Recovery() {
   const [password, setPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
 
+  const [warnWrongAddress, setWarnWrongAddress] = useState(false)
   const [isReadyToContinue, setIsReadyToContinue] = useState(false)
   const [isLoadingWallets, setIsLoadingWallets] = useState(false)
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
   useEffect(() => {
+    setWarnWrongAddress(false)
+
     if (!ethers.isAddress(wallet)) {
       return
     }
@@ -93,7 +96,6 @@ function Recovery() {
 
   const updateWallet = async (wallet: string) => {
     setWallet(wallet)
-    setPossibleWallets([])
     setIsReadyToContinue(false)
   }
 
@@ -116,7 +118,11 @@ function Recovery() {
 
       const match = signers.some(signer => signer.address === recoverySigner.address)
       setIsReadyToContinue(match)
+      if (!match) {
+        setWarnWrongAddress(true)
+      }
     } catch (error) {
+      setWarnWrongAddress(true)
       console.error(error)
     }
 
@@ -201,13 +207,23 @@ function Recovery() {
               </Box>
             )}
 
-            <TextInput
-              name="wallet"
-              label="Sequence Wallet Address"
-              labelLocation="left"
-              value={wallet}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
-            />
+            <Box>
+              <TextInput
+                name="wallet"
+                label="Sequence Wallet Address"
+                labelLocation="left"
+                value={wallet}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
+              />
+
+              {warnWrongAddress && (
+                <Box justifyContent="center" marginTop="2">
+                  <Text variant="small" color="negative">
+                    Wallet does not match recovery phrase
+                  </Text>
+                </Box>
+              )}
+            </Box>
 
             {possibleWallets.length >= 1 && (
               <Box flexDirection="column" gap="4">
