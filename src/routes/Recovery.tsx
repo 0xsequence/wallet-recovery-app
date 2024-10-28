@@ -3,16 +3,16 @@ import { ethers } from 'ethers'
 import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
+import { PasswordInput } from '~/components/PasswordInput'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
-
-import { PasswordInput } from '~/components/PasswordInput'
-
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
+import { TRACKER } from '~/utils/tracker'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
   const [wallet, setWallet] = useState('')
+  const [wallets, setWallets] = useState([] as string[])
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
@@ -33,6 +33,25 @@ function Recovery() {
 
   const notValidPassword = () => {
     return password && password.length < 8
+  }
+
+  const updateMnemonic = async (mnemonic: string) => {
+    setWallets([])
+    setMnemonic(mnemonic)
+
+    if (notValidMnemonic()) {
+      return
+    }
+
+    try {
+      const signer = ethers.Wallet.fromPhrase(mnemonic)
+
+      const wallets = await TRACKER.walletsOfSigner({ signer: signer.address })
+
+      setWallets(wallets.map(({ wallet }) => wallet))
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -81,7 +100,7 @@ function Recovery() {
                 label="Recovery Phrase"
                 labelLocation="top"
                 value={mnemonic}
-                onChange={ev => setMnemonic(ev.target.value)}
+                onChange={ev => updateMnemonic(ev.target.value)}
               />
               {notValidMnemonic() && (
                 <Text variant="small" color="negative" marginLeft="1" marginTop="2">
@@ -121,6 +140,14 @@ function Recovery() {
               value={wallet}
               onChange={(ev: ChangeEvent<HTMLInputElement>) => setWallet(ev.target.value)}
             />
+
+            <Text variant="small" color="text100">Possible Wallets</Text>
+
+            <Box flexDirection="column">
+              {wallets.map(wallet => (
+                <Button marginBottom="2" shape="square" label={wallet} onClick={() => setWallet(wallet)} />
+              ))}
+            </Box>
           </Box>
         </Box>
 
@@ -140,7 +167,7 @@ function Recovery() {
                   size="lg"
                   shape="square"
                   label="Continue"
-                  disabled={!mnemonic || (usingPassword && (!password || password.length < 8))}
+                  disabled={!mnemonic || !ethers.isAddress(wallet) || (usingPassword && (!password || password.length < 8))}
                   onClick={() => {
                     handleSignInWithRecoveryMnemonic()
                   }}
