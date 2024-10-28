@@ -150,12 +150,18 @@ export class AuthStore {
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
   }
 
-  async decryptRecoveryMnemonic(encryptedMnemonic: any, key: CryptoKey): Promise<{ wallet: string; mnemonic: string }> {
+  async decryptRecoveryMnemonic(
+    encryptedMnemonic: any,
+    key: CryptoKey
+  ): Promise<{ wallet: string; mnemonic: string }> {
     const plaintext = await decrypt(key, encryptedMnemonic)
     return JSON.parse(plaintext)
   }
 
-  async decryptRecoveryMnemonicWithPassword(encryptedMnemonic: any, password: string): Promise<{ wallet: string; mnemonic: string }> {
+  async decryptRecoveryMnemonicWithPassword(
+    encryptedMnemonic: any,
+    password: string
+  ): Promise<{ wallet: string; mnemonic: string }> {
     const salt = encryptedMnemonic.salt
     const key = await createKeyFromPassword(password, salt!)
     const plaintext = await decrypt(key, encryptedMnemonic)
