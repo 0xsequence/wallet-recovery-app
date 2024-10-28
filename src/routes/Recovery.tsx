@@ -1,13 +1,20 @@
+import { Account } from '@0xsequence/account'
+import { universal } from '@0xsequence/core'
 import { Box, Button, Card, Checkbox, Spinner, Text, TextArea, TextInput } from '@0xsequence/design-system'
+import { ChainId } from '@0xsequence/network'
+import { Orchestrator } from '@0xsequence/signhub'
 import { ethers } from 'ethers'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { TRACKER } from '~/utils/tracker'
 import { truncateMiddle } from '~/utils/truncate'
 
+import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
+
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
+import { NetworkStore } from '~/stores/NetworkStore'
 
 import { PasswordInput } from '~/components/PasswordInput'
 
@@ -15,20 +22,35 @@ import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
+  const networkStore = useStore(NetworkStore)
+  const networks = networkStore.networks.get()
+
   const [wallet, setWallet] = useState('')
   const [possibleWallets, setPossibleWallets] = useState([] as string[])
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
 
+  const [isReadyToContinue, setIsReadyToContinue] = useState(false)
   const [isLoadingWallets, setIsLoadingWallets] = useState(false)
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
+  useEffect(() => {
+    if (!ethers.isAddress(wallet)) {
+      return
+    }
+
+    setIsLoadingWallets(true)
+    const walletAddress = ethers.getAddress(wallet)
+    validateAddress(walletAddress)
+  }, [wallet])
+
   const handleSignInWithRecoveryMnemonic = () => {
+    const walletAddress = ethers.getAddress(wallet)
     if (usingPassword) {
-      authStore.signInWithRecoveryMnemonic(ethers.getAddress(wallet), mnemonic.trim(), password)
+      authStore.signInWithRecoveryMnemonic(walletAddress, mnemonic.trim(), password)
     } else {
-      authStore.signInWithRecoveryMnemonic(ethers.getAddress(wallet), mnemonic.trim())
+      authStore.signInWithRecoveryMnemonic(walletAddress, mnemonic.trim())
     }
   }
 
@@ -44,11 +66,13 @@ function Recovery() {
     setWallet('')
     setPossibleWallets([])
     setMnemonic(mnemonic)
-    setIsLoadingWallets(true)
+    setIsReadyToContinue(false)
 
     if (notValidMnemonic()) {
       return
     }
+
+    setIsLoadingWallets(true)
 
     try {
       const signer = ethers.Wallet.fromPhrase(mnemonic)
@@ -59,7 +83,39 @@ function Recovery() {
         setWallet(wallets[0].wallet)
       } else {
         setPossibleWallets(wallets.map(({ wallet }) => wallet))
+        setIsLoadingWallets(false)
       }
+    } catch (error) {
+      console.error(error)
+      setIsLoadingWallets(false)
+    }
+  }
+
+  const updateWallet = async (wallet: string) => {
+    setWallet(wallet)
+    setPossibleWallets([])
+    setIsReadyToContinue(false)
+  }
+
+  const validateAddress = async (wallet: string) => {
+    try {
+      const recoverySigner = ethers.Wallet.fromPhrase(mnemonic)
+      const orchestrator = new Orchestrator([recoverySigner])
+      const accountToCheck = new Account({
+        address: wallet,
+        tracker: TRACKER,
+        contexts: SEQUENCE_CONTEXT,
+        orchestrator: orchestrator,
+        networks: networks
+      })
+
+      const accountStatus = await accountToCheck.status(ChainId.MAINNET)
+      const accountConfig = accountStatus.config
+      const coder = universal.genericCoderFor(accountConfig.version)
+      const signers = coder.config.signersOf(accountConfig)
+
+      const match = signers.some(signer => signer.address === recoverySigner.address)
+      setIsReadyToContinue(match)
     } catch (error) {
       console.error(error)
     }
@@ -149,9 +205,8 @@ function Recovery() {
               name="wallet"
               label="Sequence Wallet Address"
               labelLocation="left"
-              disabled={true}
               value={wallet}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => setWallet(ev.target.value)}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
             />
 
             {possibleWallets.length >= 1 && (
@@ -206,7 +261,8 @@ function Recovery() {
                   disabled={
                     !mnemonic ||
                     !ethers.isAddress(wallet) ||
-                    (usingPassword && (!password || password.length < 8))
+                    (usingPassword && (!password || password.length < 8)) ||
+                    isReadyToContinue === false
                   }
                   onClick={() => {
                     handleSignInWithRecoveryMnemonic()
