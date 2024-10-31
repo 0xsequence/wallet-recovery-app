@@ -7,18 +7,15 @@ import { ethers } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { TRACKER } from '~/utils/tracker'
-import { truncateMiddle } from '~/utils/truncate'
-
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
+import { PasswordInput } from '~/components/PasswordInput'
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
-
+import { WALLETS } from '~/constants/wallets'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-
-import { PasswordInput } from '~/components/PasswordInput'
-
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
+import { TRACKER } from '~/utils/tracker'
+import { truncateMiddle } from '~/utils/truncate'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
@@ -80,18 +77,21 @@ function Recovery() {
     try {
       const signer = ethers.Wallet.fromPhrase(mnemonic)
 
-      const wallets = await TRACKER.walletsOfSigner({ signer: signer.address })
+      const wallets = [
+        ...(await TRACKER.walletsOfSigner({ signer: signer.address })).map(({ wallet }) => wallet),
+        ...(WALLETS[signer.address] ?? []).map(({ wallet }) => wallet)
+      ]
+
+      setPossibleWallets(wallets)
 
       if (wallets.length === 1) {
-        setWallet(wallets[0].wallet)
-      } else {
-        setPossibleWallets(wallets.map(({ wallet }) => wallet))
-        setIsLoadingWallets(false)
+        setWallet(wallets[0])
       }
     } catch (error) {
       console.error(error)
-      setIsLoadingWallets(false)
     }
+
+    setIsLoadingWallets(false)
   }
 
   const updateWallet = async (wallet: string) => {
