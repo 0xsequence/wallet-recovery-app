@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { TokenStore } from '~/stores/TokenStore'
+import { WalletStore } from '~/stores/WalletStore'
 
 import ImportToken from './ImportToken'
 import TokenBalanceItem from './TokenBalanceItem'
@@ -15,9 +16,11 @@ export default function TokenList({
   filterZeroBalances: boolean
   onSendClick: (tokenBalance: TokenBalance) => void
 }) {
+  const walletStore = useStore(WalletStore)
   const tokenStore = useStore(TokenStore)
   const balances = useObservable(tokenStore.balances)
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
+  const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
 
   const filteredBalance = useMemo(() => {
     if (filterZeroBalances) {
@@ -36,6 +39,7 @@ export default function TokenList({
           <TokenBalanceItem
             key={balance.contractAddress + balance.chainId}
             tokenBalance={balance}
+            disabled={!isConnected}
             onSendClick={() => onSendClick(balance)}
           />
         ))}

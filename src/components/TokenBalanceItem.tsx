@@ -7,9 +7,11 @@ import { truncateNumber } from '~/utils/bignumber'
 import NetworkTag from './NetworkTag'
 
 export default function TokenBalanceItem({
+  disabled,
   tokenBalance,
   onSendClick
 }: {
+  disabled?: boolean
   tokenBalance: TokenBalance
   onSendClick: () => void
 }) {
@@ -29,7 +31,7 @@ export default function TokenBalanceItem({
       <Box flexDirection="row">
         <NetworkTag chainId={tokenBalance.chainId} />
         <Box marginLeft="auto">
-          <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
+          <Button size="xs" label="Send" variant="primary" shape="square" disabled={disabled} onClick={onSendClick} />
         </Box>
       </Box>
     </Card>
