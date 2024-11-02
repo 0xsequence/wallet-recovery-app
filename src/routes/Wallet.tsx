@@ -188,13 +188,7 @@ function Wallet() {
       return
     }
 
-    const network = networkStore.networkForChainId(chainId)
-    if (!network) {
-      throw new Error(`No network found for chainId ${chainId}`)
-    }
-
-    // TODO: add providerForChainId method to NetworkStore
-    const provider = new ethers.JsonRpcProvider(network.rpcUrl)
+    const provider = networkStore.providerForChainId(chainId)
 
     const receipt = await getTransactionReceipt(provider, response.hash)
 
@@ -219,12 +213,7 @@ function Wallet() {
   }
 
   const handlePendingSignTransaction = async (hash: string, chainId: number) => {
-    const network = networkStore.networkForChainId(chainId!)
-    if (!network) {
-      throw new Error(`No network found for chainId ${chainId}`)
-    }
-    const rpcProvider = new ethers.JsonRpcProvider(network.rpcUrl)
-
+    const rpcProvider = networkStore.providerForChainId(chainId)
     const receipt = await getTransactionReceipt(rpcProvider, hash!)
 
     if (receipt) {

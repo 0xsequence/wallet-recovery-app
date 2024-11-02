@@ -127,19 +127,9 @@ export class WalletStore {
         throw new Error('No account found')
       }
 
-      const networkForToken = this.networkStore.networkForChainId(chainId)
-
-      if (!networkForToken) {
-        throw new Error(`No network found for chainId ${chainId}`)
-      }
-
-      if (!networkForToken.rpcUrl) {
-        throw new Error(`No RPC URL found for network ${networkForToken.name}`)
-      }
+      const provider = this.store.get(NetworkStore).providerForChainId(chainId)
 
       this.isSendingTokenTransaction.set({ tokenBalance, to, amount })
-
-      const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
       const externalProvider = this.selectedExternalProvider.get()?.provider
 
@@ -216,19 +206,9 @@ export class WalletStore {
         throw new Error('No account found')
       }
 
-      const networkForToken = this.networkStore.networkForChainId(chainId)
-
-      if (!networkForToken) {
-        throw new Error(`No network found for chainId ${chainId}`)
-      }
-
-      if (!networkForToken.rpcUrl) {
-        throw new Error(`No RPC URL found for network ${networkForToken.name}`)
-      }
+      const provider = this.store.get(NetworkStore).providerForChainId(chainId)
 
       this.isSendingCollectibleTransaction.set({ collectibleInfo, to, amount })
-
-      const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
       const externalProvider = this.selectedExternalProvider.get()?.provider
 

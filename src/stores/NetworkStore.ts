@@ -99,6 +99,18 @@ export class NetworkStore {
     return this.networks.get().find(n => n.chainId === chainId)
   }
 
+  providerForChainId(chainId: number) {
+    const network = this.networkForChainId(chainId)?.rpcUrl
+    if (!network) {
+      throw new Error(`No network found for chainId ${chainId}`)
+    }
+    const provider = new ethers.JsonRpcProvider(network)
+    if (!provider) {
+      throw new Error(`No provider found for chainId ${chainId}`)
+    }
+    return provider
+  }
+
   editNetwork(network: NetworkConfig) {
     const userEdits = this.local.networksUserEdits.get() ?? []
 

@@ -98,19 +98,9 @@ export class CollectibleStore {
       throw new Error('No account found')
     }
 
-    const network = this.store.get(NetworkStore).networkForChainId(params.chainId)
-
-    if (!network) {
-      throw new Error(`No network found for chainId ${params.chainId}`)
-    }
-
-    if (!network.rpcUrl) {
-      throw new Error(`No RPC URL found for network ${network.name}`)
-    }
+    const provider = this.store.get(NetworkStore).providerForChainId(params.chainId)
 
     this.isFetchingCollectibleInfo.set(true)
-
-    const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     let uri: string | undefined
     let image: string | undefined

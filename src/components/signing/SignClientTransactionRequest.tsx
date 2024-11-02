@@ -58,8 +58,7 @@ export default function SignClientTransactionRequest({
 
     setTimestamp(new Date().toLocaleString())
 
-    const network = networkStore.networkForChainId(details.chainId ?? 0)
-    const provider = new ethers.JsonRpcProvider(network?.rpcUrl)
+    const provider = networkStore.providerForChainId(details.chainId ?? 0)
 
     const data = details.txn[0].data as string
     const to = details.txn[0].to as string

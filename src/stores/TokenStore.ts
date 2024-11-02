@@ -99,19 +99,7 @@ export class TokenStore {
   }
 
   private async loadUserAddedTokenBalance(accountAddress: string, token: UserAddedToken) {
-    const networkForToken = this.store.get(NetworkStore).networkForChainId(token.chainId)
-
-    if (!networkForToken) {
-      console.warn(`No network found for chainId ${token.chainId}`)
-      return
-    }
-
-    if (!networkForToken.rpcUrl) {
-      console.warn(`No RPC URL found for network ${networkForToken.name}`)
-      return
-    }
-
-    const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
+    const provider = this.store.get(NetworkStore).providerForChainId(token.chainId)
     try {
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
       const balance = await erc20.balanceOf(accountAddress)
@@ -168,14 +156,9 @@ export class TokenStore {
 
   // TODO: refactor this part so it can be reused in load
   async updateTokenBalance(tokenBalance: TokenBalance) {
+    const provider = this.store.get(NetworkStore).providerForChainId(tokenBalance.chainId)
+
     this.isFetchingBalances.set(true)
-
-    const network = this.store.get(NetworkStore).networkForChainId(tokenBalance.chainId)
-
-    if (!network) {
-      console.warn(`No network found for chainId ${tokenBalance.chainId}`)
-      return
-    }
 
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
@@ -185,8 +168,6 @@ export class TokenStore {
     }
 
     const update = this.balances.get()
-
-    const provider = new ethers.JsonRpcProvider(network.rpcUrl)
 
     try {
       let balance: bigint
@@ -261,21 +242,9 @@ export class TokenStore {
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
-    const networkForToken = this.store.get(NetworkStore).networkForChainId(chainId)
-
-    if (!networkForToken) {
-      console.warn(`No network found for chainId ${chainId}`)
-      throw new Error(`No network found for chainId ${chainId}`)
-    }
-
-    if (!networkForToken.rpcUrl) {
-      console.warn(`No RPC URL found for network ${networkForToken.name}`)
-      throw new Error(`No RPC URL found for network ${networkForToken.name}`)
-    }
+    const provider = this.store.get(NetworkStore).providerForChainId(chainId)
 
     this.isFetchingTokenInfo.set(true)
-
-    const provider = new ethers.JsonRpcProvider(networkForToken.rpcUrl)
 
     try {
       const erc20 = new ethers.Contract(address, ERC20_ABI, provider)
