@@ -10,6 +10,5 @@ export default defineConfig({
       '~': path.resolve(__dirname, './src')
     }
   },
-  plugins: [react(), vanillaExtractPlugin()],
-  base: '/wallet-recovery-app'
+  plugins: [react(), vanillaExtractPlugin()]
 })
