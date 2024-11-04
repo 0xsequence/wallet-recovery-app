@@ -235,6 +235,7 @@ function Recovery() {
                   {possibleWallets.map(walletAddress => {
                     return (
                       <Button
+                        key={walletAddress}
                         size="lg"
                         shape="square"
                         label={truncateMiddle(walletAddress, 18, 4)}
