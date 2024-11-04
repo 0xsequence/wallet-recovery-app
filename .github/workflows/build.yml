@@ -1,0 +1,34 @@
+name: build app
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Push
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: true
+
+      - name: Build
+        run: pnpm build
+
+      - name: Deploy to gh-pages
+        uses: s0/git-publish-subdir-action@develop
+        with:
+          folder: dist
+          branch: gh-pages
+          repo: self
+          message: 'Build: ({sha}) {msg}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
