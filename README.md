@@ -1,3 +1,8 @@
 # Sequence Wallet Recovery App
 
-Better readme soon!
+# Running Locally
+
+1. Install [pnpm](https://pnpm.io)
+2. `pnpm i`
+3. `pnpm dev`
+4. Visit http://localhost:5173
