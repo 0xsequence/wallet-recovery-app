@@ -3,15 +3,16 @@ import { LocalStorageKey } from '~/constants/storage'
 import { LocalStore } from '~/stores/LocalStore'
 
 const GATEWAYS = [
+  'https://dweb.link/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
+  'https://nftstorage.link/ipfs/',
+  // Below gateways are not too reliable
   'https://flk-ipfs.io/ipfs/',
   'https://storry.tv/ipfs/',
   'https://ipfs.io/ipfs/',
-  'https://dweb.link/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
   'https://hardbin.com/ipfs/',
   'https://ipfs.runfission.com/ipfs/',
   'https://ipfs.eth.aragon.network/ipfs/',
-  'https://nftstorage.link/ipfs/',
   'https://4everland.io/ipfs/',
   'https://w3s.link/ipfs/',
   'https://trustless-gateway.link/ipfs/'
@@ -50,7 +51,7 @@ export class IPFSGatewayHelper {
 
   private async isGatewayAccessible(gateway: string): Promise<boolean> {
     try {
-      await fetch(`${gateway}${TEST_HASH}`)
+      await fetch(`${gateway}${TEST_HASH}`, { signal: AbortSignal.timeout(3000) })
       return true
     } catch {
       return false
@@ -62,7 +63,7 @@ export class IPFSGatewayHelper {
       await this.findAccessibleGateway()
     }
     const gatewayUri = await this.getGatewayURL(uri)
-    return fetch(gatewayUri)
+    return fetch(gatewayUri, { signal: AbortSignal.timeout(3000) })
   }
 
   async getGatewayURL(uri: string): Promise<string> {
