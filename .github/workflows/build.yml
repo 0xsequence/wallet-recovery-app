@@ -3,7 +3,7 @@ name: build app
 on:
   push:
     branches:
-      - master
+      - auto-build-and-deploy
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
     name: Build and Push
 
     steps:
-      - name: Checkout repository
+      - name: git-checkout
         uses: actions/checkout@v3
 
       - name: Setup PNPM
@@ -23,12 +23,11 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Deploy to gh-pages
+      - name: Push
         uses: s0/git-publish-subdir-action@develop
-        with:
-          folder: dist
-          branch: gh-pages
-          repo: self
-          message: 'Build: ({sha}) {msg}'
         env:
+          REPO: self
+          BRANCH: gh-pages
+          FOLDER: dist
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESSAGE: 'Build: ({sha}) {msg}'
