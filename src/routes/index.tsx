@@ -12,7 +12,7 @@ export const AppRouter = () => {
   const hasAccount = useObservable(authStore.accountAddress)
 
   return (
-    <Router>
+    <Router basename={'/wallet-recovery-app'}>
       <Routes>
         <Route path="/" element={!hasAccount ? <Landing /> : <Navigate replace to="/wallet" />} />
         <Route path="recovery" element={!hasAccount ? <Recovery /> : <Navigate replace to="/wallet" />} />
