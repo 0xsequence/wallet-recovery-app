@@ -7,10 +7,12 @@ import NetworkTag from './NetworkTag'
 
 export default function CollectibleBalanceItem({
   collectibleInfo,
-  onSendClick
+  onSendClick,
+  onRemoveClick
 }: {
   collectibleInfo: CollectibleInfo
   onSendClick: () => void
+  onRemoveClick?: () => void
 }) {
   return (
     <Card width="full" flexDirection="column" gap="2" padding="4">
@@ -46,7 +48,10 @@ export default function CollectibleBalanceItem({
 
       <Box flexDirection="row" justifyContent="space-between">
         <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
-        <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
+        <Box>
+          <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
+          {onRemoveClick && <Button marginLeft="2" size="xs" label="Remove" shape="square" onClick={onRemoveClick} />}
+        </Box>
       </Box>
     </Card>
   )

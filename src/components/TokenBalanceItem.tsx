@@ -9,11 +9,13 @@ import NetworkTag from './NetworkTag'
 export default function TokenBalanceItem({
   disabled,
   tokenBalance,
-  onSendClick
+  onSendClick,
+  onRemoveClick
 }: {
   disabled?: boolean
   tokenBalance: TokenBalance
   onSendClick: () => void
+  onRemoveClick?: () => void
 }) {
   const formattedBalance = ethers.formatUnits(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
@@ -30,8 +32,9 @@ export default function TokenBalanceItem({
       </Box>
       <Box flexDirection="row">
         <NetworkTag chainId={tokenBalance.chainId} />
-        <Box marginLeft="auto">
+        <Box marginLeft="auto" gap="2">
           <Button size="xs" label="Send" variant="primary" shape="square" disabled={disabled} onClick={onSendClick} />
+          {onRemoveClick && <Button size="xs" label="Remove" shape="square" onClick={onRemoveClick} />}
         </Box>
       </Box>
     </Card>

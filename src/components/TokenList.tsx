@@ -1,5 +1,5 @@
 import { AddIcon, Box, Button, Spinner } from '@0xsequence/design-system'
-import { TokenBalance } from '@0xsequence/indexer'
+import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -32,15 +32,26 @@ export default function TokenList({
 
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
 
+  const onRemoveClick = (balance: TokenBalance) => balance.contractType === ContractType.NATIVE ? undefined : () => {
+    tokenStore.removeToken({
+      chainId: balance.chainId,
+      address: balance.contractAddress,
+      contractType: balance.contractType,
+      decimals: balance.contractInfo?.decimals!,
+      symbol: balance.contractInfo?.symbol!
+    })
+  }
+
   return (
     <>
       <Box width="full" flexDirection="column" gap="4" marginBottom="8">
-        {(filterZeroBalances ? filteredBalance : balances).map(balance => (
+        {filteredBalance.map(balance => (
           <TokenBalanceItem
             key={balance.contractAddress + balance.chainId}
             tokenBalance={balance}
             disabled={!isConnected}
             onSendClick={() => onSendClick(balance)}
+            onRemoveClick={onRemoveClick(balance)}
           />
         ))}
         {isFetchingBalances && (

@@ -1,5 +1,5 @@
 import { AddIcon, Box, Button, Spinner } from '@0xsequence/design-system'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
@@ -18,12 +18,14 @@ export default function CollectibleList({
   const isFetchingBalances = useObservable(collectibleStore.isFetchingBalances)
   const userCollectibles = useObservable(collectibleStore.userCollectibles)
 
+  const collectibles = useMemo(() => userCollectibles, [userCollectibles])
+
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
   return (
     <>
       <Box width="full" flexDirection="row" gap="4" marginBottom="8">
-        {userCollectibles.map(collectibleInfo => (
+        {collectibles.map(collectibleInfo => (
           <Box
             key={
               collectibleInfo.collectibleInfoParams.chainId +
@@ -36,6 +38,9 @@ export default function CollectibleList({
               collectibleInfo={collectibleInfo}
               onSendClick={() => {
                 onSendClick(collectibleInfo)
+              }}
+              onRemoveClick={() => {
+                collectibleStore.removeCollectible(collectibleInfo)
               }}
             />
           </Box>

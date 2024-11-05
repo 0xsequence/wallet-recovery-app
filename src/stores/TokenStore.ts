@@ -231,14 +231,6 @@ export class TokenStore {
       .filter(b => !(b.chainId === token.chainId && b.contractAddress === token.address))
 
     this.balances.set(filteredBalances)
-
-    const accountAddress = this.store.get(AuthStore).accountAddress.get()
-
-    if (accountAddress) {
-      this.isFetchingBalances.set(true)
-      await this.loadUserAddedTokenBalance(accountAddress, token)
-      this.isFetchingBalances.set(false)
-    }
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
