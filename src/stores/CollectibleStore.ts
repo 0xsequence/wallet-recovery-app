@@ -194,5 +194,9 @@ export class CollectibleStore {
         c.tokenId !== collectibleInfo.collectibleInfoParams.tokenId
     )
     this.local.userCollectibles.set(filtered)
+
+    this.isFetchingCollectibleInfo.set(true)
+    this.loadBalances()
+    this.isFetchingCollectibleInfo.set(false)
   }
 }
