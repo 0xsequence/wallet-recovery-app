@@ -43,10 +43,12 @@ function Recovery() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
   const [selectingOtherWallets, setSelectingOtherWallets] = useState(false)
+  const [trackerSuccessful, setTrackerSuccessful] = useState(false)
 
   const [warnWrongAddress, setWarnWrongAddress] = useState(false)
   const [isReadyToContinue, setIsReadyToContinue] = useState(false)
   const [isLoadingWallets, setIsLoadingWallets] = useState(false)
+
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
   useEffect(() => {
@@ -98,6 +100,7 @@ function Recovery() {
         ...(WALLETS[signer.address] ?? []).map(({ wallet }) => wallet)
       ]
 
+      setTrackerSuccessful(true)
       setPossibleWallets(wallets)
 
       if (wallets.length === 1) {
@@ -169,7 +172,6 @@ function Recovery() {
           </Box>
         </Box>
 
-        {/* <Card marginTop="12"> */}
         <Box marginTop="12">
           <Box alignItems="center" justifyContent="center" flexDirection="column">
             <Text variant="medium" color="text100" textAlign="center">
@@ -206,7 +208,7 @@ function Recovery() {
               )}
             </Box>
 
-            {validMnemonic() && (
+            {trackerSuccessful && validMnemonic() && (
               <Box flexDirection="column" gap="8" marginTop="3" marginLeft="1">
                 <Checkbox
                   color="primary"
