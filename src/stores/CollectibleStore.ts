@@ -195,8 +195,12 @@ export class CollectibleStore {
     )
     this.local.userCollectibles.set(filtered)
 
-    this.isFetchingCollectibleInfo.set(true)
-    this.loadBalances()
-    this.isFetchingCollectibleInfo.set(false)
+    const currentBalances = this.userCollectibles.get()
+    const filteredBalances = currentBalances.filter(
+      c =>
+        c.collectibleInfoParams.address !== collectibleInfo.collectibleInfoParams.address ||
+        c.collectibleInfoParams.tokenId !== collectibleInfo.collectibleInfoParams.tokenId
+    )
+    this.userCollectibles.set(filteredBalances)
   }
 }
