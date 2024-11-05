@@ -33,7 +33,8 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
         styles={{
           video: {
             transform: 'scaleX(-1)',
-            borderRadius: '10px'
+            borderRadius: '10px',
+            minHeight: '500px'
           }
         }}
       />
