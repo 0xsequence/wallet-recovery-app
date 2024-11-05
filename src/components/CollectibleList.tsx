@@ -24,7 +24,7 @@ export default function CollectibleList({
 
   return (
     <>
-      <Box width="full" flexDirection="row" gap="4" marginBottom="8">
+      <Box width="full" flexDirection="row" flexWrap="wrap" gap="4" marginBottom="8">
         {collectibles.map(collectibleInfo => (
           <Box
             key={
