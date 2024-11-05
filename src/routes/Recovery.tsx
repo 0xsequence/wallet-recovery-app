@@ -71,15 +71,14 @@ function Recovery() {
   }
 
   const validMnemonic = (testMnemonic: string = mnemonic) => {
-    return testMnemonic && testMnemonic.replace(/\s+/g, ' ').trim().split(' ').length == 12
+    return testMnemonic.replace(/\s+/g, ' ').trim().split(' ').length == 12
   }
 
   const validPassword = () => {
-    return !password || password?.length >= 8
+    return password?.length >= 8
   }
 
   const updateMnemonic = async (mnemonic: string) => {
-    console.log('TEST')
     setWallet('')
     setPossibleWallets([])
     setMnemonic(mnemonic)
@@ -200,7 +199,7 @@ function Recovery() {
                 onChange={ev => updateMnemonic(ev.target.value)}
               />
 
-              {!validMnemonic() && (
+              {mnemonic && !validMnemonic() && (
                 <Text variant="small" color="negative" marginLeft="1" marginTop="2">
                   Mnemonic must be 12 words
                 </Text>
@@ -231,7 +230,7 @@ function Recovery() {
                         value={password}
                         onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
                       ></PasswordInput>
-                      {!validPassword() && (
+                      {password && !validPassword() && (
                         <Text variant="small" color="negative" marginLeft="1" marginTop="2">
                           Password not long enough
                         </Text>
@@ -244,7 +243,7 @@ function Recovery() {
                         value={confirmPassword}
                         onChange={(ev: ChangeEvent<HTMLInputElement>) => setConfirmPassword(ev.target.value)}
                       ></PasswordInput>
-                      {password !== confirmPassword && (
+                      {password && confirmPassword && password !== confirmPassword && (
                         <Text variant="small" color="negative" marginLeft="1" marginTop="2">
                           Passwords must match
                         </Text>
@@ -292,24 +291,14 @@ function Recovery() {
                 )}
 
                 <Box>
-                  {selectingOtherWallets ? (
-                    <TextInput
-                      name="wallet"
-                      label="Enter Address Manually"
-                      labelLocation="left"
-                      value={wallet}
-                      onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
-                    />
-                  ) : (
-                    <TextInput
-                      name="wallet"
-                      label="Sequence Wallet Address"
-                      labelLocation="left"
-                      disabled={true}
-                      value={wallet}
-                      onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
-                    />
-                  )}
+                  <TextInput
+                    name="wallet"
+                    label={selectingOtherWallets ? 'Enter Address Manually' : 'Sequence Wallet Address'}
+                    labelLocation="left"
+                    disabled={!selectingOtherWallets}
+                    value={wallet}
+                    onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
+                  />
 
                   {warnWrongAddress && (
                     <Box justifyContent="center" marginTop="2">
