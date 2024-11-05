@@ -266,7 +266,7 @@ function Recovery() {
                         handleSelectingOtherWallets()
                       }}
                     >
-                      {selectingOtherWallets ? 'Hide' : 'Select another wallet'}
+                      {selectingOtherWallets ? 'Go back to default wallet' : 'Enter another wallet'}
                     </Text>
                   </Box>
                 </Box>
