@@ -23,6 +23,12 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Touch .nojeykll
+        run: touch ./dist/.nojekyll
+
+      - name: Touch CNAME
+        run: echo "recovery.sequence.app" > ./dist/CNAME
+
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
