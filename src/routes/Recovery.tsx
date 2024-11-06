@@ -1,21 +1,35 @@
 import { Account } from '@0xsequence/account'
 import { universal } from '@0xsequence/core'
-import { Box, Button, Card, Checkbox, Spinner, Text, TextArea, TextInput } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Checkbox,
+  Divider,
+  Spinner,
+  Text,
+  TextArea,
+  TextInput
+} from '@0xsequence/design-system'
 import { ChainId } from '@0xsequence/network'
 import { Orchestrator } from '@0xsequence/signhub'
 import { ethers } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
-import { PasswordInput } from '~/components/PasswordInput'
+import { TRACKER } from '~/utils/tracker'
+import { truncateMiddle } from '~/utils/truncate'
+
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 import { WALLETS } from '~/constants/wallets'
+
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-import { TRACKER } from '~/utils/tracker'
-import { truncateMiddle } from '~/utils/truncate'
+
+import { PasswordInput } from '~/components/PasswordInput'
+
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
@@ -26,11 +40,15 @@ function Recovery() {
   const [possibleWallets, setPossibleWallets] = useState([] as string[])
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [usingPassword, setUsingPassword] = useState(false)
+  const [selectingOtherWallets, setSelectingOtherWallets] = useState(false)
+  const [trackerSuccessful, setTrackerSuccessful] = useState(false)
 
   const [warnWrongAddress, setWarnWrongAddress] = useState(false)
   const [isReadyToContinue, setIsReadyToContinue] = useState(false)
   const [isLoadingWallets, setIsLoadingWallets] = useState(false)
+
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
   useEffect(() => {
@@ -54,12 +72,12 @@ function Recovery() {
     }
   }
 
-  const notValidMnemonic = () => {
-    return mnemonic && mnemonic.replace(/\s+/g, ' ').trim().split(' ').length !== 12
+  const validMnemonic = (testMnemonic: string = mnemonic) => {
+    return testMnemonic.replace(/\s+/g, ' ').trim().split(' ').length == 12
   }
 
-  const notValidPassword = () => {
-    return password && password.length < 8
+  const validPassword = () => {
+    return password?.length >= 8
   }
 
   const updateMnemonic = async (mnemonic: string) => {
@@ -68,7 +86,7 @@ function Recovery() {
     setMnemonic(mnemonic)
     setIsReadyToContinue(false)
 
-    if (notValidMnemonic()) {
+    if (!validMnemonic(mnemonic)) {
       return
     }
 
@@ -82,6 +100,7 @@ function Recovery() {
         ...(WALLETS[signer.address] ?? []).map(({ wallet }) => wallet)
       ]
 
+      setTrackerSuccessful(true)
       setPossibleWallets(wallets)
 
       if (wallets.length === 1) {
@@ -129,6 +148,11 @@ function Recovery() {
     setIsLoadingWallets(false)
   }
 
+  const handleSelectingOtherWallets = () => {
+    setSelectingOtherWallets(!selectingOtherWallets)
+    setWallet(possibleWallets[0])
+  }
+
   return (
     <Box
       background="backgroundPrimary"
@@ -167,7 +191,7 @@ function Recovery() {
             </Text>
           </Box>
 
-          <Box flexDirection="column" marginTop="12" gap="8">
+          <Box flexDirection="column" marginTop="12">
             <Box>
               <TextArea
                 name="mnemonic"
@@ -176,81 +200,121 @@ function Recovery() {
                 value={mnemonic}
                 onChange={ev => updateMnemonic(ev.target.value)}
               />
-              {notValidMnemonic() && (
+
+              {mnemonic && !validMnemonic() && (
                 <Text variant="small" color="negative" marginLeft="1" marginTop="2">
                   Mnemonic must be 12 words
                 </Text>
               )}
             </Box>
 
-            <Checkbox
-              labelLocation="right"
-              label="Use Password to Encrypt Mnemonic (Optional)"
-              checked={usingPassword}
-              onCheckedChange={checked => {
-                setUsingPassword(checked === true)
-              }}
-            ></Checkbox>
+            {trackerSuccessful && validMnemonic() && (
+              <Box flexDirection="column" gap="8" marginTop="3" marginLeft="1">
+                <Checkbox
+                  color="primary"
+                  labelLocation="right"
+                  label={
+                    <Text color="text80" underline="true">
+                      Use Password to Encrypt Mnemonic (Optional)
+                    </Text>
+                  }
+                  checked={usingPassword}
+                  onCheckedChange={checked => {
+                    setUsingPassword(checked === true)
+                  }}
+                ></Checkbox>
 
-            {usingPassword && (
-              <Box>
-                <PasswordInput
-                  label="Create Password (min 8 characters)"
-                  value={password}
-                  onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
-                ></PasswordInput>
-                {notValidPassword() && (
-                  <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-                    Password not long enough
-                  </Text>
+                {usingPassword && (
+                  <Box flexDirection="column" gap="3">
+                    <Box>
+                      <PasswordInput
+                        label="Create Password (min 8 characters)"
+                        value={password}
+                        onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
+                      ></PasswordInput>
+                      {password && !validPassword() && (
+                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                          Password not long enough
+                        </Text>
+                      )}
+                    </Box>
+
+                    <Box>
+                      <PasswordInput
+                        label="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(ev: ChangeEvent<HTMLInputElement>) => setConfirmPassword(ev.target.value)}
+                      ></PasswordInput>
+                      {password && confirmPassword && password !== confirmPassword && (
+                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                          Passwords must match
+                        </Text>
+                      )}
+                    </Box>
+                  </Box>
                 )}
-              </Box>
-            )}
 
-            <Box>
-              <TextInput
-                name="wallet"
-                label="Sequence Wallet Address"
-                labelLocation="left"
-                value={wallet}
-                onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
-              />
-
-              {warnWrongAddress && (
-                <Box justifyContent="center" marginTop="2">
-                  <Text variant="small" color="negative">
-                    Wallet does not match recovery phrase
-                  </Text>
+                <Box>
+                  <Divider color="white" />
+                  <Box justifyContent="flex-end">
+                    <Text
+                      marginRight="1"
+                      variant="small"
+                      color="text80"
+                      cursor="pointer"
+                      underline="true"
+                      onClick={() => {
+                        handleSelectingOtherWallets()
+                      }}
+                    >
+                      {selectingOtherWallets ? 'Go back to default wallet' : 'Enter another wallet'}
+                    </Text>
+                  </Box>
                 </Box>
-              )}
-            </Box>
 
-            {possibleWallets.length >= 1 && (
-              <Box flexDirection="column" gap="4">
-                <Text variant="normal" marginTop="4" color="text100" textAlign="center">
-                  Select your wallet
-                </Text>
+                {selectingOtherWallets && possibleWallets.length > 1 && (
+                  <Box flexDirection="column" gap="4">
+                    <Box display="grid" gap="4" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                      {possibleWallets.map(walletAddress => {
+                        return (
+                          <Button
+                            key={walletAddress}
+                            size="lg"
+                            shape="square"
+                            label={truncateMiddle(walletAddress, 18, 4)}
+                            onClick={() => {
+                              setWallet(walletAddress)
+                            }}
+                          />
+                        )
+                      })}
+                    </Box>
+                  </Box>
+                )}
 
-                <Box display="grid" gap="4" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-                  {possibleWallets.map(walletAddress => {
-                    return (
-                      <Button
-                        key={walletAddress}
-                        size="lg"
-                        shape="square"
-                        label={truncateMiddle(walletAddress, 18, 4)}
-                        onClick={() => {
-                          setWallet(walletAddress)
-                        }}
-                      />
-                    )
-                  })}
+                <Box>
+                  <TextInput
+                    name="wallet"
+                    label={selectingOtherWallets ? 'Enter Address Manually' : 'Sequence Wallet Address'}
+                    labelLocation="left"
+                    disabled={!selectingOtherWallets}
+                    value={wallet}
+                    onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
+                  />
+
+                  {warnWrongAddress && (
+                    <Box justifyContent="center" marginTop="2">
+                      <Text variant="small" color="negative">
+                        Wallet does not match recovery phrase
+                      </Text>
+                    </Box>
+                  )}
                 </Box>
               </Box>
             )}
 
             {isLoadingWallets && (
-              <Box alignItems="center" justifyContent="center">
+              <Box alignItems="center" justifyContent="center" marginTop="4">
                 <Card width="16" alignItems="center" justifyContent="center">
                   <Spinner size="lg" />
                 </Card>
@@ -279,6 +343,7 @@ function Recovery() {
                     !mnemonic ||
                     !ethers.isAddress(wallet) ||
                     (usingPassword && (!password || password.length < 8)) ||
+                    password !== confirmPassword ||
                     isReadyToContinue === false
                   }
                   onClick={() => {
