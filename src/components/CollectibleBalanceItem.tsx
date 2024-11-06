@@ -17,21 +17,23 @@ export default function CollectibleBalanceItem({
   return (
     <Card width="full" flexDirection="column" gap="2" padding="4">
       <Box flexDirection="row" alignItems="center" gap="2">
-        <Text variant="medium" color="text80">
+        <Text variant="medium" color="text80" wordBreak="break-word">
           {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
         </Text>
       </Box>
-      <Box style={{ height: '200px' }}>
-        <Image
-          style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            objectFit: 'contain'
-          }}
-          src={collectibleInfo.collectibleInfoResponse.image ?? ''}
-          width="full"
-        />
-      </Box>
+      {collectibleInfo.collectibleInfoResponse.image && (
+        <Box style={{ height: '200px' }}>
+          <Image
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain'
+            }}
+            src={collectibleInfo.collectibleInfoResponse.image}
+            width="full"
+          />
+        </Box>
+      )}
 
       <Box justifyContent="flex-end">
         <Text variant="medium" color="text100">
