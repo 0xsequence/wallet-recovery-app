@@ -76,6 +76,8 @@ export class NetworkStore {
         updatedNetworkConfig.rpcUrl = rpcForCurrent
         updatedNetworkConfig.relayer = createDebugLocalRelayer(rpcForCurrent)
 
+        updatedNetworkConfig.disabled = false
+
         updatedNetworkConfigs.push(updatedNetworkConfig)
       } else {
         console.warn(

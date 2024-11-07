@@ -58,16 +58,19 @@ export default function Networks() {
           <TabsContent value={NetworkType.MAINNET}>
             <Box flexDirection="column" gap="2">
               <Box width="full" flexDirection="column" alignItems="flex-end" marginY="4">
-                <Button
-                  label="Add network"
-                  variant="primary"
-                  size="md"
-                  shape="square"
-                  onClick={() => {
-                    setIsAddNetworkActive(true)
-                  }}
-                />
-                {isAddNetworkActive && <AddNetwork onClose={() => setIsAddNetworkActive(false)} />}
+                {!isAddNetworkActive ? (
+                  <Button
+                    label="Add network"
+                    variant="primary"
+                    size="md"
+                    shape="square"
+                    onClick={() => {
+                      setIsAddNetworkActive(true)
+                    }}
+                  />
+                ) : (
+                  <AddNetwork onClose={() => setIsAddNetworkActive(false)} />
+                )}
               </Box>
               <>
                 {sortedMainnets.map((network, i) => (
