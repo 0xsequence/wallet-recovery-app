@@ -100,9 +100,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
                 variant="danger"
                 size="md"
                 shape="square"
-                onClick={() => {
-                  networkStore.resetNetworkEdit(network.chainId)
-                }}
+                onClick={() => networkStore.resetNetworkEdit(network.chainId)}
               />
             )}
           </>
