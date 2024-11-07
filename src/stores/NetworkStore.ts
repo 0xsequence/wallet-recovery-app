@@ -1,6 +1,9 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers } from 'ethers'
+import { WritableObservable } from 'micro-observables'
+
+import { DEFAULT_TRACKER_OPTIONS, TRACKER_OPTIONS } from '~/utils/tracker'
 
 import { DEFAULT_PUBLIC_RPC_LIST, IGNORED_CHAIN_IDS } from '~/constants/network'
 import { LocalStorageKey } from '~/constants/storage'
@@ -29,11 +32,16 @@ export class NetworkStore {
   editedNetworkChainIds = observable<number[]>([])
   userAdditionNetworkChainIds = observable<number[]>([])
 
+  arweaveGatewayUrl: WritableObservable<string | undefined>
+  arweaveGraphqlUrl: WritableObservable<string | undefined>
+
   accountLoaded = observable<boolean>(false)
 
   private local = {
     networksUserEdits: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_EDITS),
-    networksUserAdditions: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_ADDITIONS)
+    networksUserAdditions: new LocalStore<NetworkConfig[]>(LocalStorageKey.NETWORKS_USER_ADDITIONS),
+    arweaveGatewayUrl: new LocalStore<string>(LocalStorageKey.ARWEAVE_GATEWAY_URL),
+    arweaveGraphqlUrl: new LocalStore<string>(LocalStorageKey.ARWEAVE_GRAPHQL_URL)
   }
 
   constructor(_store: Store) {
@@ -43,6 +51,26 @@ export class NetworkStore {
       if (loaded && this.networks.get().length === 0) {
         this.prepareNetworks()
       }
+    })
+
+    this.arweaveGatewayUrl = this.local.arweaveGatewayUrl.observable
+    this.arweaveGraphqlUrl = this.local.arweaveGraphqlUrl.observable
+
+    if (!this.arweaveGatewayUrl.get()) {
+      this.arweaveGatewayUrl.set(DEFAULT_TRACKER_OPTIONS.arweaveUrl)
+    }
+    if (!this.arweaveGraphqlUrl.get()) {
+      this.arweaveGraphqlUrl.set(DEFAULT_TRACKER_OPTIONS.graphqlUrl)
+    }
+
+    TRACKER_OPTIONS.arweaveUrl = this.arweaveGatewayUrl.get() || DEFAULT_TRACKER_OPTIONS.arweaveUrl
+    TRACKER_OPTIONS.graphqlUrl = this.arweaveGraphqlUrl.get() || DEFAULT_TRACKER_OPTIONS.graphqlUrl
+
+    this.arweaveGatewayUrl.subscribe(value => {
+      TRACKER_OPTIONS.arweaveUrl = value || DEFAULT_TRACKER_OPTIONS.arweaveUrl
+    })
+    this.arweaveGraphqlUrl.subscribe(value => {
+      TRACKER_OPTIONS.graphqlUrl = value || DEFAULT_TRACKER_OPTIONS.graphqlUrl
     })
   }
 
@@ -167,6 +195,8 @@ export class NetworkStore {
     this.networks.set([])
     this.editedNetworkChainIds.set([])
     this.userAdditionNetworkChainIds.set([])
+    this.arweaveGatewayUrl.set(undefined)
+    this.arweaveGraphqlUrl.set(undefined)
     this.accountLoaded.set(false)
   }
 }
