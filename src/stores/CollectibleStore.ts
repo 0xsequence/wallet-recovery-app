@@ -160,12 +160,6 @@ export class CollectibleStore {
         image = await this.ipfsGatewayHelper.getGatewayURL(image)
       }
     } catch {
-      if (!decimals) {
-        decimals = 0
-      }
-      if (!image) {
-        image = undefined
-      }
       if (!name) {
         name = `No Metadata Found Address: ${params.address} TokenId: ${params.tokenId}`
       }
