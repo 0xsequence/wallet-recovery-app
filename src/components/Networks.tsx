@@ -1,6 +1,6 @@
-import { Box, Button, TabsContent, TabsHeader, TabsRoot, Text } from '@0xsequence/design-system'
+import { Box, Button, TabsContent, TabsHeader, TabsRoot, Text, TextInput } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
@@ -20,7 +20,10 @@ export default function Networks() {
 
   const testnets = networks.filter(network => network.type === NetworkType.TESTNET)
 
-  const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkType>(NetworkType.MAINNET)
+  const arweaveGatewayUrl = useObservable(networkStore.arweaveGatewayUrl)
+  const arweaveGraphqlUrl = useObservable(networkStore.arweaveGraphqlUrl)
+
+  const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkType | 'arweave'>(NetworkType.MAINNET)
 
   const [isAddNetworkActive, setIsAddNetworkActive] = useState(false)
 
@@ -50,7 +53,8 @@ export default function Networks() {
               value={selectedNetworkType}
               tabs={[
                 { label: 'Networks', value: NetworkType.MAINNET },
-                { label: 'Test Networks', value: NetworkType.TESTNET }
+                { label: 'Test Networks', value: NetworkType.TESTNET },
+                { label: 'Arweave', value: 'arweave' }
               ]}
             />
           </Box>
@@ -82,6 +86,34 @@ export default function Networks() {
               {testnets.map((network, i) => (
                 <NetworkItem key={i} network={network} />
               ))}
+            </Box>
+          </TabsContent>
+
+          <TabsContent value="arweave">
+            <Box flexDirection="column" gap="2">
+              <Text fontWeight="bold" color="text100">
+                Arweave
+              </Text>
+              <TextInput
+                label="Arweave Gateway URL"
+                labelLocation="left"
+                name="arweaveGatewayUrl"
+                spellCheck={false}
+                value={arweaveGatewayUrl ?? ''}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                  networkStore.arweaveGatewayUrl.set(ev.target.value)
+                }}
+              />
+              <TextInput
+                label="Arweave GraphQL URL"
+                labelLocation="left"
+                name="arweaveGraphqlUrl"
+                spellCheck={false}
+                value={arweaveGraphqlUrl ?? ''}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                  networkStore.arweaveGraphqlUrl.set(ev.target.value)
+                }}
+              />
             </Box>
           </TabsContent>
         </TabsRoot>

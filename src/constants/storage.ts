@@ -1,6 +1,8 @@
 export enum LocalStorageKey {
   NETWORKS_USER_EDITS = '@sequence-recovery.networks-user-edits',
   NETWORKS_USER_ADDITIONS = '@sequence-recovery.networks-user-additions',
+  ARWEAVE_GATEWAY_URL = '@sequence-recovery.arweave-gateway-url',
+  ARWEAVE_GRAPHQL_URL = '@sequence-recovery.arweave-graphql-url',
   TOKENS_USER_ADDITIONS = '@sequence-recovery.tokens-user-additions',
   COLLECTIBLES = '@sequence-recovery.collectibles',
   GATEWAY_ADDRESS = '@sequence-recovery.gateway-address',
