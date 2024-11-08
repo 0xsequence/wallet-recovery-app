@@ -1,4 +1,4 @@
-import { Box, Button, TabsContent, TabsHeader, TabsRoot, Text, TextInput } from '@0xsequence/design-system'
+import { Box, Button, Divider, TabsContent, TabsHeader, TabsRoot, Text, TextInput } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useState } from 'react'
 
@@ -114,6 +114,7 @@ export default function Networks() {
                   networkStore.arweaveGraphqlUrl.set(ev.target.value)
                 }}
               />
+              <Divider />
             </Box>
           </TabsContent>
         </TabsRoot>
