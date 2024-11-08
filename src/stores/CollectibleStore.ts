@@ -128,6 +128,8 @@ export class CollectibleStore {
         return { isOwner: false, uri: '' }
       }
 
+      balance = balance ?? BigInt(1)
+
       uri = await contract.uri(params.tokenId)
     }
 
@@ -141,23 +143,28 @@ export class CollectibleStore {
 
     let metadata
 
-    if (uri.startsWith('ipfs://')) {
-      metadata = await this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
-    } else {
-      metadata = await fetch(uri).then(res => res.json())
+    try {
+      if (uri.startsWith('ipfs://')) {
+        metadata = await this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
+      } else {
+        metadata = await fetch(uri).then(res => res.json())
+      }
+
+      if (metadata) {
+        decimals = metadata.decimals
+        image = metadata.image
+        name = metadata.name
+      }
+
+      if (image?.startsWith('ipfs://')) {
+        image = await this.ipfsGatewayHelper.getGatewayURL(image)
+      }
+    } catch {
+      if (!name) {
+        name = `No Metadata Found Address: ${params.address} TokenId: ${params.tokenId}`
+      }
     }
 
-    if (metadata) {
-      decimals = metadata.decimals
-      image = metadata.image
-      name = metadata.name
-    }
-
-    if (image?.startsWith('ipfs://')) {
-      image = await this.ipfsGatewayHelper.getGatewayURL(image)
-    }
-
-    balance = balance ?? BigInt(1)
     decimals = decimals ?? 0
 
     this.isFetchingCollectibleInfo.set(false)
