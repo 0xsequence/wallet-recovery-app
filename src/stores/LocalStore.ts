@@ -20,6 +20,8 @@ export class LocalStore<T extends Object = string, K extends T | undefined = und
           this._observable?.set(this.get())
         }
       })
+
+      this._observable.subscribe((val: T | K) => this.set(val))
     }
 
     return this._observable

@@ -14,6 +14,7 @@ import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
@@ -34,8 +35,6 @@ import PendingTxn from '~/components/PendingTxn'
 import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
-import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
-import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
@@ -65,6 +64,8 @@ function Wallet() {
   const tokenStore = useStore(TokenStore)
   const walletStore = useStore(WalletStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
+
+  const navigate = useNavigate()
 
   const accountAddress = useObservable(authStore.accountAddress)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
@@ -116,7 +117,6 @@ function Wallet() {
   const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
 
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
-  const [isSettingsTokenListModalOpen, setIsSettingsTokenListModalOpen] = useState(false)
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
   const [isConnectingDapp, setIsConnectingDapp] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
@@ -371,7 +371,7 @@ function Wallet() {
           alignItems="center"
         >
           <img src={sequenceLogo} alt="Sequence Logo" width="40" />
-          <Box marginLeft="auto">
+          <Box marginLeft="auto" marginRight="16">
             <Button
               label="Networks"
               variant="text"
@@ -379,7 +379,14 @@ function Wallet() {
               onClick={() => setIsNetworkModalOpen(true)}
             />
 
-            <SettingsDropdownMenu onTokenListClick={() => setIsSettingsTokenListModalOpen(true)} />
+            <Button
+              label="Sign Out"
+              variant="text"
+              onClick={() => {
+                authStore.logout()
+                navigate('/')
+              }}
+            />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
@@ -519,11 +526,6 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal onClose={() => setIsNetworkModalOpen(false)}>
           <Networks />
-        </Modal>
-      )}
-      {isSettingsTokenListModalOpen && (
-        <Modal onClose={() => setIsSettingsTokenListModalOpen(false)}>
-          <SettingsTokenList />
         </Modal>
       )}
       {isSelectProviderModalOpen && (

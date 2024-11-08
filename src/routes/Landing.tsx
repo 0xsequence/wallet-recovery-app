@@ -47,7 +47,7 @@ function Landing() {
         width="full"
         background="backgroundMuted"
         justifyContent="flex-end"
-        paddingX="8"
+        paddingX="20"
         paddingY="4"
         style={{ height: '64.12px' }}
       >
