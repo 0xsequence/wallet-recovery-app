@@ -63,6 +63,7 @@ function Wallet() {
   const authStore = useStore(AuthStore)
   const tokenStore = useStore(TokenStore)
   const walletStore = useStore(WalletStore)
+  const networkStore = useStore(NetworkStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
   const navigate = useNavigate()
@@ -73,11 +74,19 @@ function Wallet() {
 
   const sessionList = useObservable(walletConnectSignClientStore.allSessions)
 
+  const networks = useObservable(networkStore.networks)
+
   const toast = useToast()
 
   const isMobile = useMediaQuery('isMobile')
 
   const walletConnectProvider = useWalletConnectProvider()
+
+  useEffect(() => {
+    if (accountAddress && networks.length > 0) {
+      tokenStore.loadBalances(accountAddress, networks)
+    }
+  }, [accountAddress, networks])
 
   useEffect(() => {
     if (
@@ -108,8 +117,6 @@ function Wallet() {
   const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
   const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
   const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
-
-  const networkStore = useStore(NetworkStore)
 
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
 
@@ -371,7 +378,7 @@ function Wallet() {
           alignItems="center"
         >
           <img src={sequenceLogo} alt="Sequence Logo" width="40" />
-          <Box marginLeft="auto" marginRight="20">
+          <Box marginLeft="auto" marginRight="16">
             <Button
               label="Networks"
               variant="text"

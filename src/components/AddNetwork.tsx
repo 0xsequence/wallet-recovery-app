@@ -18,21 +18,22 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
   const [tokenSymbol, setTokenSymbol] = useState<string | undefined>()
 
   const handleAdd = async () => {
-    // TODO: add form validation
-    if (chainId && networkName && rpcUrl && blockExplorerUrl) {
+    if (chainId && networkName && rpcUrl) {
       await networkStore.addNetwork({
         chainId: Number(chainId),
         name: networkName,
         title: networkName,
         type: NetworkType.MAINNET,
         rpcUrl,
-        blockExplorer: { rootUrl: blockExplorerUrl },
+        blockExplorer: blockExplorerUrl ? { rootUrl: blockExplorerUrl } : undefined,
         nativeToken: {
           name: tokenName || 'Ether',
           symbol: tokenSymbol || 'ETH',
           decimals: 18
         }
       })
+    } else {
+      throw new Error('Please fill in all required fields, marked with *')
     }
   }
 
@@ -49,7 +50,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
     <Box flexDirection="column" width="full" marginTop="4" gap="4">
       <TextInput
         width="full"
-        label="Chain ID"
+        label="Chain ID*"
         labelLocation="left"
         name="chainId"
         value={chainId ?? ''}
@@ -59,7 +60,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
       />
       <TextInput
         width="full"
-        label="Network Name"
+        label="Network Name*"
         labelLocation="left"
         name="networkName"
         value={networkName ?? ''}
@@ -69,7 +70,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
       />
       <TextInput
         width="full"
-        label="RPC URL"
+        label="RPC URL*"
         labelLocation="left"
         name="rpcUrl"
         value={rpcUrl ?? ''}
@@ -79,7 +80,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
       />
       <TextInput
         width="full"
-        label="Block explorer URL"
+        label="Block explorer URL (optional)"
         labelLocation="left"
         name="rpcUrl"
         value={blockExplorerUrl ?? ''}
@@ -89,7 +90,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
       />
       <TextInput
         width="full"
-        label="Native Token Name"
+        label="Native Token Name (default ETH)"
         labelLocation="left"
         name="tokenName"
         value={tokenName ?? ''}
@@ -99,7 +100,7 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
       />
       <TextInput
         width="full"
-        label="Native Token Symbol"
+        label="Native Token Symbol (default ETH)"
         labelLocation="left"
         name="tokenSymbol"
         value={tokenSymbol ?? ''}

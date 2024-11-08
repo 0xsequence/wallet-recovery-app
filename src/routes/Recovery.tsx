@@ -18,16 +18,20 @@ import { ethers } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
-import Networks from '~/components/Networks'
-import { PasswordInput } from '~/components/PasswordInput'
+import { TRACKER } from '~/utils/tracker'
+import { truncateMiddle } from '~/utils/truncate'
+
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 import { WALLETS } from '~/constants/wallets'
+
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-import { TRACKER } from '~/utils/tracker'
-import { truncateMiddle } from '~/utils/truncate'
+
+import Networks from '~/components/Networks'
+import { PasswordInput } from '~/components/PasswordInput'
+
+import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 function Recovery() {
   const authStore = useStore(AuthStore)
@@ -43,7 +47,7 @@ function Recovery() {
   const [selectingOtherWallets, setSelectingOtherWallets] = useState(false)
   const [trackerSuccessful, setTrackerSuccessful] = useState(false)
 
-  const [warnWrongAddress, setWarnWrongAddress] = useState(false)
+  const [warningAddress, setWarningAddress] = useState('')
   const [isReadyToContinue, setIsReadyToContinue] = useState(false)
   const [isLoadingWallets, setIsLoadingWallets] = useState(false)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
@@ -51,7 +55,7 @@ function Recovery() {
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
 
   useEffect(() => {
-    setWarnWrongAddress(false)
+    setWarningAddress('')
 
     if (!ethers.isAddress(wallet)) {
       return
@@ -137,11 +141,11 @@ function Recovery() {
       const match = signers.some(signer => signer.address === recoverySigner.address)
       setIsReadyToContinue(match)
       if (!match) {
-        setWarnWrongAddress(true)
+        setWarningAddress('Wallet does not match recovery phrase')
       }
     } catch (error) {
-      setWarnWrongAddress(true)
-      console.error(error)
+      setWarningAddress('Please ensure the RPC URL for Ethereum in Networks (top right) is correct')
+      console.error('failed to validate wallet address', error)
     }
 
     setIsLoadingWallets(false)
@@ -155,6 +159,17 @@ function Recovery() {
   return (
     <>
       <Box
+        flexDirection="row"
+        width="full"
+        background="backgroundMuted"
+        justifyContent="flex-end"
+        paddingX="20"
+        paddingY="4"
+        style={{ height: '64.12px' }}
+      >
+        <Button label="Networks" variant="text" onClick={() => setIsNetworkModalOpen(true)} />
+      </Box>
+      <Box
         background="backgroundPrimary"
         width="full"
         height="full"
@@ -163,23 +178,6 @@ function Recovery() {
         justifyContent="center"
       >
         <Box width="full" style={{ maxWidth: '800px' }} marginBottom="16">
-          <Box
-            flexDirection="row"
-            width="full"
-            background="backgroundMuted"
-            paddingX="8"
-            paddingY="4"
-            alignItems="center"
-          >
-            <Box marginLeft="auto">
-              <Button
-                label="Networks"
-                variant="text"
-                marginRight="8"
-                onClick={() => setIsNetworkModalOpen(true)}
-              />
-            </Box>
-          </Box>
           <Box padding="6" marginTop="16">
             <Box flexDirection="column" alignItems="center" justifyContent="center" gap="6">
               <img src={sequenceLogo} alt="Sequence Logo" style={{ width: '100px', height: '100px' }} />
@@ -260,7 +258,9 @@ function Recovery() {
                         <PasswordInput
                           label="Confirm Password"
                           value={confirmPassword}
-                          onChange={(ev: ChangeEvent<HTMLInputElement>) => setConfirmPassword(ev.target.value)}
+                          onChange={(ev: ChangeEvent<HTMLInputElement>) =>
+                            setConfirmPassword(ev.target.value)
+                          }
                         ></PasswordInput>
                         {password && confirmPassword && password !== confirmPassword && (
                           <Text variant="small" color="negative" marginLeft="1" marginTop="2">
@@ -319,10 +319,10 @@ function Recovery() {
                       onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
                     />
 
-                    {warnWrongAddress && (
+                    {warningAddress && (
                       <Box justifyContent="center" marginTop="2">
                         <Text variant="small" color="negative">
-                          Wallet does not match recovery phrase
+                          {warningAddress}
                         </Text>
                       </Box>
                     )}
@@ -386,12 +386,12 @@ function Recovery() {
             )}
           </Box>
         </Box>
+        {isNetworkModalOpen && (
+          <Modal onClose={() => setIsNetworkModalOpen(false)}>
+            <Networks />
+          </Modal>
+        )}
       </Box>
-      {isNetworkModalOpen && (
-        <Modal onClose={() => setIsNetworkModalOpen(false)}>
-          <Networks />
-        </Modal>
-      )}
     </>
   )
 }

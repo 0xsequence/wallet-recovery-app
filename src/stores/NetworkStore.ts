@@ -104,6 +104,8 @@ export class NetworkStore {
         updatedNetworkConfig.rpcUrl = rpcForCurrent
         updatedNetworkConfig.relayer = createDebugLocalRelayer(rpcForCurrent)
 
+        updatedNetworkConfig.disabled = false
+
         updatedNetworkConfigs.push(updatedNetworkConfig)
       } else {
         console.warn(
@@ -195,6 +197,9 @@ export class NetworkStore {
     this.networks.set([])
     this.editedNetworkChainIds.set([])
     this.userAdditionNetworkChainIds.set([])
+
+    this.prepareNetworks()
+
     this.arweaveGatewayUrl.set(undefined)
     this.arweaveGraphqlUrl.set(undefined)
     this.accountLoaded.set(false)
