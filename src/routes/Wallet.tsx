@@ -14,6 +14,7 @@ import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
@@ -34,7 +35,6 @@ import PendingTxn from '~/components/PendingTxn'
 import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
-import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
 import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
@@ -64,6 +64,8 @@ function Wallet() {
   const tokenStore = useStore(TokenStore)
   const walletStore = useStore(WalletStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
+
+  const navigate = useNavigate()
 
   const accountAddress = useObservable(authStore.accountAddress)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
@@ -377,7 +379,14 @@ function Wallet() {
               onClick={() => setIsNetworkModalOpen(true)}
             />
 
-            <SettingsDropdownMenu />
+            <Button
+              label="Sign Out"
+              variant="text"
+              onClick={() => {
+                authStore.logout()
+                navigate('/')
+              }}
+            />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
