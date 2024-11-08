@@ -371,7 +371,7 @@ function Wallet() {
           alignItems="center"
         >
           <img src={sequenceLogo} alt="Sequence Logo" width="40" />
-          <Box marginLeft="auto">
+          <Box marginLeft="auto" marginRight="20">
             <Button
               label="Networks"
               variant="text"
