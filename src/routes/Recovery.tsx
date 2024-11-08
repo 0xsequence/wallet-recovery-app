@@ -289,7 +289,7 @@ function Recovery() {
                     </Box>
                   </Box>
 
-                  {selectingOtherWallets && possibleWallets.length > 1 && (
+                  {(selectingOtherWallets || possibleWallets.length > 1) && (
                     <Box flexDirection="column" gap="4">
                       <Box display="grid" gap="4" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
                         {possibleWallets.map(walletAddress => {
