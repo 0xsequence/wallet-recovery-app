@@ -38,18 +38,9 @@ export class TokenStore {
     userAddedTokens: new LocalStore<UserAddedToken[]>(LocalStorageKey.TOKENS_USER_ADDITIONS)
   }
 
-  constructor(private store: Store) {
-    const networkStore = this.store.get(NetworkStore)
+  constructor(private store: Store) {}
 
-    subscribeImmediately(networkStore.networks, networks => {
-      const accountAddress = this.store.get(AuthStore).accountAddress.get()
-      if (accountAddress && networks.length > 0) {
-        this.loadBalances(accountAddress, networks)
-      }
-    })
-  }
-
-  private async loadBalances(account: string, networks: NetworkConfig[]) {
+  async loadBalances(account: string, networks: NetworkConfig[]) {
     const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
     const update: TokenBalance[] = []
 
