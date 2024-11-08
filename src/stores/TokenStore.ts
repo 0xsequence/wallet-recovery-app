@@ -3,7 +3,6 @@ import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
 import { ethers } from 'ethers'
 
 import { getNativeTokenInfo } from '~/utils/network'
-import { subscribeImmediately } from '~/utils/observable'
 
 import { ERC20_ABI } from '~/constants/abi'
 import { LocalStorageKey } from '~/constants/storage'
