@@ -108,7 +108,7 @@ function Landing() {
             {isPromptingForPassword ? (
               <Box flexDirection="column" marginTop="8" justifyContent="center" alignItems="center">
                 <Text variant="large" color="text100" marginBottom="8">
-                  Weclome back!
+                  Welcome back!
                 </Text>
                 <PasswordInput
                   label="Password"
@@ -139,7 +139,7 @@ function Landing() {
                 <Box>
                   <Button
                     variant="text"
-                    label="The dog ate my password (Forgot Password)"
+                    label="My dog ate my password (Forgot Password)"
                     onClick={() => {
                       handleResetConfirmation()
                     }}
