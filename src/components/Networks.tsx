@@ -95,7 +95,7 @@ export default function Networks() {
                 Arweave
               </Text>
               <TextInput
-                label="Arweave Gateway URL"
+                label="Gateway URL"
                 labelLocation="left"
                 name="arweaveGatewayUrl"
                 spellCheck={false}
@@ -105,7 +105,7 @@ export default function Networks() {
                 }}
               />
               <TextInput
-                label="Arweave GraphQL URL"
+                label="GraphQL URL"
                 labelLocation="left"
                 name="arweaveGraphqlUrl"
                 spellCheck={false}
