@@ -35,7 +35,6 @@ import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
 import SettingsDropdownMenu from '~/components/SettingsDropdownMenu'
-import SettingsTokenList from '~/components/SettingsTokenList'
 import TokenList from '~/components/TokenList'
 import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
@@ -116,7 +115,6 @@ function Wallet() {
   const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
 
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
-  const [isSettingsTokenListModalOpen, setIsSettingsTokenListModalOpen] = useState(false)
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
   const [isConnectingDapp, setIsConnectingDapp] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
@@ -379,7 +377,7 @@ function Wallet() {
               onClick={() => setIsNetworkModalOpen(true)}
             />
 
-            <SettingsDropdownMenu onTokenListClick={() => setIsSettingsTokenListModalOpen(true)} />
+            <SettingsDropdownMenu />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
@@ -519,11 +517,6 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal onClose={() => setIsNetworkModalOpen(false)}>
           <Networks />
-        </Modal>
-      )}
-      {isSettingsTokenListModalOpen && (
-        <Modal onClose={() => setIsSettingsTokenListModalOpen(false)}>
-          <SettingsTokenList />
         </Modal>
       )}
       {isSelectProviderModalOpen && (
