@@ -169,6 +169,9 @@ export class NetworkStore {
     this.networks.set([])
     this.editedNetworkChainIds.set([])
     this.userAdditionNetworkChainIds.set([])
+
+    this.prepareNetworks()
+
     this.accountLoaded.set(false)
   }
 }
