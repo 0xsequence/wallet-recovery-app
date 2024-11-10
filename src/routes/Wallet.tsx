@@ -541,7 +541,7 @@ function Wallet() {
       {isConfirmSignOutModalOpen && (
         <Modal size="sm" onClose={() => setIsConfirmSignOutModalOpen(false)}>
           <Box flexDirection="column" padding="8">
-            <Text color="text80" marginRight="8">
+            <Text variant="medium" color="text80" marginRight="8">
               You will need to re-enter your mnemonic if you sign out. Continue?
             </Text>
             <Box flexDirection="row" width="full" justifyContent="flex-end" marginTop="8" gap="4">
