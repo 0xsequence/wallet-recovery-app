@@ -69,6 +69,7 @@ function Wallet() {
   const navigate = useNavigate()
 
   const accountAddress = useObservable(authStore.accountAddress)
+  const isPasswordSet = useObservable(authStore.isPasswordSet)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
   const isSigningMsg = useObservable(walletStore.isSigningMsg)
 
@@ -386,6 +387,15 @@ function Wallet() {
               marginRight="8"
               onClick={() => setIsNetworkModalOpen(true)}
             />
+
+            {isPasswordSet && (
+              <Button
+                label="Password Lock"
+                variant="text"
+                marginRight="8"
+                onClick={() => window.location.reload()}
+              />
+            )}
 
             <Button
               label="Sign Out"
