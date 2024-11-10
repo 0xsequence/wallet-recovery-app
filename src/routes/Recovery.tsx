@@ -230,7 +230,7 @@ function Recovery() {
                     labelLocation="right"
                     label={
                       <Text color="text80" underline="true">
-                        Use Password to Encrypt Mnemonic (Optional)
+                        Use Password to Encrypt Mnemonic (Recommended)
                       </Text>
                     }
                     checked={usingPassword}
