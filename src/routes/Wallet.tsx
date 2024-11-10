@@ -123,6 +123,7 @@ function Wallet() {
   const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
   const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
 
+  const [isConfirmSignOutModalOpen, setIsConfirmSignOutModalOpen] = useState(false)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
   const [isConnectingDapp, setIsConnectingDapp] = useState(false)
@@ -389,10 +390,7 @@ function Wallet() {
             <Button
               label="Sign Out"
               variant="text"
-              onClick={() => {
-                authStore.logout()
-                navigate('/')
-              }}
+              onClick={() => setIsConfirmSignOutModalOpen(true)}
             />
           </Box>
         </Box>
@@ -530,6 +528,22 @@ function Wallet() {
           </Box>
         </Box>
       </Box>
+      {isConfirmSignOutModalOpen && (
+        <Modal size="sm" onClose={() => setIsConfirmSignOutModalOpen(false)}>
+          <Box flexDirection="column" padding="8">
+            <Text color="text80" marginRight="8">
+              You will need to re-enter your mnemonic if you sign out. Continue?
+            </Text>
+            <Box flexDirection="row" width="full" justifyContent="flex-end" marginTop="8" gap="4">
+              <Button label="Sign Out" shape="square" variant="primary" onClick={() => {
+                authStore.logout()
+                navigate('/')
+              }} />
+              <Button label="Cancel" shape="square" onClick={() => setIsConfirmSignOutModalOpen(false)} />
+            </Box>
+          </Box>
+        </Modal>
+      )}
       {isNetworkModalOpen && (
         <Modal onClose={() => setIsNetworkModalOpen(false)}>
           <Networks />
