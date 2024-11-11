@@ -397,11 +397,7 @@ function Wallet() {
               />
             )}
 
-            <Button
-              label="Sign Out"
-              variant="text"
-              onClick={() => setIsConfirmSignOutModalOpen(true)}
-            />
+            <Button label="Sign Out" variant="text" onClick={() => setIsConfirmSignOutModalOpen(true)} />
           </Box>
         </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
@@ -419,7 +415,7 @@ function Wallet() {
               variant="primary"
               size="sm"
               shape="square"
-              label="Connect to a Dapp with WalletConnect"
+              label="Connect to a dapp via WalletConnect"
               leftIcon={ScanIcon}
               onClick={() => {
                 handleConnectSignClient()
@@ -545,10 +541,15 @@ function Wallet() {
               You will need to re-enter your mnemonic if you sign out. Continue?
             </Text>
             <Box flexDirection="row" width="full" justifyContent="flex-end" marginTop="8" gap="4">
-              <Button label="Sign Out" shape="square" variant="primary" onClick={() => {
-                authStore.logout()
-                navigate('/')
-              }} />
+              <Button
+                label="Sign Out"
+                shape="square"
+                variant="primary"
+                onClick={() => {
+                  authStore.logout()
+                  navigate('/')
+                }}
+              />
               <Button label="Cancel" shape="square" onClick={() => setIsConfirmSignOutModalOpen(false)} />
             </Box>
           </Box>

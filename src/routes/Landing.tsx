@@ -137,6 +137,7 @@ function Landing() {
                       setPassword(ev.target.value)
                       setWrongPassword(false)
                     }}
+                    autoFocus
                   ></PasswordInput>
 
                   <Box alignSelf="flex-start" height="6">
