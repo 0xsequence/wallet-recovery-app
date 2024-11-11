@@ -10,6 +10,7 @@ interface TextInputWrapperProps {
   value: string
   onKeyPress: (ev: KeyboardEvent<HTMLInputElement>) => void
   onChange: (ev: ChangeEvent<HTMLInputElement>) => void
+  autoFocus?: boolean
 }
 
 export const PasswordInput: React.FC<TextInputWrapperProps> = ({
@@ -17,7 +18,8 @@ export const PasswordInput: React.FC<TextInputWrapperProps> = ({
   labelLocation = 'top',
   value,
   onKeyPress,
-  onChange
+  onChange,
+  autoFocus = false
 }) => {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -35,6 +37,7 @@ export const PasswordInput: React.FC<TextInputWrapperProps> = ({
         value={value}
         onKeyPress={onKeyPress}
         onChange={onChange}
+        autoFocus={autoFocus}
       />
       <button
         type="button"
