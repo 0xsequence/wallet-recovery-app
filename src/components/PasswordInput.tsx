@@ -8,8 +8,8 @@ interface TextInputWrapperProps {
   label: string
   labelLocation?: 'top' | 'left' | 'right' | 'bottom' // Optional prop for label location
   value: string
-  onKeyPress: (ev: KeyboardEvent<HTMLInputElement>) => void
   onChange: (ev: ChangeEvent<HTMLInputElement>) => void
+  onKeyPress?: (ev: KeyboardEvent<HTMLInputElement>) => void
   autoFocus?: boolean
 }
 
