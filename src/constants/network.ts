@@ -24,7 +24,13 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
   [3776, 'https://rpc.startale.com/astar-zkevm'],
   [6038361, 'https://rpc.startale.com/zkyoto'],
   [2730, 'https://xr-sepolia-testnet.rpc.caldera.xyz/http'],
-  [40, 'https://mainnet-asia.telos.net/evm']
+  [40, 'https://mainnet-asia.telos.net/evm'],
+  [1946, 'https://rpc.minato.soneium.org'],
+  [7668, 'https://root.rootnet.live/archive'],
+  [8333, 'https://mainnet-rpc.b3.fun'],
+  [13371, 'https://rpc.immutable.com'],
+  [33139, 'https://rpc.apechain.com'],
+  [81457, 'https://blast-rpc.publicnode.com']
 ])
 
 // These are hardhat test networks
