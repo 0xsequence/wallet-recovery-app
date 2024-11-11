@@ -123,7 +123,7 @@ function Landing() {
               {isPromptingForPassword ? (
                 <Box flexDirection="column" marginTop="8" justifyContent="center" alignItems="center">
                   <Text variant="large" color="text100" marginBottom="8">
-                    Weclome back!
+                    Welcome back!
                   </Text>
                   <PasswordInput
                     label="Password"
@@ -154,7 +154,7 @@ function Landing() {
                   <Box>
                     <Button
                       variant="text"
-                      label="The dog ate my password (Forgot Password)"
+                      label="Forgot your password?"
                       onClick={() => {
                         handleResetConfirmation()
                       }}
@@ -173,9 +173,10 @@ function Landing() {
         </Box>
         {isReseting && (
           <Modal size="md" onClose={() => setIsReseting(false)}>
-            <Card flexDirection="column" alignItems="center" padding="16">
-              <Text variant="md" fontWeight="bold" color="text100">
-                Click "Reset" to START OVER and re-enter your mnemonic
+            <Box flexDirection="column" alignItems="center" padding="16">
+              <Text variant="md" color="text100">
+                Click <Text fontWeight="bold">Reset</Text> to start over. This will require you to re-enter
+                your mnemonic.
               </Text>
               <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="10">
                 <Button
@@ -197,7 +198,7 @@ function Landing() {
                   data-id="signingContinue"
                 />
               </Box>
-            </Card>
+            </Box>
           </Modal>
         )}
         {isNetworkModalOpen && (
