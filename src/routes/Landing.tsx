@@ -128,6 +128,11 @@ function Landing() {
                   <PasswordInput
                     label="Password"
                     value={password}
+                    onKeyPress={ev => {
+                      if (ev.key === 'Enter') {
+                        handleUnlock()
+                      }
+                    }}
                     onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                       setPassword(ev.target.value)
                       setWrongPassword(false)

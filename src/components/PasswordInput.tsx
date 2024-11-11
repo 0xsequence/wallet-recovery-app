@@ -1,5 +1,5 @@
 import { TextInput } from '@0xsequence/design-system'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, KeyboardEvent, useState } from 'react'
 
 import passwordEyeOff from '../assets/images/password-eye-off.svg'
 import passwordEye from '../assets/images/password-eye.svg'
@@ -8,6 +8,7 @@ interface TextInputWrapperProps {
   label: string
   labelLocation?: 'top' | 'left' | 'right' | 'bottom' // Optional prop for label location
   value: string
+  onKeyPress: (ev: KeyboardEvent<HTMLInputElement>) => void
   onChange: (ev: ChangeEvent<HTMLInputElement>) => void
 }
 
@@ -15,6 +16,7 @@ export const PasswordInput: React.FC<TextInputWrapperProps> = ({
   label,
   labelLocation = 'top',
   value,
+  onKeyPress,
   onChange
 }) => {
   const [showPassword, setShowPassword] = useState(false)
@@ -31,6 +33,7 @@ export const PasswordInput: React.FC<TextInputWrapperProps> = ({
         label={label}
         labelLocation={labelLocation}
         value={value}
+        onKeyPress={onKeyPress}
         onChange={onChange}
       />
       <button
