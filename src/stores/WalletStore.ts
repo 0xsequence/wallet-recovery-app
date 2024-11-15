@@ -137,6 +137,8 @@ export class WalletStore {
         throw new Error('No external provider selected')
       }
 
+      // MULTITXN
+
       const externalProviderAccounts = await this.getExternalProviderAccounts(externalProvider)
       const externalProviderAddress = externalProviderAccounts[0]
 
