@@ -500,6 +500,7 @@ function Wallet() {
           )}
           {isSendingSignedTokenTransaction && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
+              {/* MULTITXN */}
               <PendingTxn
                 symbol={'tokens'}
                 chainId={isSendingSignedTokenTransaction.chainId!}

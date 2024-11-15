@@ -51,6 +51,8 @@ export default function SignClientTransactionRequest({
 
   const details = walletStore.toSignTxnDetails.get()
 
+  // MULTITXN
+
   useEffect(() => {
     // TODO maybe set timestamp state in store or other persistent state
     // TODO check if we need to account for multiple transactions in one request
