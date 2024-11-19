@@ -1,4 +1,4 @@
-import { Box, Button, Card, Modal, Spinner, Text } from '@0xsequence/design-system'
+import { Box, Button, Card, Modal, Spinner, Text, TextInput } from '@0xsequence/design-system'
 import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -6,7 +6,6 @@ import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
 import Networks from '~/components/Networks'
-import { PasswordInput } from '~/components/PasswordInput'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
@@ -125,20 +124,24 @@ function Landing() {
                   <Text variant="large" color="text100" marginBottom="8">
                     Welcome back!
                   </Text>
-                  <PasswordInput
-                    label="Password"
-                    value={password}
-                    onKeyPress={ev => {
-                      if (ev.key === 'Enter') {
-                        handleUnlock()
-                      }
-                    }}
-                    onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                      setPassword(ev.target.value)
-                      setWrongPassword(false)
-                    }}
-                    autoFocus
-                  ></PasswordInput>
+
+                  <Box width="full">
+                    <TextInput
+                      label="Password"
+                      labelLocation="top"
+                      type="password"
+                      value={password}
+                      onKeyPress={(ev: KeyboardEvent) => {
+                        if (ev.key === 'Enter') {
+                          handleUnlock()
+                        }
+                      }}
+                      onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                        setPassword(ev.target.value)
+                        setWrongPassword(false)
+                      }}
+                    />
+                  </Box>
 
                   <Box alignSelf="flex-start" height="6">
                     {wrongPassword && (
