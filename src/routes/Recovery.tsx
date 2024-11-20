@@ -25,8 +25,8 @@ import { useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 
-import Networks from '~/components/Networks'
 import FilledCheckBox from '~/components/checkboxes/FilledCheckBox'
+import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import WalletList from '~/components/recovery/WalletList'
 

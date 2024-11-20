@@ -1,9 +1,20 @@
-import { Box, Button, Checkbox, Collapsible, Divider, Text, TextInput } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  ChevronDownIcon,
+  Collapsible,
+  CollapsiblePrimitive,
+  Text,
+  TextInput
+} from '@0xsequence/design-system'
 import { NetworkConfig } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore, createDebugLocalRelayer } from '~/stores/NetworkStore'
+
+import FilledCheckBox from '../checkboxes/FilledCheckBox'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)
@@ -35,48 +46,73 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
     disabled !== network.disabled
 
   return (
-    <Box flexDirection="column" gap="6">
+    <Card flexDirection="column" gap="4">
       <Box flexDirection="row" gap="3">
-        <Checkbox
+        <Button
+          variant="text"
           label={
-            <Text fontWeight="bold" color="text100" variant="normal">
-              {network.title}
-            </Text>
+            <Box flexDirection="row" gap="2" alignItems="center">
+              <FilledCheckBox checked={!disabled} />
+              <Text variant="medium" fontWeight="semibold" color="text80">
+                {network.title}
+              </Text>
+            </Box>
           }
-          labelLocation="right"
-          color="primary"
-          checked={!disabled}
-          onCheckedChange={checked => {
-            setDisabled(!checked)
-          }}
-        />
+          onClick={() => setDisabled(!disabled)}
+        ></Button>
       </Box>
-      <Collapsible label="Network Settings">
-        <Box flexDirection="column" gap="2">
-          <TextInput
-            label="RPC URL"
-            labelLocation="left"
-            name="rpcUrl"
-            spellCheck={false}
-            disabled={isUserAddition}
-            value={rpcUrl ?? ''}
-            onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-              setRpcUrl(ev.target.value)
-            }}
-          />
-          <TextInput
-            label="Block Explorer URL"
-            labelLocation="left"
-            name="blockExplorerUrl"
-            spellCheck={false}
-            disabled={isUserAddition}
-            value={blockExplorerUrl ?? ''}
-            onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-              setBlockExplorerUrl(ev.target.value)
-            }}
-          />
-        </Box>
-      </Collapsible>
+
+      <CollapsiblePrimitive.Root>
+        <CollapsiblePrimitive.Trigger
+          style={{
+            backgroundColor: 'inherit',
+            border: 'none',
+            cursor: 'pointer',
+            width: '100%'
+          }}
+        >
+          <Box flexDirection="row" justifyContent="space-between" alignItems="center">
+            <Text variant="medium" fontWeight="bold" color={disabled ? 'borderNormal' : 'text50'}>
+              Network Settings
+            </Text>
+            <ChevronDownIcon color={disabled ? 'text50' : 'text100'} />
+          </Box>
+        </CollapsiblePrimitive.Trigger>
+
+        <CollapsiblePrimitive.Content>
+          <Box flexDirection="column" paddingTop="4" gap="3">
+            <Box flexDirection="column" gap="1">
+              <Text variant="normal" fontWeight="medium" color="text100">
+                RPC URL
+              </Text>
+              <TextInput
+                name="rpcUrl"
+                spellCheck={false}
+                disabled={isUserAddition}
+                value={rpcUrl ?? ''}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                  setRpcUrl(ev.target.value)
+                }}
+              />
+            </Box>
+            <Box flexDirection="column" gap="1">
+              <Text variant="normal" fontWeight="medium" color="text100">
+                Block Explorer URL
+              </Text>
+              <TextInput
+                name="blockExplorerUrl"
+                spellCheck={false}
+                disabled={isUserAddition}
+                value={blockExplorerUrl ?? ''}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                  setBlockExplorerUrl(ev.target.value)
+                }}
+              />
+            </Box>
+          </Box>
+        </CollapsiblePrimitive.Content>
+      </CollapsiblePrimitive.Root>
+
       {isUserAddition && (
         <Box marginTop="4" alignItems="center" justifyContent="flex-end" gap="5">
           <Text variant="small" color="text50">
@@ -124,7 +160,6 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
           </>
         </Box>
       )}
-      <Divider />
-    </Box>
+    </Card>
   )
 }

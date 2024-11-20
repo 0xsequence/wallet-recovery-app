@@ -3,7 +3,7 @@ import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 
-import NetworkTag from './NetworkTag'
+import NetworkTag from './network/NetworkTag'
 
 export default function CollectibleBalanceItem({
   collectibleInfo,
@@ -52,7 +52,9 @@ export default function CollectibleBalanceItem({
         <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
         <Box>
           <Button size="xs" label="Send" variant="primary" shape="square" onClick={onSendClick} />
-          {onRemoveClick && <Button marginLeft="2" size="xs" label="Remove" shape="square" onClick={onRemoveClick} />}
+          {onRemoveClick && (
+            <Button marginLeft="2" size="xs" label="Remove" shape="square" onClick={onRemoveClick} />
+          )}
         </Box>
       </Box>
     </Card>

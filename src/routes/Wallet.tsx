@@ -31,12 +31,12 @@ import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientSt
 import { WalletStore } from '~/stores/WalletStore'
 
 import CollectibleList from '~/components/CollectibleList'
-import Networks from '~/components/Networks'
 import PendingTxn from '~/components/PendingTxn'
 import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
 import TokenList from '~/components/TokenList'
+import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
@@ -364,35 +364,6 @@ function Wallet() {
         alignItems="center"
         justifyContent="center"
       >
-        <Box
-          flexDirection="row"
-          width="full"
-          background="backgroundMuted"
-          paddingX="8"
-          paddingY="4"
-          alignItems="center"
-        >
-          <img src={sequenceLogo} alt="Sequence Logo" width="40" />
-          <Box marginLeft="auto" marginRight="16">
-            <Button
-              label="Networks"
-              variant="text"
-              marginRight="8"
-              onClick={() => setIsNetworkModalOpen(true)}
-            />
-
-            {isPasswordSet && (
-              <Button
-                label="Password Lock"
-                variant="text"
-                marginRight="8"
-                onClick={() => window.location.reload()}
-              />
-            )}
-
-            <Button label="Sign Out" variant="text" onClick={() => setIsConfirmSignOutModalOpen(true)} />
-          </Box>
-        </Box>
         <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
           <Card flexDirection="column" alignItems="center" padding="6" marginTop="10">
             <Text variant="large" color="text80" marginBottom="4">
@@ -549,7 +520,15 @@ function Wallet() {
         </Modal>
       )}
       {isNetworkModalOpen && (
-        <Modal onClose={() => setIsNetworkModalOpen(false)}>
+        <Modal
+          onClose={() => setIsNetworkModalOpen(false)}
+          contentProps={{
+            style: {
+              scrollbarColor: 'gray black',
+              scrollbarWidth: 'thin'
+            }
+          }}
+        >
           <Networks />
         </Modal>
       )}

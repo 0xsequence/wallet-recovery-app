@@ -1,4 +1,4 @@
-import { Box, Button, Divider, TabsContent, TabsHeader, TabsRoot, Text, TextInput } from '@0xsequence/design-system'
+import { Box, Button, Divider, TabsContent, TabsPrimitive, Text, TextInput } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useState } from 'react'
 
@@ -6,7 +6,7 @@ import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 
 import AddNetwork from './AddNetwork'
-import NetworkItem from './NetworkItem'
+import NetworkItem from './network/NetworkItem'
 
 export default function Networks() {
   const networkStore = useStore(NetworkStore)
@@ -15,7 +15,7 @@ export default function Networks() {
   const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
 
   const userAdditions = useObservable(networkStore.userAdditionNetworkChainIds)
-  // Move user additions to top
+  // TODO: Move user additions to top
   const sortedMainnets = mainnets.sort((a, _) => (userAdditions.includes(a.chainId) ? -1 : 1))
 
   const testnets = networks.filter(network => network.type === NetworkType.TESTNET)
@@ -28,40 +28,97 @@ export default function Networks() {
   const [isAddNetworkActive, setIsAddNetworkActive] = useState(false)
 
   return (
-    <Box
-      flexDirection="column"
-      paddingY="4"
-      paddingX="8"
-      background="backgroundPrimary"
-      width="full"
-      height="full"
-      alignItems="center"
-    >
-      <Box>
-        <Text variant="large" color="text80">
-          Networks
-        </Text>
-      </Box>
+    <Box flexDirection="column" padding="6" gap="6">
+      <Text variant="xlarge" color="text100">
+        Networks
+      </Text>
 
-      <Box width="full" marginTop="4" paddingBottom="4">
-        <TabsRoot
-          value={selectedNetworkType}
-          onValueChange={value => setSelectedNetworkType(value as NetworkType)}
-        >
-          <Box marginBottom="10">
-            <TabsHeader
-              value={selectedNetworkType}
-              tabs={[
-                { label: 'Networks', value: NetworkType.MAINNET },
-                { label: 'Test Networks', value: NetworkType.TESTNET },
-                { label: 'Arweave', value: 'arweave' }
-              ]}
-            />
-          </Box>
+      <TabsPrimitive.Root
+        value={selectedNetworkType}
+        onValueChange={value => setSelectedNetworkType(value as NetworkType)}
+      >
+        <Box>
+          <TabsPrimitive.TabsList>
+            <Box flexDirection="row" style={{ height: '32px' }}>
+              <TabsPrimitive.TabsTrigger
+                value={NetworkType.MAINNET}
+                style={{
+                  backgroundColor: 'inherit',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Text
+                  variant="medium"
+                  fontWeight="semibold"
+                  color={selectedNetworkType === NetworkType.MAINNET ? 'text100' : 'text50'}
+                  paddingX="4"
+                >
+                  Mainnets
+                </Text>
+                {selectedNetworkType === NetworkType.MAINNET ? (
+                  <Divider color="white" height="0.5" position="relative" style={{ bottom: '10px' }} />
+                ) : (
+                  <Divider position="relative" style={{ bottom: '10px' }} />
+                )}
+              </TabsPrimitive.TabsTrigger>
+
+              <TabsPrimitive.TabsTrigger
+                value={NetworkType.TESTNET}
+                style={{
+                  backgroundColor: 'inherit',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Text
+                  variant="medium"
+                  fontWeight="semibold"
+                  color={selectedNetworkType === NetworkType.TESTNET ? 'text100' : 'text50'}
+                  paddingX="4"
+                >
+                  Testnets
+                </Text>
+                {selectedNetworkType === NetworkType.TESTNET ? (
+                  <Divider color="white" height="0.5" position="relative" style={{ bottom: '10px' }} />
+                ) : (
+                  <Divider position="relative" style={{ bottom: '10px' }} />
+                )}
+              </TabsPrimitive.TabsTrigger>
+
+              <TabsPrimitive.TabsTrigger
+                value="arweave"
+                style={{
+                  backgroundColor: 'inherit',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Text
+                  variant="medium"
+                  fontWeight="semibold"
+                  color={selectedNetworkType === 'arweave' ? 'text100' : 'text50'}
+                  paddingX="4"
+                >
+                  Arweave
+                </Text>
+
+                {selectedNetworkType === 'arweave' ? (
+                  <Divider color="white" height="0.5" position="relative" style={{ bottom: '10px' }} />
+                ) : (
+                  <Divider position="relative" style={{ bottom: '10px' }} />
+                )}
+              </TabsPrimitive.TabsTrigger>
+
+              <Box flexGrow="1">
+                <Divider position="relative" marginY="0" style={{ top: '30px' }} />
+              </Box>
+            </Box>
+          </TabsPrimitive.TabsList>
 
           <TabsContent value={NetworkType.MAINNET}>
-            <Box flexDirection="column" gap="2">
-              <Box width="full" flexDirection="column" alignItems="flex-end" marginY="4">
+            <Box flexDirection="column" gap="3" paddingTop="6">
+              {/* <Box width="full" flexDirection="column" alignItems="flex-end" marginY="4">
                 {!isAddNetworkActive ? (
                   <Button
                     label="Add network"
@@ -75,12 +132,10 @@ export default function Networks() {
                 ) : (
                   <AddNetwork onClose={() => setIsAddNetworkActive(false)} />
                 )}
-              </Box>
-              <>
-                {sortedMainnets.map((network, i) => (
-                  <NetworkItem key={i} network={network} />
-                ))}
-              </>
+              </Box> */}
+              {sortedMainnets.map((network, i) => (
+                <NetworkItem key={i} network={network} />
+              ))}
             </Box>
           </TabsContent>
 
@@ -120,8 +175,8 @@ export default function Networks() {
               <Divider />
             </Box>
           </TabsContent>
-        </TabsRoot>
-      </Box>
+        </Box>
+      </TabsPrimitive.Root>
     </Box>
   )
 }

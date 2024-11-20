@@ -4,7 +4,7 @@ import { ethers } from 'ethers'
 
 import { truncateNumber } from '~/utils/bignumber'
 
-import NetworkTag from './NetworkTag'
+import NetworkTag from './network/NetworkTag'
 
 export default function TokenBalanceItem({
   disabled,
@@ -33,7 +33,14 @@ export default function TokenBalanceItem({
       <Box flexDirection="row">
         <NetworkTag chainId={tokenBalance.chainId} />
         <Box marginLeft="auto" gap="2">
-          <Button size="xs" label="Send" variant="primary" shape="square" disabled={disabled} onClick={onSendClick} />
+          <Button
+            size="xs"
+            label="Send"
+            variant="primary"
+            shape="square"
+            disabled={disabled}
+            onClick={onSendClick}
+          />
           {onRemoveClick && <Button size="xs" label="Remove" shape="square" onClick={onRemoveClick} />}
         </Box>
       </Box>

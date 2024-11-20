@@ -10,8 +10,7 @@ export default function FilledCheckBox({ checked }: { checked: boolean }) {
       height="7"
       justifyContent="center"
       alignItems="center"
-      background={checked ? 'text50' : 'transparent'}
-      style={{ borderRadius: '6px' }}
+      style={{ borderRadius: '6px', background: checked ? '#4F4F4F' : 'inherit' }}
     >
       {checked ? (
         <img src={Checkmark} alt="Checkmark" style={{ width: '16px', height: '16px' }} />
