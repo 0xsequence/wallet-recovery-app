@@ -3,20 +3,20 @@ import { useState } from 'react'
 
 import { WALLET_WIDTH } from '~/routes/Wallet'
 
-import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '../helpers/FilledRoundCheckBox'
+import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '../checkboxes/FilledRoundCheckBox'
 
 export default function WalletList({
   possibleWallets,
-  initialSelectedWallet,
   handleSelectWallet
 }: {
   possibleWallets: string[]
-  initialSelectedWallet: string
   handleSelectWallet: (wallet: string) => void
 }) {
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(initialSelectedWallet)
+  const [selectedWallet, setSelectedWallet] = useState<string>(possibleWallets[0])
 
-  const gapWidth = 1
+  const gapWidth = 2
+
+  console.log('possibleWallets', possibleWallets)
 
   return (
     <Box flexDirection="column" gap={`${gapWidth}`}>

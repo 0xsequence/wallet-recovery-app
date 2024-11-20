@@ -27,7 +27,7 @@ import { NetworkStore } from '~/stores/NetworkStore'
 
 import Networks from '~/components/Networks'
 import RecoveryHeader from '~/components/RecoveryHeader'
-import FilledCheckBox from '~/components/helpers/FilledCheckBox'
+import FilledCheckBox from '~/components/checkboxes/FilledCheckBox'
 import WalletList from '~/components/recovery/WalletList'
 
 import { WALLET_WIDTH } from './Wallet'
@@ -38,7 +38,7 @@ function Recovery() {
   const networks = networkStore.networks.get()
 
   const [wallet, setWallet] = useState('')
-  const [possibleWallets, setPossibleWallets] = useState([] as string[])
+  const [possibleWallets, setPossibleWallets] = useState<string[]>([])
   const [mnemonic, setMnemonic] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -77,7 +77,7 @@ function Recovery() {
   }
 
   const validAddress = () => {
-    return ethers.isAddress(wallet)
+    return wallet ? ethers.isAddress(wallet) : true
   }
 
   const updateMnemonic = async (mnemonic: string) => {
@@ -256,14 +256,11 @@ function Recovery() {
           </Box>
         )}
 
-        {possibleWallets && (
-          <>
-            <WalletList
-              possibleWallets={possibleWallets}
-              initialSelectedWallet={possibleWallets[0]}
-              handleSelectWallet={selectedWallet => updateWallet(selectedWallet)}
-            />
-          </>
+        {possibleWallets.length > 0 && (
+          <WalletList
+            possibleWallets={possibleWallets}
+            handleSelectWallet={selectedWallet => updateWallet(selectedWallet)}
+          />
         )}
 
         {showManualAddress && (

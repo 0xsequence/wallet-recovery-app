@@ -13,7 +13,7 @@ export default function FilledCheckBox({ checked }: { checked: boolean }) {
       justifyContent="center"
       alignItems="center"
       background={checked ? 'white' : 'transparent'}
-      borderRadius="lg"
+      borderRadius="circle"
     >
       {checked ? (
         <img src={CheckmarkBlack} alt="Checkmark" style={{ width: '24px', height: '24px' }} />
