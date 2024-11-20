@@ -151,8 +151,6 @@ function Recovery() {
     <Box flexDirection="column" background="backgroundPrimary">
       <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
 
-      <Divider marginY="0" />
-
       <Box
         alignSelf="center"
         flexDirection="column"

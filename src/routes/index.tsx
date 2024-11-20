@@ -3,6 +3,8 @@ import { Navigate, Route, HashRouter as Router, Routes } from 'react-router-dom'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
+import GitHubCorner from '~/assets/GithubCorner'
+
 import Landing from './Landing'
 import Recovery from './Recovery'
 import Wallet from './Wallet'
@@ -18,6 +20,7 @@ export const AppRouter = () => {
         <Route path="recovery" element={!hasAccount ? <Recovery /> : <Navigate replace to="/wallet" />} />
         <Route path="wallet" element={hasAccount ? <Wallet /> : <Navigate replace to="/" />} />
       </Routes>
+      <GitHubCorner />
     </Router>
   )
 }

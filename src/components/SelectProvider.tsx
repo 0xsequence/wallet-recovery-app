@@ -2,14 +2,12 @@ import { Box, Card, Divider, Text } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useState } from 'react'
 
-import { createProvider } from '~/utils/ethereumprovider'
+import { createProvider, getWalletConnectProviderDetail } from '~/utils/ethereumprovider'
 
 import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
-
-import { getWalletConnectProviderDetail } from '~/routes/Wallet'
 
 export interface ProviderInfo {
   walletId?: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask

@@ -24,6 +24,7 @@
     "@0xsequence/relayer": "^2.0.25",
     "@0xsequence/sessions": "^2.0.25",
     "@0xsequence/signhub": "^2.0.25",
+    "@radix-ui/react-popover": "^1.1.2",
     "@vanilla-extract/css": "1.15.5",
     "@walletconnect/ethereum-provider": "^2.17.1",
     "@walletconnect/sign-client": "^2.17.1",

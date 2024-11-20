@@ -6,6 +6,18 @@ import { WALLET_CONNECT_PROJECT_ID } from '~/constants/wallet-context'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
+export const getWalletConnectProviderDetail = (provider: EthereumProvider) => {
+  return {
+    info: {
+      walletId: '',
+      uuid: '',
+      name: 'WalletConnect',
+      icon: 'https://avatars.githubusercontent.com/u/37784886'
+    },
+    provider: provider
+  }
+}
+
 export async function createProvider(showQr: boolean): Promise<EthereumProvider> {
   const provider = await EthereumProvider.init({
     projectId: WALLET_CONNECT_PROJECT_ID,

@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
+import { getWalletConnectProviderDetail } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
 
 import { useSyncProviders } from '~/hooks/useSyncProviders'
@@ -36,6 +37,7 @@ import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
 import TokenList from '~/components/TokenList'
+import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
 import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
@@ -46,18 +48,6 @@ import WalletScan from '~/components/signing/WalletScan'
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
 export const WALLET_WIDTH = 800
-
-export const getWalletConnectProviderDetail = (provider: EthereumProvider) => {
-  return {
-    info: {
-      walletId: '',
-      uuid: '',
-      name: 'WalletConnect',
-      icon: 'https://avatars.githubusercontent.com/u/37784886'
-    },
-    provider: provider
-  }
-}
 
 function Wallet() {
   const externalProviders = useSyncProviders()
@@ -364,7 +354,8 @@ function Wallet() {
   }
 
   return (
-    <>
+    <Box>
+      <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
       <Box
         flexDirection="column"
         background="backgroundPrimary"
@@ -689,7 +680,7 @@ function Wallet() {
           />
         </Modal>
       )}
-    </>
+    </Box>
   )
 }
 
