@@ -26,8 +26,8 @@ import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 
 import Networks from '~/components/Networks'
-import RecoveryHeader from '~/components/RecoveryHeader'
 import FilledCheckBox from '~/components/checkboxes/FilledCheckBox'
+import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import WalletList from '~/components/recovery/WalletList'
 
 import { WALLET_WIDTH } from './Wallet'

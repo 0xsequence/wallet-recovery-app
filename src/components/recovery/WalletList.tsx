@@ -16,8 +16,6 @@ export default function WalletList({
 
   const gapWidth = 2
 
-  console.log('possibleWallets', possibleWallets)
-
   return (
     <Box flexDirection="column" gap={`${gapWidth}`}>
       <Text variant="normal" color="text100">
