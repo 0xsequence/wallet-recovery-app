@@ -45,6 +45,8 @@ import WalletScan from '~/components/signing/WalletScan'
 
 import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
+export const WALLET_WIDTH = 800
+
 export const getWalletConnectProviderDetail = (provider: EthereumProvider) => {
   return {
     info: {

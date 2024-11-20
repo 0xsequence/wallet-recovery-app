@@ -1,7 +1,7 @@
 import { Box, Button, Text } from '@0xsequence/design-system'
 
-import networkIcon from '~/assets/images/chain.svg'
-import externalArrowIcon from '~/assets/images/external-link-arrow.svg'
+import networkIcon from '~/assets/icons/chain.svg'
+import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
 import sequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
 export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkModal: () => void }) {
