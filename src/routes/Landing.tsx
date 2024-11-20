@@ -1,4 +1,4 @@
-import { Box, Button, Card, Modal, Spinner, Text, TextInput } from '@0xsequence/design-system'
+import { Box, Button, Card, Modal, Text, TextInput } from '@0xsequence/design-system'
 import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -16,13 +16,10 @@ import sequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 function Landing() {
   const authStore = useStore(AuthStore)
   const isLoadingAccount = useObservable(authStore.isLoadingAccount)
-  const isPromptingForPassword = useObservable(authStore.isPromptingForPassword)
 
   const [password, setPassword] = useState('')
   const [isReseting, setIsReseting] = useState(false)
   const [wrongPassword, setWrongPassword] = useState(false)
-
-  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
 
   const handleUnlock = async () => {
     try {

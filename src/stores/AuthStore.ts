@@ -47,7 +47,6 @@ export class AuthStore {
   account: Account | undefined
 
   accountAddress = observable<string | undefined>(undefined)
-  isPromptingForPassword = observable<boolean>(false)
 
   async signInWithRecoveryMnemonic(wallet: string, mnemonic: string, password?: string) {
     try {
@@ -97,12 +96,6 @@ export class AuthStore {
     var key = await db.get(IndexedDBKey.SECURITY, 'key')
 
     let mnemonic: { wallet: string; mnemonic: string } | undefined = undefined
-
-    // Check if mnemonic is stored in IndexedDB, key is not stored (meaning password needed), and flow is from constructor not from login
-    if (encryptedMnemonic && !key && !password) {
-      this.isPromptingForPassword.set(true)
-      return
-    }
 
     if (encryptedMnemonic) {
       if (key) {
