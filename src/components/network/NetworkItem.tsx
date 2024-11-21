@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   ChevronDownIcon,
-  Collapsible,
   CollapsiblePrimitive,
   Text,
   TextInput
@@ -19,20 +18,10 @@ import FilledCheckBox from '../checkboxes/FilledCheckBox'
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)
 
+  const isUnsaved = useObservable(networkStore.unsavedNetworkEditChainIds).includes(network.chainId)
+
   const userAdditions = useObservable(networkStore.userAdditionNetworkChainIds)
   const isUserAddition = userAdditions.includes(network.chainId)
-
-  useEffect(() => {
-    if (
-      rpcUrl !== network.rpcUrl ||
-      blockExplorerUrl !== network.blockExplorer?.rootUrl ||
-      disabled !== network.disabled
-    ) {
-      setRpcUrl(network.rpcUrl)
-      setBlockExplorerUrl(network.blockExplorer?.rootUrl ?? '')
-      setDisabled(network.disabled)
-    }
-  }, [network])
 
   const hasPreviousEdit = networkStore.editedNetworkChainIds.get().includes(network.chainId)
 
@@ -40,10 +29,31 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const [blockExplorerUrl, setBlockExplorerUrl] = useState(network.blockExplorer?.rootUrl ?? '')
   const [disabled, setDisabled] = useState(network.disabled)
 
-  const hasPendingChanges =
-    rpcUrl !== network.rpcUrl ||
-    blockExplorerUrl !== network.blockExplorer?.rootUrl ||
-    disabled !== network.disabled
+  const [validRpcUrl, setValidRpcUrl] = useState(true)
+
+  useEffect(() => {
+    const checkRpcUrl = async () => {
+      const rpcCheck = await networkStore.isValidRpcUrl(rpcUrl)
+      setValidRpcUrl(rpcCheck)
+    }
+    checkRpcUrl()
+  }, [rpcUrl])
+
+  useEffect(() => {
+    if (
+      rpcUrl !== network.rpcUrl ||
+      blockExplorerUrl !== network.blockExplorer?.rootUrl ||
+      disabled !== network.disabled ||
+      isUnsaved
+    ) {
+      const updated = { ...network }
+      updated.rpcUrl = rpcUrl
+      updated.blockExplorer = { rootUrl: blockExplorerUrl }
+      updated.relayer = createDebugLocalRelayer(rpcUrl)
+      updated.disabled = disabled
+      networkStore.addUnsavedNetworkEdit(updated)
+    }
+  }, [rpcUrl, blockExplorerUrl, disabled])
 
   return (
     <Card flexDirection="column" gap="4">
@@ -53,8 +63,13 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
           label={
             <Box flexDirection="row" gap="2" alignItems="center">
               <FilledCheckBox checked={!disabled} />
-              <Text variant="medium" fontWeight="semibold" color="text80">
-                {network.title}
+
+              <Text
+                variant="medium"
+                fontWeight="semibold"
+                color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
+              >
+                {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {(hasPreviousEdit || isUnsaved) && '*'}
               </Text>
             </Box>
           }
@@ -127,37 +142,15 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
           />
         </Box>
       )}
-      {(hasPendingChanges || hasPreviousEdit) && !isUserAddition && (
+      {hasPreviousEdit && !isUserAddition && (
         <Box marginTop="4" justifyContent="flex-end" gap="3">
-          <>
-            {hasPreviousEdit && (
-              <Button
-                label="Reset to default"
-                variant="danger"
-                size="md"
-                shape="square"
-                onClick={() => networkStore.resetNetworkEdit(network.chainId)}
-              />
-            )}
-          </>
-          <>
-            {hasPendingChanges && (
-              <Button
-                label="Save"
-                variant="primary"
-                size="md"
-                shape="square"
-                onClick={() => {
-                  const updated = network
-                  updated.rpcUrl = rpcUrl
-                  updated.blockExplorer = { rootUrl: blockExplorerUrl }
-                  updated.relayer = createDebugLocalRelayer(rpcUrl)
-                  updated.disabled = disabled
-                  networkStore.editNetwork(updated)
-                }}
-              />
-            )}
-          </>
+          <Button
+            label="Reset to default"
+            variant="danger"
+            size="md"
+            shape="square"
+            onClick={() => networkStore.resetNetworkEdit(network.chainId)}
+          />
         </Box>
       )}
     </Card>

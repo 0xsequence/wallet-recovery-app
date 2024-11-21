@@ -1,6 +1,6 @@
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
-import { ethers } from 'ethers'
+import { ethers, isError } from 'ethers'
 
 import { getNativeTokenInfo } from '~/utils/network'
 
@@ -52,6 +52,11 @@ export class TokenStore {
           return
         }
         const provider = new ethers.JsonRpcProvider(network.rpcUrl)
+        provider.on('error', e => {
+          if (isError(e, 'NETWORK_ERROR')) {
+            provider.destroy()
+          }
+        })
         try {
           const balance = await provider.getBalance(account)
           update.push({

@@ -1,6 +1,6 @@
-import { Box, Button, Divider, TabsContent, TabsPrimitive, Text } from '@0xsequence/design-system'
+import { Box, TabsContent, TabsPrimitive } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
@@ -9,12 +9,12 @@ import Arweave from './Arweave'
 import NetworkFooter from './NetworkFooter'
 import NetworkHeader from './NetworkHeader'
 import NetworkList from './NetworkList'
-import NetworkTab from './NetworkTab'
 
 export default function Networks() {
   const networkStore = useStore(NetworkStore)
 
   const networks = useObservable(networkStore.networks)
+
   const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
 
   const userAdditions = useObservable(networkStore.userAdditionNetworkChainIds)

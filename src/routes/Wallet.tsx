@@ -437,7 +437,9 @@ function Wallet() {
                 variant="primary"
                 size="md"
                 shape="square"
-                onClick={handleSelectProvider}
+                onClick={() => {
+                  handleSelectProvider()
+                }}
               />
             )}
           </Card>
@@ -521,7 +523,10 @@ function Wallet() {
       )}
       {isNetworkModalOpen && (
         <Modal
-          onClose={() => setIsNetworkModalOpen(false)}
+          onClose={() => {
+            setIsNetworkModalOpen(false)
+            networkStore.discardUnsavedNetworkEdits()
+          }}
           contentProps={{
             style: {
               scrollbarColor: 'gray black',
