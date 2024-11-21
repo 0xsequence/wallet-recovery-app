@@ -45,8 +45,6 @@ import SignClientTransactionRequest from '~/components/signing/SignClientTransac
 import SignClientWarning from '~/components/signing/SignClientWarning'
 import WalletScan from '~/components/signing/WalletScan'
 
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
-
 export const WALLET_WIDTH = 800
 
 function Wallet() {
@@ -61,7 +59,6 @@ function Wallet() {
   const navigate = useNavigate()
 
   const accountAddress = useObservable(authStore.accountAddress)
-  const isPasswordSet = useObservable(authStore.isPasswordSet)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
   const isSigningMsg = useObservable(walletStore.isSigningMsg)
 
@@ -526,6 +523,7 @@ function Wallet() {
           onClose={() => {
             setIsNetworkModalOpen(false)
             networkStore.discardUnsavedNetworkEdits()
+            networkStore.isAddingNetwork.set(false)
           }}
           contentProps={{
             style: {

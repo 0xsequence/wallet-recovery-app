@@ -12,21 +12,3 @@ export default function NetworkList({ networks }: { networks: NetworkConfig[] })
     </Box>
   )
 }
-
-{
-  /* <Box width="full" flexDirection="column" alignItems="flex-end" marginY="4">
-      {!isAddNetworkActive ? (
-        <Button
-          label="Add network"
-          variant="primary"
-          size="md"
-          shape="square"
-          onClick={() => {
-            setIsAddNetworkActive(true)
-          }}
-        />
-      ) : (
-        <AddNetwork onClose={() => setIsAddNetworkActive(false)} />
-      )}
-    </Box> */
-}

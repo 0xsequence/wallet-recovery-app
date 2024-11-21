@@ -69,8 +69,13 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
                 fontWeight="semibold"
                 color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
               >
-                {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {(hasPreviousEdit || isUnsaved) && '*'}
+                {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
               </Text>
+              {(hasPreviousEdit || isUserAddition) && (
+                <Text variant="normal" color="text50">
+                  {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
+                </Text>
+              )}
             </Box>
           }
           onClick={() => setDisabled(!disabled)}
@@ -103,7 +108,6 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               <TextInput
                 name="rpcUrl"
                 spellCheck={false}
-                disabled={isUserAddition}
                 value={rpcUrl ?? ''}
                 onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                   setRpcUrl(ev.target.value)
@@ -117,7 +121,6 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               <TextInput
                 name="blockExplorerUrl"
                 spellCheck={false}
-                disabled={isUserAddition}
                 value={blockExplorerUrl ?? ''}
                 onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                   setBlockExplorerUrl(ev.target.value)
@@ -127,32 +130,6 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
           </Box>
         </CollapsiblePrimitive.Content>
       </CollapsiblePrimitive.Root>
-
-      {isUserAddition && (
-        <Box marginTop="4" alignItems="center" justifyContent="flex-end" gap="5">
-          <Text variant="small" color="text50">
-            Added by you
-          </Text>
-          <Button
-            label="Remove"
-            variant="danger"
-            size="md"
-            shape="square"
-            onClick={() => networkStore.removeNetwork(network.chainId)}
-          />
-        </Box>
-      )}
-      {hasPreviousEdit && !isUserAddition && (
-        <Box marginTop="4" justifyContent="flex-end" gap="3">
-          <Button
-            label="Reset to default"
-            variant="danger"
-            size="md"
-            shape="square"
-            onClick={() => networkStore.resetNetworkEdit(network.chainId)}
-          />
-        </Box>
-      )}
     </Card>
   )
 }

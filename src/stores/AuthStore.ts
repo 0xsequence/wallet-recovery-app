@@ -35,14 +35,9 @@ export class AuthStore {
         networkStore.accountLoaded.set(true)
       }
     })
-
-    getIndexedDB(IndexedDBKey.SECURITY).then(async db => {
-      this.isPasswordSet.set(!db.get(IndexedDBKey.SECURITY, 'key'))
-    })
   }
 
   isLoadingAccount = observable(true)
-  isPasswordSet = observable(true)
 
   account: Account | undefined
 
@@ -131,8 +126,6 @@ export class AuthStore {
     const db = await getIndexedDB(IndexedDBKey.SECURITY)
     await db.put(IndexedDBKey.SECURITY, key, 'key')
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
-
-    this.isPasswordSet.set(false)
   }
 
   async encryptRecoveryMnemonicWithPassword(mnemonic: string, address: string, password: string) {
@@ -148,8 +141,6 @@ export class AuthStore {
     // Store encrypted data (minus key) in indexed db
     const db = await getIndexedDB(IndexedDBKey.SECURITY)
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
-
-    this.isPasswordSet.set(true)
   }
 
   async decryptRecoveryMnemonic(

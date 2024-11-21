@@ -1,9 +1,9 @@
 import { Account } from '@0xsequence/account'
 import { universal } from '@0xsequence/core'
 import {
-  ArrowRightIcon,
   Box,
   Button,
+  ChevronLeftIcon,
   Divider,
   Modal,
   Spinner,
@@ -159,8 +159,7 @@ function Recovery() {
         width="full"
         style={{ maxWidth: WALLET_WIDTH }}
       >
-        {/* TODO: replace left arrow */}
-        <Button leftIcon={ArrowRightIcon} label="Back" size="sm" as={Link} to="/" />
+        <Button leftIcon={ChevronLeftIcon} label="Back" size="sm" as={Link} to="/" />
 
         <Box flexDirection="column">
           <Text variant="xlarge" color="text100">

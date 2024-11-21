@@ -47,6 +47,8 @@ export class NetworkStore {
   unsavedNetworkEdits = observable<NetworkConfig[]>([])
   unsavedNetworkEditChainIds = observable<number[]>([])
 
+  isAddingNetwork = observable<boolean>(false)
+
   constructor(_store: Store) {
     this.prepareNetworks()
 
@@ -80,7 +82,7 @@ export class NetworkStore {
   private async prepareNetworks() {
     const updatedNetworkConfigs: NetworkConfig[] = []
 
-    const userEdits = this.local.networksUserEdits.get()
+    var userEdits = this.local.networksUserEdits.get()
 
     for (const [key, value] of Object.entries(networks)) {
       if (IGNORED_CHAIN_IDS.has(Number(key))) {
@@ -93,15 +95,24 @@ export class NetworkStore {
 
       const updatedNetworkConfig = value as NetworkConfig
 
+      const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))
+
       const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
 
       if (userEdit) {
-        userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
-        updatedNetworkConfigs.push(userEdit)
-        continue
+        if (
+          userEdit.rpcUrl !== rpcForCurrent ||
+          userEdit.blockExplorer?.rootUrl !== updatedNetworkConfig.blockExplorer?.rootUrl ||
+          userEdit.disabled !== false
+        ) {
+          userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
+          updatedNetworkConfigs.push(userEdit)
+          continue
+        } else {
+          userEdits = userEdits?.filter(n => n.chainId !== updatedNetworkConfig.chainId)
+          this.local.networksUserEdits.set(userEdits)
+        }
       }
-
-      const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))
 
       if (rpcForCurrent) {
         updatedNetworkConfig.rpcUrl = rpcForCurrent
@@ -174,6 +185,16 @@ export class NetworkStore {
     this.prepareNetworks()
   }
 
+  async editUserNetwork(network: NetworkConfig) {
+    const userNetworks = this.local.networksUserAdditions.get() ?? []
+
+    const filtered = userNetworks.filter(n => n.chainId !== network.chainId)
+    filtered.push(network)
+    this.local.networksUserAdditions.set(filtered)
+
+    this.prepareNetworks()
+  }
+
   addUnsavedNetworkEdit(network: NetworkConfig) {
     const existingUnsaved = this.unsavedNetworkEdits.get() || []
     const chainIds = this.unsavedNetworkEditChainIds.get()
@@ -209,7 +230,11 @@ export class NetworkStore {
 
   saveUnsavedNetworkEdits() {
     for (const network of this.unsavedNetworkEdits.get() || []) {
-      this.editNetwork(network)
+      if (this.userAdditionNetworkChainIds.get()?.includes(network.chainId)) {
+        this.editUserNetwork(network)
+      } else {
+        this.editNetwork(network)
+      }
     }
     this.unsavedNetworkEdits.set([])
     this.unsavedNetworkEditChainIds.set([])
