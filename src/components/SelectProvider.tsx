@@ -1,4 +1,4 @@
-import { Box, Card, Divider, Text } from '@0xsequence/design-system'
+import { Box, Card, Text } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useState } from 'react'
 
@@ -8,6 +8,8 @@ import { EIP1193Provider, useSyncProviders } from '~/hooks/useSyncProviders'
 
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
+
+import WalletConnectIcon from '~/assets/icons/wallet-connect.svg'
 
 export interface ProviderInfo {
   walletId?: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask
@@ -52,6 +54,7 @@ export default function SelectProvider({
         }
 
         setIsWalletConnectModalOpen(true)
+        onSelectProvider()
 
         const walletConnectProvider = await createProvider(true)
         await walletConnectProvider.connect()
@@ -66,61 +69,53 @@ export default function SelectProvider({
   }
 
   return (
-    <>
-      {!isWalletConnectModalOpen && (
-        <Box flexDirection="column" paddingY="5" alignItems="center">
-          <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="1">
-            Select an external wallet to send transactions
-          </Text>
-          <Divider color="gradientPrimary" width="full" height="px" />
-          <Box flexDirection="column" gap="4" padding="8">
-            <Card
-              flexDirection="row"
-              alignItems="center"
-              gap="2"
-              cursor="pointer"
-              background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
-              onClick={() => {
-                handleWalletConnectModalOpen()
-              }}
-            >
-              <Box flexDirection="row" alignItems="center" gap="2">
-                <img
-                  src={'https://avatars.githubusercontent.com/u/37784886'}
-                  alt={'Wallet Connect'}
-                  style={{ width: '20px', height: '20px' }}
-                />
-                <Text variant="normal" color="text100">
-                  {'Wallet Connect'}
-                </Text>
-              </Box>
-            </Card>
-
-            {providers.map(provider => (
-              <Card
-                key={provider.info.uuid}
-                flexDirection="row"
-                alignItems="center"
-                gap="2"
-                cursor="pointer"
-                background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
-                onClick={() => onSelectProvider(provider)}
-              >
-                <Box flexDirection="row" alignItems="center" gap="2">
-                  <img
-                    src={provider.info.icon}
-                    alt={provider.info.name}
-                    style={{ width: '20px', height: '20px' }}
-                  />
-                  <Text variant="normal" color="text100">
-                    {provider.info.name}
-                  </Text>
-                </Box>
-              </Card>
-            ))}
+    <Box flexDirection="column" padding="6" gap="6">
+      <Text variant="large" color="text100">
+        Connect external wallet
+      </Text>
+      <Text variant="normal" color="text50">
+        You need an external wallet to relay transactions
+      </Text>
+      <Box flexDirection="column" gap="3">
+        <Card
+          flexDirection="row"
+          justifyContent="center"
+          gap="2"
+          cursor="pointer"
+          borderRadius="circle"
+          background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
+          onClick={() => {
+            handleWalletConnectModalOpen()
+          }}
+        >
+          <Box flexDirection="row" alignItems="center" gap="2">
+            <img src={WalletConnectIcon} alt={'Wallet Connect'} height={20} width={20} />
+            <Text variant="normal" fontWeight="bold" color="text100">
+              {'Wallet Connect'}
+            </Text>
           </Box>
-        </Box>
-      )}
-    </>
+        </Card>
+
+        {providers.map(provider => (
+          <Card
+            key={provider.info.uuid}
+            flexDirection="row"
+            justifyContent="center"
+            gap="2"
+            cursor="pointer"
+            borderRadius="circle"
+            background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
+            onClick={() => onSelectProvider(provider)}
+          >
+            <Box flexDirection="row" alignItems="center" gap="2">
+              <img src={provider.info.icon} alt={provider.info.name} height={20} width={20} />
+              <Text variant="normal" fontWeight="bold" color="text100">
+                {provider.info.name}
+              </Text>
+            </Box>
+          </Card>
+        ))}
+      </Box>
+    </Box>
   )
 }

@@ -536,7 +536,7 @@ function Wallet() {
         </Modal>
       )}
       {isSelectProviderModalOpen && (
-        <Modal size="md" onClose={() => setIsSelectProviderModalOpen(false)}>
+        <Modal size="sm" onClose={() => setIsSelectProviderModalOpen(false)}>
           <SelectProvider
             onSelectProvider={async provider => {
               if (provider) {
@@ -561,7 +561,7 @@ function Wallet() {
         <Modal
           size="md"
           contentProps={{
-            style: { width: !isMobile ? '600px' : '100%', height: !isMobile ? '750px' : '' }
+            style: { width: !isMobile ? '500px' : '100%' }
           }}
           onClose={() => setIsScanningQrWalletConnect(false)}
         >
