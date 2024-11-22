@@ -6,6 +6,7 @@ import { NetworkStore } from '~/stores/NetworkStore'
 export default function NetworkFooter() {
   const networkStore = useStore(NetworkStore)
   const unsavedNetworkEditChainIds = useObservable(networkStore.unsavedNetworkEditChainIds)
+  const unsavedArweaveURLs = useObservable(networkStore.unsavedArweaveURLs)
 
   return (
     <Box flexDirection="column" width="full" position="absolute" bottom="0" background="backgroundPrimary">
@@ -21,7 +22,9 @@ export default function NetworkFooter() {
           label="Confirm"
           variant="primary"
           shape="square"
-          disabled={unsavedNetworkEditChainIds.length === 0}
+          disabled={
+            unsavedNetworkEditChainIds.length === 0 && !Object.values(unsavedArweaveURLs || {}).length
+          }
           onClick={() => networkStore.saveUnsavedNetworkEdits()}
         />
       </Box>

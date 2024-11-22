@@ -71,6 +71,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               >
                 {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
               </Text>
+
               {(hasPreviousEdit || isUserAddition) && (
                 <Text variant="normal" color="text50">
                   {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
@@ -95,6 +96,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
             <Text variant="medium" fontWeight="bold" color={disabled ? 'borderNormal' : 'text50'}>
               Network Settings
             </Text>
+
             <ChevronDownIcon color={disabled ? 'text50' : 'text100'} />
           </Box>
         </CollapsiblePrimitive.Trigger>
@@ -105,6 +107,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               <Text variant="normal" fontWeight="medium" color="text100">
                 RPC URL
               </Text>
+
               <TextInput
                 name="rpcUrl"
                 spellCheck={false}
@@ -118,6 +121,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               <Text variant="normal" fontWeight="medium" color="text100">
                 Block Explorer URL
               </Text>
+
               <TextInput
                 name="blockExplorerUrl"
                 spellCheck={false}

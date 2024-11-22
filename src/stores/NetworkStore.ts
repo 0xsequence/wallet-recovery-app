@@ -46,6 +46,7 @@ export class NetworkStore {
 
   unsavedNetworkEdits = observable<NetworkConfig[]>([])
   unsavedNetworkEditChainIds = observable<number[]>([])
+  unsavedArweaveURLs = observable<{ gatewayUrl?: string; graphQLUrl?: string }>({})
 
   isAddingNetwork = observable<boolean>(false)
 
@@ -223,12 +224,24 @@ export class NetworkStore {
     }
   }
 
+  addUnsavedArweaveURLs(gatewayUrl: string, graphQLUrl: string) {
+    this.unsavedArweaveURLs.set({ gatewayUrl, graphQLUrl })
+  }
+
   discardUnsavedNetworkEdits() {
     this.unsavedNetworkEdits.set([])
     this.unsavedNetworkEditChainIds.set([])
+    this.unsavedArweaveURLs.set({})
   }
 
   saveUnsavedNetworkEdits() {
+    const unsavedArweaveURLs = this.unsavedArweaveURLs.get()
+
+    if (unsavedArweaveURLs) {
+      this.local.arweaveGatewayUrl.set(unsavedArweaveURLs.gatewayUrl)
+      this.local.arweaveGraphqlUrl.set(unsavedArweaveURLs.graphQLUrl)
+    }
+
     for (const network of this.unsavedNetworkEdits.get() || []) {
       if (this.userAdditionNetworkChainIds.get()?.includes(network.chainId)) {
         this.editUserNetwork(network)
@@ -238,6 +251,7 @@ export class NetworkStore {
     }
     this.unsavedNetworkEdits.set([])
     this.unsavedNetworkEditChainIds.set([])
+    this.unsavedArweaveURLs.set({})
   }
 
   resetNetworkEdit(chainId: number) {

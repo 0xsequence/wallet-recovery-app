@@ -1,15 +1,29 @@
-import { Box, Divider, Text, TextInput } from '@0xsequence/design-system'
-import { useObservable } from 'micro-observables'
-import { ChangeEvent } from 'react'
+import { Box, Text, TextInput } from '@0xsequence/design-system'
+import { ChangeEvent, useEffect, useState } from 'react'
 
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 
 export default function Arweave() {
   const networkStore = useStore(NetworkStore)
 
-  const arweaveGatewayUrl = useObservable(networkStore.arweaveGatewayUrl)
-  const arweaveGraphqlUrl = useObservable(networkStore.arweaveGraphqlUrl)
+  const [gatewayUrl, setGatewayUrl] = useState(networkStore.arweaveGatewayUrl.get())
+  const [graphQLUrl, setGraphQLUrl] = useState(networkStore.arweaveGraphqlUrl.get())
+
+  const isUnsaved = Object.values(useObservable(networkStore.unsavedArweaveURLs) || {}).length > 0
+
+  useEffect(() => {
+    if (
+      gatewayUrl &&
+      graphQLUrl &&
+      (gatewayUrl !== networkStore.arweaveGatewayUrl.get() ||
+        graphQLUrl !== networkStore.arweaveGraphqlUrl.get() ||
+        isUnsaved)
+    ) {
+      networkStore.addUnsavedArweaveURLs(gatewayUrl, graphQLUrl)
+    }
+  }, [gatewayUrl, graphQLUrl])
+
   return (
     <Box flexDirection="column" gap="2" paddingTop="6">
       <Box flexDirection="column" gap="1">
@@ -19,9 +33,9 @@ export default function Arweave() {
         <TextInput
           name="arweaveGatewayUrl"
           spellCheck={false}
-          value={arweaveGatewayUrl ?? ''}
+          value={gatewayUrl ?? ''}
           onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            networkStore.arweaveGatewayUrl.set(ev.target.value)
+            setGatewayUrl(ev.target.value)
           }}
         />
       </Box>
@@ -30,11 +44,11 @@ export default function Arweave() {
           GraphQL URL
         </Text>
         <TextInput
-          name="arweaveGatewayUrl"
+          name="arweaveGraphqlUrl"
           spellCheck={false}
-          value={arweaveGatewayUrl ?? ''}
+          value={graphQLUrl ?? ''}
           onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            networkStore.arweaveGatewayUrl.set(ev.target.value)
+            setGraphQLUrl(ev.target.value)
           }}
         />
       </Box>
