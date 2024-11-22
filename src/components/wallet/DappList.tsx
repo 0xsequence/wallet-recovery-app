@@ -1,9 +1,8 @@
-import { AddIcon, Box, Button, Card, Divider, Modal, Text, useMediaQuery } from '@0xsequence/design-system'
+import { AddIcon, Box, Button, Divider, Image, Modal, Text, useMediaQuery } from '@0xsequence/design-system'
 import { useObservable } from 'micro-observables'
 import { useState } from 'react'
 
 import { useStore } from '~/stores'
-import { AuthStore } from '~/stores/AuthStore'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
@@ -19,11 +18,8 @@ export default function DappList() {
 
   const walletStore = useStore(WalletStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
-  const authStore = useStore(AuthStore)
 
   const sessionList = useObservable(walletConnectSignClientStore.allSessions)
-
-  const accountAddress = useObservable(authStore.accountAddress)
 
   const [isScanningQrWalletConnect, setIsScanningQrWalletConnect] = useState(false)
   const [isConnectingDapp, setIsConnectingDapp] = useState(false)
@@ -44,7 +40,7 @@ export default function DappList() {
     <Box flexDirection="column">
       <Box justifyContent="space-between" alignItems="center" gap="2">
         <Box alignItems="center" gap="2">
-          <img src={LinkConnectionIcon} alt="LinkConnection" style={{ width: '28px', height: '28px' }} />
+          <Image src={LinkConnectionIcon} width="7" height="7" />
 
           <Text variant="large" fontWeight="bold" color="text100">
             External Wallet

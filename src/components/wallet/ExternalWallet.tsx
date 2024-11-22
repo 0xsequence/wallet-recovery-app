@@ -8,7 +8,8 @@ import {
   Divider,
   Modal,
   Text,
-  WalletIcon
+  WalletIcon,
+  useToast
 } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useObservable } from 'micro-observables'
@@ -21,6 +22,8 @@ import SelectProvider from '../SelectProvider'
 import { ExternalIcon } from '../helpers/ExternalIcons'
 
 export default function ExternalWallet() {
+  const toast = useToast()
+
   const walletStore = useStore(WalletStore)
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
@@ -78,10 +81,12 @@ export default function ExternalWallet() {
                 <Text variant="medium" color="text100">
                   {selectedExternalProvider.info.name}
                 </Text>
+
                 <Box gap="1">
                   <Text variant="normal" color="text50" width="full">
                     {selectedExternalWalletAddress}
                   </Text>
+
                   <CopyIcon
                     color="borderNormal"
                     cursor="pointer"
@@ -120,6 +125,13 @@ export default function ExternalWallet() {
                     ?.provider as EthereumProvider
                   await walletConnectProvider.disconnect()
                 }
+
+                toast({
+                  variant: 'success',
+                  title: 'External wallet added successfully',
+                  description: 'You can now relay transactions.'
+                })
+
                 walletStore.setExternalProvider(provider)
               }
               setIsSelectProviderModalOpen(false)

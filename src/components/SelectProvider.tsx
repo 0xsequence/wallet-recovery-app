@@ -1,4 +1,4 @@
-import { Box, Card, Text } from '@0xsequence/design-system'
+import { Box, Card, Image, Text } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useState } from 'react'
 
@@ -89,7 +89,7 @@ export default function SelectProvider({
           }}
         >
           <Box flexDirection="row" alignItems="center" gap="2">
-            <img src={WalletConnectIcon} alt={'Wallet Connect'} height={20} width={20} />
+            <Image src={WalletConnectIcon} width="5" height="auto" />
             <Text variant="normal" fontWeight="bold" color="text100">
               {'Wallet Connect'}
             </Text>
@@ -108,7 +108,7 @@ export default function SelectProvider({
             onClick={() => onSelectProvider(provider)}
           >
             <Box flexDirection="row" alignItems="center" gap="2">
-              <img src={provider.info.icon} alt={provider.info.name} height={20} width={20} />
+              <Image src={provider.info.icon} width="5" height="auto" />
               <Text variant="normal" fontWeight="bold" color="text100">
                 {provider.info.name}
               </Text>

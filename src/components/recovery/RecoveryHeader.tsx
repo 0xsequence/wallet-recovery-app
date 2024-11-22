@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Text } from '@0xsequence/design-system'
+import { Box, Button, Divider, Image, Text } from '@0xsequence/design-system'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -24,13 +24,13 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
           style={{ height: '59px' }}
         >
           <Box marginX="5">
-            <img src={sequenceRecoveryLogo} alt="Sequence Recovery Wallet Logo" height="28px" />
+            <Image src={sequenceRecoveryLogo} />
           </Box>
           <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>
             <Button
               label={
                 <Box flexDirection="row" alignItems="center" gap="2">
-                  <img src={externalArrowIcon} alt="External Arrow Icon" height="20px" />
+                  <Image src={externalArrowIcon} height="5" />
                   <Text variant="medium" lineHeight="5" color="text50">
                     Docs
                   </Text>
@@ -42,7 +42,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
             <Button
               label={
                 <Box flexDirection="row" alignItems="center" gap="2">
-                  <img src={networkIcon} alt="Network Icon" height="20px" />
+                  <Image src={networkIcon} height="5" />
                   <Text variant="medium" lineHeight="5" color="text50">
                     Networks
                   </Text>

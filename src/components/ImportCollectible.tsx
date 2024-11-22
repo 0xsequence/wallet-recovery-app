@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Divider,
+  Image,
   Select,
   Spinner,
   Text,
@@ -214,11 +215,8 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           <Box alignItems="center" justifyContent="center">
             <Card flexDirection="column" gap="2">
               <Box flexDirection="row" gap="6">
-                <img
-                  src={collectibleInfoResponse.image ?? ''}
-                  alt={collectibleInfoResponse.name ?? ''}
-                  style={{ width: '120px', height: 'auto' }}
-                />
+                <Image src={collectibleInfoResponse.image} style={{ width: '120px', height: 'auto' }} />
+
                 <Box flexDirection="column" gap="2">
                   <Text variant="medium" color="text100">
                     {collectibleInfoResponse.name ?? ''}

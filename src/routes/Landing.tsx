@@ -1,4 +1,4 @@
-import { Box, Button, Card, Modal, Text, TextInput } from '@0xsequence/design-system'
+import { Box, Button, Card, Image, Modal, Text, TextInput } from '@0xsequence/design-system'
 import { ChangeEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -53,7 +53,8 @@ function Landing() {
         paddingY="10"
       >
         <Box flexDirection="column" gap="6">
-          <img src={sequenceRecoveryLogo} alt="Sequence Recovery Wallet Logo" height="28px" />
+          <Image src={sequenceRecoveryLogo} height="7" />
+
           <Text
             textAlign="center"
             variant="xlarge"
@@ -114,7 +115,7 @@ function Landing() {
             <Box flexDirection="row" gap="2" width="2/3">
               <Card flexDirection="column" gap="2">
                 <Box flexDirection="row" gap="2">
-                  <img src={contractsIcon}></img>
+                  <Image src={contractsIcon} />
                   <Text variant="normal" fontWeight="bold" color="text100">
                     Connect to Applications
                   </Text>
@@ -125,7 +126,7 @@ function Landing() {
               </Card>
               <Card flexDirection="column" gap="2">
                 <Box flexDirection="row" gap="2">
-                  <img src={walletIcon}></img>
+                  <Image src={walletIcon} />
                   <Text variant="normal" fontWeight="bold" color="text100">
                     Move funds anywhere
                   </Text>
