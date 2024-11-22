@@ -1,4 +1,13 @@
-import { Box, Button, Card, Divider, ExternalLinkIcon, IconButton, Text } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  ExternalLinkIcon,
+  IconButton,
+  Text,
+  useToast
+} from '@0xsequence/design-system'
 import { useState } from 'react'
 
 import { getNetworkTitle } from '~/utils/network'
@@ -9,6 +18,8 @@ import { WalletStore } from '~/stores/WalletStore'
 export default function ConnectDapp({ onClose }: { onClose: () => void }) {
   const walletStore = useStore(WalletStore)
   const connectOptions = useObservable(walletStore.connectOptions)
+
+  const toast = useToast()
 
   const [isPending, setPending] = useState(false)
 
@@ -22,6 +33,13 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
     walletStore.connectDetails.set(connectDetails)
 
     setPending(false)
+
+    toast({
+      variant: 'success',
+      title: 'Dapp connection added successfully',
+      description: 'You can now receive dapp action requests.'
+    })
+
     onClose()
   }
 

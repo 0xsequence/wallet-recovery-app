@@ -5,7 +5,7 @@ import { ChangeEvent, useState } from 'react'
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
-import FilledCheckBox from '../checkboxes/FilledCheckBox'
+import FilledCheckBox from '../helpers/FilledCheckBox'
 
 export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) => void }) {
   const isMobile = useMediaQuery('isMobile')

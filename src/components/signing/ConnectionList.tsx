@@ -4,43 +4,53 @@ import { SessionTypes } from '@walletconnect/types'
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
+import { ExternalIcon } from '../helpers/ExternalIcons'
+
 export default function ConnectionList({ sessionList }: { sessionList: SessionTypes.Struct[] }) {
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
   return (
-    <Box flexDirection="column" gap="2">
-      {sessionList.length !== 0 && (
-        <Text variant="large" color="text80" marginTop="6" marginBottom="2">
-          Connected dapps via WalletConnect
-        </Text>
-      )}
-
+    <>
       {sessionList.map((session, index) => (
-        <Card key={index} flexDirection="row" alignItems="center" gap="2" padding="2">
-          <Image width="8" height="8" src={session.peer.metadata.icons[0]} />
-          <Text variant="normal" fontWeight="bold" color="text100">
-            {session.peer.metadata.name === '' || !session.peer.metadata.name
-              ? session.peer.metadata.url
-              : session.peer.metadata.name}
-          </Text>
-          <Box gap="2" marginLeft="auto">
+        <Card key={index} flexDirection="row" justifyContent="space-between" alignItems="center" gap="2">
+          <Box alignItems="center" gap="4">
+            <ExternalIcon src={session.peer.metadata.icons[0]} />
+
+            <Text variant="medium" color="text100">
+              {!!!session.peer.metadata.name ? session.peer.metadata.url : session.peer.metadata.name}
+            </Text>
+          </Box>
+
+          <Box gap="2">
             {session.peer.metadata.url && (
-              <IconButton
-                size="xs"
-                icon={ExternalLinkIcon}
+              <Box
+                justifyContent="center"
+                alignItems="center"
+                background="backgroundMuted"
+                borderRadius="sm"
+                height="9"
+                width="9"
+                cursor="pointer"
                 onClick={() => window.open(session.peer.metadata.url!, '_blank')}
-              />
+              >
+                <ExternalLinkIcon color="text100" />
+              </Box>
             )}
-            <IconButton
-              size="xs"
-              icon={CloseIcon}
-              onClick={() => {
-                walletConnectSignClientStore.disconnectSession(session.topic)
-              }}
-            />
+            <Box
+              justifyContent="center"
+              alignItems="center"
+              background="backgroundMuted"
+              borderRadius="sm"
+              height="9"
+              width="9"
+              cursor="pointer"
+              onClick={() => walletConnectSignClientStore.disconnectSession(session.topic)}
+            >
+              <CloseIcon color="text100" />
+            </Box>
           </Box>
         </Card>
       ))}
-    </Box>
+    </>
   )
 }

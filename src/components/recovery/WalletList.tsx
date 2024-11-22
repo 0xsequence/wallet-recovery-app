@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 import { WALLET_WIDTH } from '~/routes/Wallet'
 
-import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '../checkboxes/FilledRoundCheckBox'
+import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '../helpers/FilledRoundCheckBox'
 
 export default function WalletList({
   possibleWallets,
