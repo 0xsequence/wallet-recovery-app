@@ -1,4 +1,14 @@
-import { Box, Button, Card, Select, Spinner, Text, TextInput, useToast } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  Select,
+  Spinner,
+  Text,
+  TextInput,
+  useToast
+} from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
@@ -13,7 +23,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const mainnetNetworks = networks.filter(network => network.type === NetworkType.MAINNET)
 
   const tokenStore = useStore(TokenStore)
-  const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
 
   const toast = useToast()
 
@@ -23,6 +32,8 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
 
   const [isAddingToken, setIsAddingToken] = useState(false)
+
+  const [isNativeToken, setIsNativeToken] = useState(false)
 
   useEffect(() => {
     if (selectedNetwork && tokenAddress) {
@@ -53,7 +64,8 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       setIsAddingToken(false)
       toast({
         variant: 'success',
-        title: 'Token added'
+        title: isNativeToken ? 'Native token added sucessfully' : 'ERC20 token added sucessfully',
+        description: "You'll be able to see this token on your browser as long as you don't clear your cache."
       })
       resetInputs()
       onClose()
@@ -66,91 +78,106 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Card
-      flexDirection="column"
-      paddingY="4"
-      paddingX="8"
-      borderRadius="md"
-      width="full"
-      height="full"
-      alignItems="center"
-      disabled={isAddingToken}
-    >
-      <Box>
-        <Text variant="medium" color="text80">
-          Import ERC20 Token
+    <Box flexDirection="column">
+      <Box flexDirection="column" padding="6" gap="6">
+        <Text variant="large" fontWeight="bold" color="text100">
+          Import Token
         </Text>
-      </Box>
-      <Box flexDirection="column" width="full" marginTop="4" gap="4">
-        <Select
-          label="Token Network"
-          labelLocation="left"
-          name="tokenNetwork"
-          options={selectOptions}
-          onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
-        />
+        <Box flexDirection="column">
+          <Box flexDirection="row" style={{ paddingBottom: '5px' }}>
+            <Box cursor="pointer" onClick={() => setIsNativeToken(false)}>
+              <Text
+                variant="normal"
+                fontWeight="semibold"
+                color={!isNativeToken ? 'text100' : 'text50'}
+                paddingY="2"
+                paddingX="4"
+              >
+                ERC20 Token
+              </Text>
 
-        <TextInput
-          width="full"
-          label="Token Address"
-          labelLocation="left"
-          name="tokenAddress"
-          value={tokenAddress ?? ''}
-          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            setTokenAddress(ev.target.value)
-          }}
-        />
+              {!isNativeToken && (
+                <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
+              )}
+            </Box>
 
-        {isFetchingTokenInfo && (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
-            <Spinner size="lg" />
+            <Box cursor="pointer" onClick={() => setIsNativeToken(true)}>
+              <Text
+                variant="normal"
+                fontWeight="semibold"
+                color={isNativeToken ? 'text100' : 'text50'}
+                paddingY="2"
+                paddingX="4"
+              >
+                Native Token
+              </Text>
+
+              {isNativeToken && (
+                <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
+              )}
+            </Box>
           </Box>
-        )}
 
-        {tokenInfo && (
-          <>
-            <TextInput
-              width="full"
-              label="Token Symbol"
-              labelLocation="left"
-              name="tokenSymbol"
-              value={tokenInfo?.symbol ?? ''}
-              disabled
+          <Divider marginY="0" />
+        </Box>
+        <Box flexDirection="column" gap="3">
+          <Box flexDirection="column" gap="1">
+            <Text variant="normal" color="text100">
+              Token Network
+            </Text>
+
+            <Select
+              name="tokenNetwork"
+              options={selectOptions}
+              onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
             />
+          </Box>
+
+          <Box flexDirection="column" gap="0.5">
+            <Text variant="normal" color="text100">
+              Token Address
+            </Text>
+
+            <Box flexDirection="row" gap="1" paddingBottom="0.5">
+              <Text variant="normal" color="text50">
+                See addresses on network's
+              </Text>
+              <Text
+                variant="normal"
+                color="text50"
+                underline
+                cursor="pointer"
+                // TODO: add variable link for network directory
+                onClick={() => window.open('https://docs.sequence.xyz/')}
+              >
+                directory
+              </Text>
+            </Box>
 
             <TextInput
-              width="full"
-              label="Token Decimals"
-              labelLocation="left"
-              name="tokenDecimals"
-              value={tokenInfo?.decimals ?? ''}
-              disabled
+              name="tokenAddress"
+              value={tokenAddress ?? ''}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                setTokenAddress(ev.target.value)
+              }}
             />
-          </>
-        )}
-
-        <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
-          <Button
-            label="Cancel"
-            variant="text"
-            size="md"
-            shape="square"
-            disabled={isAddingToken}
-            onClick={() => {
-              resetInputs()
-              onClose()
-            }}
-          />
-          <Button
-            label="Add"
-            disabled={tokenInfo === undefined || isAddingToken}
-            variant="primary"
-            size="md"
-            shape="square"
-            onClick={handleAdd}
-          />
+          </Box>
         </Box>
       </Box>
-    </Card>
+      <Divider marginY="0" />
+      <Box flexDirection="row" justifyContent="flex-end" padding="6" gap="2">
+        <Button label="Cancel" size="md" shape="square" onClick={onClose} />
+
+        <Button
+          label="Add Token"
+          variant="primary"
+          shape="square"
+          disabled={tokenInfo === undefined || isAddingToken}
+          onClick={() => {
+            handleAdd()
+          }}
+        />
+      </Box>
+    </Box>
   )
 }

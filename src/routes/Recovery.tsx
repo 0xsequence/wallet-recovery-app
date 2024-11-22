@@ -297,7 +297,16 @@ function Recovery() {
           </>
         )}
 
-        <Box flexDirection="row-reverse" justifyContent="space-between">
+        <Box flexDirection="row" justifyContent="space-between">
+          {!showManualAddress && (
+            <Button
+              label="Enter wallet address manually"
+              size="md"
+              shape="square"
+              onClick={() => setShowManualAddress(true)}
+            />
+          )}
+
           <Button
             variant="primary"
             size="md"
@@ -315,15 +324,6 @@ function Recovery() {
               handleSignInWithRecoveryMnemonic()
             }}
           />
-
-          {!showManualAddress && (
-            <Button
-              label="Enter wallet address manually"
-              size="md"
-              shape="square"
-              onClick={() => setShowManualAddress(true)}
-            />
-          )}
         </Box>
       </Box>
 

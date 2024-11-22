@@ -12,7 +12,12 @@ import { AuthStore } from './AuthStore'
 import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 
-export type CollectibleContractType = ContractType.ERC721 | ContractType.ERC1155
+export const CollectibleContractTypeValues = {
+  ERC721: 'ERC721',
+  ERC1155: 'ERC1155'
+} as const
+
+export type CollectibleContractType = keyof typeof CollectibleContractTypeValues
 
 export type CollectibleInfoParams = {
   chainId: number

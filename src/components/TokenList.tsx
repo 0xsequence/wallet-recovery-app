@@ -1,4 +1,4 @@
-import { AddIcon, Box, Button, Spinner } from '@0xsequence/design-system'
+import { AddIcon, Box, Button, Modal, Spinner } from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
@@ -22,6 +22,8 @@ export default function TokenList({
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
   const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
 
+  const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
+
   const filteredBalance = useMemo(() => {
     if (filterZeroBalances) {
       return balances.filter(balance => balance.balance !== '0')
@@ -32,15 +34,18 @@ export default function TokenList({
 
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
 
-  const onRemoveClick = (balance: TokenBalance) => balance.contractType === ContractType.NATIVE ? undefined : () => {
-    tokenStore.removeToken({
-      chainId: balance.chainId,
-      address: balance.contractAddress,
-      contractType: balance.contractType,
-      decimals: balance.contractInfo?.decimals!,
-      symbol: balance.contractInfo?.symbol!
-    })
-  }
+  const onRemoveClick = (balance: TokenBalance) =>
+    balance.contractType === ContractType.NATIVE
+      ? undefined
+      : () => {
+          tokenStore.removeToken({
+            chainId: balance.chainId,
+            address: balance.contractAddress,
+            contractType: balance.contractType,
+            decimals: balance.contractInfo?.decimals!,
+            symbol: balance.contractInfo?.symbol!
+          })
+        }
 
   return (
     <>
@@ -60,9 +65,11 @@ export default function TokenList({
           </Box>
         )}
       </Box>
-      {isImportTokenViewOpen && <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />}
-      {!isImportTokenViewOpen && (
-        <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
+
+      <Box width="full" alignItems="center" justifyContent="center" marginBottom="4">
+        {isFetchingTokenInfo ? (
+          <Spinner size="lg" />
+        ) : (
           <Button
             label="Import token"
             leftIcon={AddIcon}
@@ -73,7 +80,13 @@ export default function TokenList({
               setIsImportTokenViewOpen(true)
             }}
           />
-        </Box>
+        )}
+      </Box>
+
+      {isImportTokenViewOpen && (
+        <Modal size="sm" onClose={() => setIsImportTokenViewOpen(false)}>
+          <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />
+        </Modal>
       )}
     </>
   )

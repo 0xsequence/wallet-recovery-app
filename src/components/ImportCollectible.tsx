@@ -1,11 +1,26 @@
-import { Box, Button, Card, Select, Spinner, Text, TextInput, useToast } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  Select,
+  Spinner,
+  Text,
+  TextInput,
+  useToast
+} from '@0xsequence/design-system'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { BigNumberish } from 'ethers'
 import { ethers } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
-import { CollectibleContractType, CollectibleInfoResponse, CollectibleStore } from '~/stores/CollectibleStore'
+import {
+  CollectibleContractType,
+  CollectibleContractTypeValues,
+  CollectibleInfoResponse,
+  CollectibleStore
+} from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 
 export default function ImportCollectible({ onClose }: { onClose: () => void }) {
@@ -71,7 +86,12 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
       setIsAddingCollectible(false)
       toast({
         variant: 'success',
-        title: 'Collectible added'
+        title:
+          contractType === CollectibleContractTypeValues.ERC721
+            ? 'ERC721 collectible added successfully'
+            : 'ERC1155 collectible added successfully',
+        description:
+          "You'll be able to see this collectible on your browser as long as you don't clear your cache."
       })
       resetInputs()
       onClose()
@@ -86,76 +106,98 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }
 
   return (
-    <Card
-      flexDirection="column"
-      paddingY="4"
-      paddingX="8"
-      marginBottom="8"
-      borderRadius="md"
-      width="full"
-      height="full"
-      alignItems="center"
-      disabled={isAddingCollectible}
-    >
-      <Box>
-        <Text variant="medium" color="text80">
+    <Box flexDirection="column">
+      <Box flexDirection="column" padding="6" gap="6">
+        <Text variant="large" fontWeight="bold" color="text100">
           Import ERC721 or ERC1155 Collectible
         </Text>
-      </Box>
-      <Box flexDirection="column" width="full" marginTop="4" gap="4">
-        <Select
-          label="Collectible Network"
-          labelLocation="left"
-          name="collectibleNetwork"
-          options={selectOptions}
-          onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
-        />
 
-        <TextInput
-          width="full"
-          label="Collectible Address"
-          labelLocation="left"
-          name="collectibleAddress"
-          value={collectibleAddress ?? ''}
-          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            setCollectibleAddress(ev.target.value)
-          }}
-        />
+        <Box flexDirection="column" gap="3">
+          <Box flexDirection="column" gap="1">
+            <Text variant="normal" color="text100">
+              Collectible Network
+            </Text>
 
-        <Select
-          label="Collectible Type"
-          labelLocation="left"
-          name="collectibleType"
-          options={[
-            { value: 'ERC721', label: 'ERC721' },
-            { value: 'ERC1155', label: 'ERC1155' }
-          ]}
-          onValueChange={value => setContractType(value as CollectibleContractType)}
-        />
+            <Select
+              name="collectibleNetwork"
+              options={selectOptions}
+              onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
+            />
+          </Box>
 
-        <TextInput
-          width="full"
-          label="Collectible Token ID"
-          labelLocation="left"
-          name="collectibleId"
-          value={collectibleTokenId ?? ''}
-          onKeyPress={(event: { key: string; preventDefault: () => void }) => {
-            if (!/[0-9]/.test(event.key)) {
-              event.preventDefault()
-            }
-          }}
-          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            if (ev.target.value === '') {
-              setCollectibleTokenId(undefined)
-              return
-            }
+          <Box flexDirection="column" gap="0.5">
+            <Text variant="normal" color="text100">
+              Collectible Address
+            </Text>
 
-            setCollectibleTokenId(ev.target.value as unknown as number)
-          }}
-        />
+            <Box flexDirection="row" gap="1" paddingBottom="0.5">
+              <Text variant="normal" color="text50">
+                See addresses on network's
+              </Text>
+
+              <Text
+                variant="normal"
+                color="text50"
+                underline
+                cursor="pointer"
+                // TODO: add variable link for network directory
+                onClick={() => window.open('https://docs.sequence.xyz/')}
+              >
+                directory
+              </Text>
+            </Box>
+
+            <TextInput
+              name="collectibleAddress"
+              value={collectibleAddress ?? ''}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                setCollectibleAddress(ev.target.value)
+              }}
+            />
+          </Box>
+
+          <Box flexDirection="column" gap="1">
+            <Text variant="normal" color="text100">
+              Collectible Type
+            </Text>
+
+            <Select
+              name="collectibleType"
+              options={[
+                { value: 'ERC721', label: 'ERC721' },
+                { value: 'ERC1155', label: 'ERC1155' }
+              ]}
+              onValueChange={value => setContractType(value as CollectibleContractType)}
+            />
+          </Box>
+
+          <Box flexDirection="column" gap="0.5">
+            <Text variant="normal" color="text100">
+              Collectible Token ID
+            </Text>
+
+            <TextInput
+              name="collectibleTokenId"
+              value={collectibleTokenId ?? ''}
+              onKeyPress={(event: { key: string; preventDefault: () => void }) => {
+                if (!/[0-9]/.test(event.key)) {
+                  event.preventDefault()
+                }
+              }}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                if (ev.target.value === '') {
+                  setCollectibleTokenId(undefined)
+                  return
+                }
+
+                setCollectibleTokenId(ev.target.value as unknown as number)
+              }}
+            />
+          </Box>
+        </Box>
 
         {isFetchingCollectibleInfo && (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
+          <Box alignItems="center" justifyContent="center">
             <Spinner size="lg" />
           </Box>
         )}
@@ -169,7 +211,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         )}
 
         {collectibleInfoResponse && collectibleInfoResponse.isOwner && !isFetchingCollectibleInfo && (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
+          <Box alignItems="center" justifyContent="center">
             <Card flexDirection="column" gap="2">
               <Box flexDirection="row" gap="6">
                 <img
@@ -203,31 +245,22 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             </Card>
           </Box>
         )}
-
-        <Box alignItems="center" justifyContent="flex-end" gap="8" marginTop="4">
-          <Button
-            label="Cancel"
-            variant="text"
-            size="md"
-            shape="square"
-            disabled={isAddingCollectible}
-            onClick={() => {
-              resetInputs()
-              onClose()
-            }}
-          />
-          <Button
-            label="Add"
-            disabled={
-              collectibleInfoResponse === undefined || !collectibleInfoResponse.isOwner || isAddingCollectible
-            }
-            variant="primary"
-            size="md"
-            shape="square"
-            onClick={handleAdd}
-          />
-        </Box>
       </Box>
-    </Card>
+
+      <Divider marginY="0" />
+      <Box flexDirection="row" justifyContent="flex-end" padding="6" gap="2">
+        <Button label="Cancel" size="md" shape="square" onClick={onClose} />
+
+        <Button
+          label="Add Collectible"
+          variant="primary"
+          shape="square"
+          disabled={collectibleInfoResponse === undefined || isAddingCollectible}
+          onClick={() => {
+            handleAdd()
+          }}
+        />
+      </Box>
+    </Box>
   )
 }

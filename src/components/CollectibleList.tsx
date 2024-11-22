@@ -1,4 +1,4 @@
-import { AddIcon, Box, Button, Spinner } from '@0xsequence/design-system'
+import { AddIcon, Box, Button, Modal, Spinner } from '@0xsequence/design-system'
 import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -53,7 +53,9 @@ export default function CollectibleList({
       </Box>
       <Box width="full" flexDirection="column" alignItems="center" justifyContent="center" marginBottom="4">
         {isImportCollectibleViewOpen && (
-          <ImportCollectible onClose={() => setIsImportCollectibleViewOpen(false)} />
+          <Modal size="sm" onClose={() => setIsImportCollectibleViewOpen(false)}>
+            <ImportCollectible onClose={() => setIsImportCollectibleViewOpen(false)} />
+          </Modal>
         )}
         <Button
           label="Import collectible"

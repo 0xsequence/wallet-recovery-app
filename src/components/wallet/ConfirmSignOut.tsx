@@ -10,7 +10,7 @@ export default function ConfirmSignOut({ handleSignOut }: { handleSignOut: (sign
         This will disconnect all Dapps, tokens, and relay wallet connections, and you’ll need to reconnect
         them manually.
       </Text>
-      <Box flexDirection="row-reverse" gap="2">
+      <Box flexDirection="row" justifyContent="flex-end" gap="2">
         <Button label="Yes, sign out" shape="square" variant="primary" onClick={() => handleSignOut(true)} />
         <Button label="Cancel" shape="square" onClick={() => handleSignOut()} />
       </Box>

@@ -93,14 +93,14 @@ function Landing() {
                   </Text>
                 )}
               </Box>
-              <Box flexDirection="row-reverse" gap="4">
-                <Button label="Continue" variant="primary" shape="square" onClick={() => handleUnlock()} />
+              <Box flexDirection="row" justifyContent="flex-end" gap="4">
                 <Button
                   label="Forgot password?"
                   variant="text"
                   shape="square"
                   onClick={() => handleResetConfirmation()}
                 />
+                <Button label="Continue" variant="primary" shape="square" onClick={() => handleUnlock()} />
               </Box>
             </Box>
           </>
