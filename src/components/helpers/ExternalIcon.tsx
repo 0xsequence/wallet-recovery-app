@@ -1,11 +1,11 @@
-import { Box, Image } from '@0xsequence/design-system'
+import { Box, BoxProps, Image } from '@0xsequence/design-system'
 
 export const ExternalIcon = ({
   src,
   background = 'text80'
 }: {
   src: string
-  background?: 'text80' | 'backgroundSecondary'
+  background?: BoxProps['background']
 }) => {
   return (
     <Box
