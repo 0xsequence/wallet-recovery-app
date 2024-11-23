@@ -4,8 +4,8 @@ import { getNetworkTitle } from '~/utils/network'
 
 export default function NetworkTag({
   chainId,
-  paddingTop = '1',
-  paddingBottom = '2'
+  paddingTop = '0',
+  paddingBottom = '1'
 }: {
   chainId: number
   paddingTop?: '0' | '1' | '2'

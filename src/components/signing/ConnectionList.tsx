@@ -4,7 +4,8 @@ import { SessionTypes } from '@walletconnect/types'
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
-import { ExternalIcon } from '../helpers/ExternalIcons'
+import { ButtonWithIcon } from '../helpers/ButtonWithIcon'
+import { ExternalIcon } from '../helpers/ExternalIcon'
 
 export default function ConnectionList({ sessionList }: { sessionList: SessionTypes.Struct[] }) {
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
@@ -23,31 +24,15 @@ export default function ConnectionList({ sessionList }: { sessionList: SessionTy
 
           <Box gap="2">
             {session.peer.metadata.url && (
-              <Box
-                justifyContent="center"
-                alignItems="center"
-                background="backgroundMuted"
-                borderRadius="sm"
-                height="9"
-                width="9"
-                cursor="pointer"
+              <ButtonWithIcon
+                icon={<ExternalLinkIcon color="text100" />}
                 onClick={() => window.open(session.peer.metadata.url!, '_blank')}
-              >
-                <ExternalLinkIcon color="text100" />
-              </Box>
+              />
             )}
-            <Box
-              justifyContent="center"
-              alignItems="center"
-              background="backgroundMuted"
-              borderRadius="sm"
-              height="9"
-              width="9"
-              cursor="pointer"
+            <ButtonWithIcon
+              icon={<CloseIcon color="text100" />}
               onClick={() => walletConnectSignClientStore.disconnectSession(session.topic)}
-            >
-              <CloseIcon color="text100" />
-            </Box>
+            />
           </Box>
         </Card>
       ))}

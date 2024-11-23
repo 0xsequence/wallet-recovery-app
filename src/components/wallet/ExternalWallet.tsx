@@ -19,7 +19,8 @@ import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
 import SelectProvider from '../SelectProvider'
-import { ExternalIcon } from '../helpers/ExternalIcons'
+import { ButtonWithIcon } from '../helpers/ButtonWithIcon'
+import { ExternalIcon } from '../helpers/ExternalIcon'
 
 export default function ExternalWallet() {
   const toast = useToast()
@@ -96,18 +97,7 @@ export default function ExternalWallet() {
               </Box>
             </Box>
 
-            <Box
-              justifyContent="center"
-              alignItems="center"
-              background="backgroundMuted"
-              borderRadius="sm"
-              height="9"
-              width="9"
-              cursor="pointer"
-              onClick={() => handleDisconnect()}
-            >
-              <CloseIcon color="text100" />
-            </Box>
+            <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => handleDisconnect()} />
           </Box>
         ) : (
           <Text alignSelf="center" variant="large" color="text50" padding="4">

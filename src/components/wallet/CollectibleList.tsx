@@ -5,7 +5,7 @@ import { useObservable, useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 
-import CollectibleBalanceItem from './CollectibleBalanceItem'
+import CollectibleBalanceItem from '../CollectibleBalanceItem'
 import ImportCollectible from './ImportCollectible'
 
 export default function CollectibleList({
@@ -23,7 +23,7 @@ export default function CollectibleList({
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
   return (
-    <>
+    <Box>
       <Box width="full" flexDirection="row" flexWrap="wrap" gap="4" marginBottom="8">
         {collectibles.map(collectibleInfo => (
           <Box
@@ -68,6 +68,6 @@ export default function CollectibleList({
           }}
         />
       </Box>
-    </>
+    </Box>
   )
 }

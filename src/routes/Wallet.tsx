@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  Modal,
-  ScanIcon,
-  Switch,
-  Text,
-  useMediaQuery,
-  useToast
-} from '@0xsequence/design-system'
+import { Box, Button, Modal, Switch, Text, useMediaQuery, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import { ethers } from 'ethers'
@@ -29,22 +19,18 @@ import { TokenStore } from '~/stores/TokenStore'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import CollectibleList from '~/components/CollectibleList'
 import PendingTxn from '~/components/PendingTxn'
-import SelectProvider from '~/components/SelectProvider'
 import SendCollectible from '~/components/SendCollectible'
 import SendToken from '~/components/SendToken'
-import TokenList from '~/components/TokenList'
 import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
-import ConnectDapp from '~/components/signing/ConnectDapp'
-import ConnectionList from '~/components/signing/ConnectionList'
 import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
 import SignClientTransactionRequest from '~/components/signing/SignClientTransactionRequest'
 import SignClientWarning from '~/components/signing/SignClientWarning'
-import WalletScan from '~/components/signing/WalletScan'
+import CollectibleList from '~/components/wallet/CollectibleList'
 import DappList from '~/components/wallet/DappList'
 import ExternalWallet from '~/components/wallet/ExternalWallet'
+import TokenList from '~/components/wallet/TokenList'
 
 export const WALLET_WIDTH = 800
 
@@ -104,8 +90,6 @@ function Wallet() {
   const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
   const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
   const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
-
-  const [filterZeroBalances, setFilterZeroBalances] = useState(true)
 
   const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
   const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
@@ -325,16 +309,32 @@ function Wallet() {
         padding="5"
         width="full"
         style={{ maxWidth: '800px' }}
-        paddingBottom="20"
+        paddingBottom="10"
       >
-        <Box flexDirection="column" gap="5">
-          <Text variant="normal" fontWeight="bold" color="text50">
-            External connections
-          </Text>
+        <Box flexDirection="column" gap="12">
+          <Box flexDirection="column" gap="5">
+            <Text variant="normal" fontWeight="bold" color="text50">
+              External connections
+            </Text>
 
-          <ExternalWallet />
+            <ExternalWallet />
 
-          <DappList />
+            <DappList />
+          </Box>
+          <Box flexDirection="column" gap="5">
+            <Text variant="normal" fontWeight="bold" color="text50">
+              My Sequence wallet
+            </Text>
+
+            <TokenList onSendClick={handleTokenOnSendClick} />
+
+            <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
+              <Text variant="large" color="text80" marginBottom="4">
+                Collectibles
+              </Text>
+              <CollectibleList onSendClick={handleCollectibleOnSendClick} />
+            </Box>
+          </Box>
         </Box>
       </Box>
       <Box
@@ -345,7 +345,7 @@ function Wallet() {
         alignItems="center"
         justifyContent="center"
       >
-        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
+        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
           {isSendingToken && (
             <Box marginTop="8" alignItems="center" justifyContent="center">
               <PendingTxn
@@ -376,30 +376,6 @@ function Wallet() {
               />
             </Box>
           )}
-          <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
-            <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
-              <Text variant="large" color="text80">
-                Coins
-              </Text>
-
-              <Box marginLeft="auto">
-                <Switch
-                  label="Filter zero balances"
-                  checked={filterZeroBalances}
-                  onCheckedChange={setFilterZeroBalances}
-                />
-              </Box>
-            </Box>
-
-            <TokenList filterZeroBalances={filterZeroBalances} onSendClick={handleTokenOnSendClick} />
-          </Box>
-
-          <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
-            <Text variant="large" color="text80" marginBottom="4">
-              Collectibles
-            </Text>
-            <CollectibleList onSendClick={handleCollectibleOnSendClick} />
-          </Box>
         </Box>
       </Box>
       {isConfirmSignOutModalOpen && (

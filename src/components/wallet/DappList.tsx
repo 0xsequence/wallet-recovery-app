@@ -43,7 +43,7 @@ export default function DappList() {
           <Image src={LinkConnectionIcon} width="7" height="7" />
 
           <Text variant="large" fontWeight="bold" color="text100">
-            External Wallet
+            Connected Dapps
           </Text>
         </Box>
 
