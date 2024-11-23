@@ -1,4 +1,15 @@
-import { AddIcon, Box, Button, Divider, Image, Modal, Spinner, Switch, Text } from '@0xsequence/design-system'
+import {
+  AddIcon,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Image,
+  Modal,
+  Spinner,
+  Switch,
+  Text
+} from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
@@ -9,29 +20,35 @@ import { WalletStore } from '~/stores/WalletStore'
 import FilledCheckbox from '~/components/helpers/FilledCheckBox'
 
 import CoinIcon from '~/assets/icons/coin.svg'
-import CollectionIcon from '~/assets/icons/collection.svg'
 
-import TokenBalanceItem from '../TokenBalanceItem'
 import ImportToken from './ImportToken'
+import TokenBalanceItem from './TokenBalanceItem'
 
 export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance: TokenBalance) => void }) {
   const walletStore = useStore(WalletStore)
   const tokenStore = useStore(TokenStore)
   const balances = useObservable(tokenStore.balances)
+
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
   const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
-
   const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
 
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
 
   const filteredBalance = useMemo(() => {
-    if (filterZeroBalances) {
-      return balances.filter(balance => balance.balance !== '0')
-    } else {
-      return balances
-    }
+    const uniqueBalances = new Map<string, TokenBalance>()
+
+    const shouldIncludeBalance = (balance: TokenBalance) => !filterZeroBalances || balance.balance !== '0'
+
+    balances.forEach(balance => {
+      const key = `${balance.contractAddress}-${balance.chainId}`
+      if (!uniqueBalances.has(key) && shouldIncludeBalance(balance)) {
+        uniqueBalances.set(key, balance)
+      }
+    })
+
+    return Array.from(uniqueBalances.values())
   }, [balances, filterZeroBalances, isFetchingBalances])
 
   const onRemoveClick = (balance: TokenBalance) =>
@@ -87,22 +104,32 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
       <Divider marginY="2" />
 
-      <Box width="full" flexDirection="column" gap="4" marginBottom="8">
+      <Box width="full" flexDirection="column" gap="2">
         {isFetchingBalances ? (
           <Box marginTop="4" alignItems="center" justifyContent="center">
             <Spinner size="lg" />
           </Box>
         ) : (
           <>
-            {filteredBalance.map(balance => (
-              <TokenBalanceItem
-                key={balance.contractAddress + balance.chainId}
-                tokenBalance={balance}
-                disabled={!isConnected}
-                onSendClick={() => onSendClick(balance)}
-                onRemoveClick={onRemoveClick(balance)}
-              />
-            ))}
+            {filteredBalance.length > 0 ? (
+              <>
+                {filteredBalance.map(balance => (
+                  <TokenBalanceItem
+                    key={balance.contractAddress + balance.chainId}
+                    tokenBalance={balance}
+                    disabled={!isConnected}
+                    onSendClick={() => onSendClick(balance)}
+                    onRemoveClick={onRemoveClick(balance)}
+                  />
+                ))}
+              </>
+            ) : (
+              <Card flexDirection="column">
+                <Text alignSelf="center" variant="large" color="text50" padding="4">
+                  Import ERC 20 token address
+                </Text>
+              </Card>
+            )}
           </>
         )}
       </Box>

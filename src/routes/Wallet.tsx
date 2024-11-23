@@ -20,17 +20,17 @@ import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientSt
 import { WalletStore } from '~/stores/WalletStore'
 
 import PendingTxn from '~/components/PendingTxn'
-import SendCollectible from '~/components/SendCollectible'
-import SendToken from '~/components/SendToken'
 import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
 import SignClientTransactionRequest from '~/components/signing/SignClientTransactionRequest'
 import SignClientWarning from '~/components/signing/SignClientWarning'
-import CollectibleList from '~/components/wallet/CollectibleList'
 import DappList from '~/components/wallet/DappList'
 import ExternalWallet from '~/components/wallet/ExternalWallet'
-import TokenList from '~/components/wallet/TokenList'
+import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
+import SendCollectible from '~/components/wallet/collectibles/SendCollectible'
+import SendToken from '~/components/wallet/tokens/SendToken'
+import TokenList from '~/components/wallet/tokens/TokenList'
 
 export const WALLET_WIDTH = 800
 
@@ -309,7 +309,7 @@ function Wallet() {
         padding="5"
         width="full"
         style={{ maxWidth: '800px' }}
-        paddingBottom="10"
+        paddingBottom="20"
       >
         <Box flexDirection="column" gap="12">
           <Box flexDirection="column" gap="5">
@@ -328,12 +328,7 @@ function Wallet() {
 
             <TokenList onSendClick={handleTokenOnSendClick} />
 
-            <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
-              <Text variant="large" color="text80" marginBottom="4">
-                Collectibles
-              </Text>
-              <CollectibleList onSendClick={handleCollectibleOnSendClick} />
-            </Box>
+            <CollectibleList onSendClick={handleCollectibleOnSendClick} />
           </Box>
         </Box>
       </Box>

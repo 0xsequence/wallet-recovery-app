@@ -69,7 +69,7 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
           variant="text"
           label={
             <Box flexDirection="row" alignItems="center" gap="2">
-              <FilledCheckBox checked={false} />
+              <FilledCheckBox checked={false} size="md" />
               <Text variant="normal" color="text100">
                 Label goes here
               </Text>

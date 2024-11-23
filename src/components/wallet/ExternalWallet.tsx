@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Card,
+  CheckmarkIcon,
   CloseIcon,
   CopyIcon,
   Divider,
@@ -13,7 +14,7 @@ import {
 } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useObservable } from 'micro-observables'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
@@ -30,6 +31,15 @@ export default function ExternalWallet() {
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
 
   const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
+
+  useEffect(() => {
+    if (isCopied) {
+      setTimeout(() => {
+        setIsCopied(false)
+      }, 2000)
+    }
+  }, [isCopied])
 
   const handleSelectProvider = async () => {
     if (selectedExternalProvider === undefined) {
@@ -45,6 +55,11 @@ export default function ExternalWallet() {
       const WCProvider = extProvider.provider as EthereumProvider
       WCProvider.disconnect()
     }
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(selectedExternalWalletAddress!)
+    setIsCopied(true)
   }
 
   return (
@@ -88,11 +103,11 @@ export default function ExternalWallet() {
                     {selectedExternalWalletAddress}
                   </Text>
 
-                  <CopyIcon
-                    color="borderNormal"
-                    cursor="pointer"
-                    onClick={() => navigator.clipboard.writeText(selectedExternalWalletAddress!)}
-                  />
+                  {isCopied ? (
+                    <CheckmarkIcon color="borderNormal" cursor="pointer" onClick={() => handleCopy()} />
+                  ) : (
+                    <CopyIcon color="borderNormal" cursor="pointer" onClick={() => handleCopy()} />
+                  )}
                 </Box>
               </Box>
             </Box>

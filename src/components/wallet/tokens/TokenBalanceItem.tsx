@@ -4,10 +4,11 @@ import { ethers } from 'ethers'
 
 import { truncateNumber } from '~/utils/bignumber'
 
-import EyeHiddenIcon from '../assets/icons/eye-hidden.svg'
-import SendIcon from '../assets/icons/send.svg'
-import { ButtonWithIcon } from './helpers/ButtonWithIcon'
-import NetworkTag from './network/NetworkTag'
+import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
+import NetworkTag from '~/components/network/NetworkTag'
+
+import EyeHiddenIcon from '~/assets/icons/eye-hidden.svg'
+import SendIcon from '~/assets/icons/send.svg'
 
 export default function TokenBalanceItem({
   disabled,
@@ -41,7 +42,7 @@ export default function TokenBalanceItem({
         </Box>
       </Box>
 
-      <Box flexDirection="row" alignItems="center" gap="3">
+      <Box flexDirection="row" alignItems="center" gap="2">
         <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={disabled} onClick={onSendClick} />
 
         <ButtonWithIcon icon={<Image src={EyeHiddenIcon} color="text100" height="5" />} onClick={() => {}} />
