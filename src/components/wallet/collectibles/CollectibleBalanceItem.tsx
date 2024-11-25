@@ -59,8 +59,6 @@ export default function CollectibleBalanceItem({
       <Box flexDirection="row" alignItems="center" gap="2">
         <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={false} onClick={onSendClick} />
 
-        <ButtonWithIcon icon={<Image src={EyeHiddenIcon} color="text100" height="5" />} onClick={() => {}} />
-
         {onRemoveClick && (
           <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => onRemoveClick?.()} />
         )}

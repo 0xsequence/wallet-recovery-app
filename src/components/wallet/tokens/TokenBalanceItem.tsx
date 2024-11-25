@@ -48,8 +48,6 @@ export default function TokenBalanceItem({
       <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
         <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={disabled} onClick={onSendClick} />
 
-        <ButtonWithIcon icon={<Image src={EyeHiddenIcon} color="text100" height="5" />} onClick={() => {}} />
-
         {onRemoveClick && (
           <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => onRemoveClick?.()} />
         )}
