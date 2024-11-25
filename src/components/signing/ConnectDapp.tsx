@@ -6,6 +6,7 @@ import {
   ExternalLinkIcon,
   IconButton,
   Text,
+  useMediaQuery,
   useToast
 } from '@0xsequence/design-system'
 import { useState } from 'react'
@@ -16,6 +17,8 @@ import { useObservable, useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
 export default function ConnectDapp({ onClose }: { onClose: () => void }) {
+  const isMobile = useMediaQuery('isMobile')
+
   const walletStore = useStore(WalletStore)
   const connectOptions = useObservable(walletStore.connectOptions)
 
@@ -49,50 +52,54 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
     onClose()
   }
   return (
-    <Box>
-      {connectOptions && (
-        <Box flexDirection="column" padding="10" alignItems="center" gap="4">
-          <Text variant="md" fontWeight="bold" color="text100" paddingX="16" paddingBottom="1">
-            Would you like to allow this dapp to connect to your wallet?
-          </Text>
-          <Divider color="gradientPrimary" width="full" height="px" />
+    <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
+      <Box flexDirection="column" gap="6" padding="6">
+        <Text variant="large" fontWeight="bold" color="text100">
+          Would you like to connect to this dapp?
+        </Text>
+
+        <Box flexDirection="column" gap="3">
           <Card flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Text variant="md" color="text100">
-              {connectOptions.app}
+            <Text variant="normal" fontWeight="semibold" color="text100">
+              Origin
             </Text>
-            <Box flexDirection="row" alignItems="center" gap="3">
-              <Text variant="md" color="text100">
-                {connectOptions.origin?.split('//')[1]}
+            <Box flexDirection="row" alignItems="center" gap="2">
+              <Text variant="normal" fontWeight="semibold" color="text100">
+                {connectOptions?.origin?.split('//')[1]}
               </Text>
               <IconButton
                 size="xs"
                 icon={ExternalLinkIcon}
-                onClick={() => window.open(connectOptions.origin, '_blank')}
+                onClick={() => window.open(connectOptions?.origin, '_blank')}
+                style={{ width: '24px', height: '24px' }}
               />
             </Box>
           </Card>
           <Card flexDirection="row" justifyContent="space-between">
-            <Text variant="md" color="text100">
-              {`Network`}
+            <Text variant="normal" fontWeight="semibold" color="text100">
+              Network
             </Text>
-            <Text variant="md" color="text100">
-              {`${getNetworkTitle(Number(connectOptions.networkId))}`}
+            <Text variant="normal" fontWeight="semibold" color="text100">
+              {getNetworkTitle(Number(connectOptions?.networkId))}
             </Text>
           </Card>
-          <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="6">
-            <Button width="full" label={`Cancel`} onClick={handleCancel} data-id="signingCancel" />
-
-            <Button
-              width="full"
-              variant="primary"
-              label={isPending ? `Authorizing…` : `Connect`}
-              disabled={isPending}
-              onClick={handleConnect}
-              data-id="signingContinue"
-            />
-          </Box>
         </Box>
-      )}
+      </Box>
+
+      <Divider marginY="0" />
+
+      <Box alignItems="center" justifyContent="flex-end" padding="6" gap="2">
+        <Button label="Cancel" size="md" shape="square" onClick={() => handleCancel()} />
+
+        <Button
+          label={isPending ? `Authorizing…` : `Connect`}
+          variant="primary"
+          size="md"
+          shape="square"
+          disabled={isPending}
+          onClick={() => handleConnect()}
+        />
+      </Box>
     </Box>
   )
 }

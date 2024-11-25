@@ -22,8 +22,8 @@ import { WalletStore } from '~/stores/WalletStore'
 import PendingTxn from '~/components/PendingTxn'
 import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
-import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
-import SignClientTransactionRequest from '~/components/signing/SignClientTransactionRequest'
+import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
+import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
 import DappList from '~/components/wallet/DappList'
 import ExternalWallet from '~/components/wallet/ExternalWallet'
 import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
@@ -184,6 +184,7 @@ function Wallet() {
   }
 
   const cancelRequest = () => {
+    walletStore.resetSignObservables()
     walletConnectSignClientStore.rejectRequest()
     walletStore.toSignPermission.set('cancelled')
   }
@@ -236,7 +237,13 @@ function Wallet() {
 
         walletStore.toSignResult.set(result)
         walletStore.toSignPermission.set('approved')
+        walletStore.isSigningTxn.set(false)
       } catch (error) {
+        toast({
+          variant: 'error',
+          title: 'Transaction failed',
+          description: `Please try again.`
+        })
         walletStore.isSendingSignedTokenTransaction.set(undefined)
         cancelRequest()
         throw error
@@ -289,6 +296,11 @@ function Wallet() {
         walletStore.toSignResult.set(result)
         walletStore.toSignPermission.set('approved')
       } catch (error) {
+        toast({
+          variant: 'error',
+          title: 'Transaction failed',
+          description: `Please try again.`
+        })
         walletStore.isSendingSignedTokenTransaction.set(undefined)
         cancelRequest()
         throw error
@@ -417,15 +429,11 @@ function Wallet() {
             style: { width: !isMobile ? '800px' : '100%', maxHeight: '100%', overflowY: 'auto' }
           }}
         >
-          <SignClientTransactionRequest
-            onClose={details => {
-              walletStore.isSigningTxn.set(false)
-              if (!details) {
-                cancelRequest()
-              } else {
-                handleSignTxn(details)
-              }
+          <SignClientTransactionRelay
+            onClose={() => {
+              cancelRequest()
             }}
+            handleSignTxn={details => handleSignTxn(details)}
           />
         </Modal>
       )}
@@ -437,7 +445,7 @@ function Wallet() {
             style: { width: !isMobile ? '800px' : '100%', maxHeight: '90%', overflowY: 'auto' }
           }}
         >
-          <SignClientMessageRequest
+          <SignClientTransactionConfirm
             onClose={details => {
               walletStore.isSigningMsg.set(false)
               if (!details) {
