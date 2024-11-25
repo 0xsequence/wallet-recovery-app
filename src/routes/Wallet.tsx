@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Switch, Text, useMediaQuery, useToast } from '@0xsequence/design-system'
+import { Box, Button, Modal, Text, useMediaQuery, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import { ethers } from 'ethers'
@@ -24,7 +24,6 @@ import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
 import SignClientTransactionRequest from '~/components/signing/SignClientTransactionRequest'
-import SignClientWarning from '~/components/signing/SignClientWarning'
 import DappList from '~/components/wallet/DappList'
 import ExternalWallet from '~/components/wallet/ExternalWallet'
 import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
@@ -98,8 +97,6 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
-
-  const signClientWarningType = useObservable(walletStore.signClientWarningType)
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
@@ -425,12 +422,6 @@ function Wallet() {
               walletStore.isSigningTxn.set(false)
               if (!details) {
                 cancelRequest()
-              } else if (walletStore.selectedExternalProvider.get() === undefined) {
-                cancelRequest()
-                walletStore.signClientWarningType.set('noProvider')
-              } else if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-                cancelRequest()
-                walletStore.signClientWarningType.set('isWalletConnect')
               } else {
                 handleSignTxn(details)
               }
@@ -451,22 +442,11 @@ function Wallet() {
               walletStore.isSigningMsg.set(false)
               if (!details) {
                 cancelRequest()
-              } else if (walletStore.selectedExternalProvider.get() === undefined) {
-                cancelRequest()
-                walletStore.signClientWarningType.set('noProvider')
-              } else if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-                cancelRequest()
-                walletStore.signClientWarningType.set('isWalletConnect')
               } else {
                 handleSignMsg(details)
               }
             }}
           />
-        </Modal>
-      )}
-      {signClientWarningType && (
-        <Modal size="md" onClose={() => walletStore.signClientWarningType.set(false)}>
-          <SignClientWarning warningType={signClientWarningType} />
         </Modal>
       )}
       {isSendTokenModalOpen && (

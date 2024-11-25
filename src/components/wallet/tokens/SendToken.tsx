@@ -113,42 +113,28 @@ export default function SendToken({
 
       <Divider marginY="0" />
 
-      <Box alignItems="center" justifyContent="space-between" padding="6">
+      <Box alignItems="center" justifyContent="flex-end" padding="6" gap="2">
         <Button
-          variant="text"
-          label={
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <FilledCheckBox checked={false} size="md" />
-              <Text variant="normal" color="text100">
-                Label goes here
-              </Text>
-            </Box>
-          }
+          label="Cancel"
+          size="md"
+          shape="square"
+          onClick={() => {
+            onClose()
+          }}
         />
 
-        <Box gap="2">
-          <Button
-            label="Cancel"
-            size="md"
-            shape="square"
-            onClick={() => {
-              onClose()
-            }}
-          />
-
-          <Button
-            label="Send"
-            variant="primary"
-            size="md"
-            shape="square"
-            disabled={!address || !amount}
-            onClick={() => {
-              if (address && amount) {
-                onClose(address, amount)
-              }
-            }}
-          />
-        </Box>
+        <Button
+          label="Send"
+          variant="primary"
+          size="md"
+          shape="square"
+          disabled={!address || !amount}
+          onClick={() => {
+            if (address && amount) {
+              onClose(address, amount)
+            }
+          }}
+        />
       </Box>
     </Box>
   )

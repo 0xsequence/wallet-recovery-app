@@ -1,4 +1,4 @@
-import { Box, Card, Image, Text } from '@0xsequence/design-system'
+import { Box, Button, Card, Image, Text } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useState } from 'react'
 
@@ -10,6 +10,7 @@ import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
 import WalletConnectIcon from '~/assets/icons/wallet-connect.svg'
+import WarningIcon from '~/assets/icons/warning.svg'
 
 export interface ProviderInfo {
   walletId?: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask
@@ -31,91 +32,111 @@ export default function SelectProvider({
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
   const providers = useSyncProviders()
 
-  const [isWalletConnectModalOpen, setIsWalletConnectModalOpen] = useState(false)
+  const [isConfirmingWalletConnect, setIsConfirmingWalletConnect] = useState(false)
 
-  const confirmWalletConnectModalOpen = (): boolean => {
-    const confirmed = window.confirm(
-      'All WalletConnect Dapp sessions will be disconnected. If you would like to continue, click OK and connect to WalletConnect again.'
-    )
-    return confirmed
-  }
+  const walletConnectDappsConnected = walletConnectSignClientStore.allSessions.get().length > 0
 
-  const handleWalletConnectModalOpen = async () => {
-    try {
-      if (!isWalletConnectModalOpen) {
-        if (walletConnectSignClientStore.allSessions.get().length !== 0) {
-          const confirmed = confirmWalletConnectModalOpen()
-          if (!confirmed) {
-            throw new Error('User rejected wallet connect modal')
-          }
-          await walletConnectSignClientStore.disconnectAllSessions()
-          onSelectProvider()
-          return
-        }
+  const handleConnectWalletConnect = async () => {
+    await walletConnectSignClientStore.disconnectAllSessions()
 
-        setIsWalletConnectModalOpen(true)
-        onSelectProvider()
+    onSelectProvider()
 
-        const walletConnectProvider = await createProvider(true)
-        await walletConnectProvider.connect()
+    const walletConnectProvider = await createProvider(true)
+    await walletConnectProvider.connect()
 
-        let walletConnectProviderDetail = getWalletConnectProviderDetail(walletConnectProvider)
-
-        onSelectProvider(walletConnectProviderDetail)
-      }
-    } catch (error) {
-      console.error(error)
-    }
+    onSelectProvider(getWalletConnectProviderDetail(walletConnectProvider))
   }
 
   return (
-    <Box flexDirection="column" padding="6" gap="6">
-      <Text variant="large" color="text100">
-        Connect external wallet
-      </Text>
-      <Text variant="normal" color="text50">
-        You need an external wallet to relay transactions
-      </Text>
-      <Box flexDirection="column" gap="3">
-        <Card
-          flexDirection="row"
-          justifyContent="center"
-          gap="2"
-          cursor="pointer"
-          borderRadius="circle"
-          background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
-          onClick={() => {
-            handleWalletConnectModalOpen()
-          }}
-        >
-          <Box flexDirection="row" alignItems="center" gap="2">
-            <Image src={WalletConnectIcon} width="5" height="auto" />
-            <Text variant="normal" fontWeight="bold" color="text100">
-              {'Wallet Connect'}
-            </Text>
-          </Box>
-        </Card>
-
-        {providers.map(provider => (
-          <Card
-            key={provider.info.uuid}
-            flexDirection="row"
-            justifyContent="center"
-            gap="2"
-            cursor="pointer"
-            borderRadius="circle"
-            background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
-            onClick={() => onSelectProvider(provider)}
-          >
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <Image src={provider.info.icon} width="5" height="auto" />
-              <Text variant="normal" fontWeight="bold" color="text100">
-                {provider.info.name}
+    <Box>
+      {isConfirmingWalletConnect ? (
+        <Box flexDirection="column" padding="6" gap="6">
+          <Text variant="large" color="text100">
+            Use WalletConnect for External Wallet?
+          </Text>
+          <Card alignItems="center" gap="3" style={{ background: 'rgba(176, 126, 30, 0.3)' }}>
+            <Box flexDirection="column" gap="2">
+              <Text variant="medium" color="text100">
+                Attention
               </Text>
+              {walletConnectDappsConnected ? (
+                <Text variant="normal" color="text80">
+                  If you connect your external wallet using WalletConnect, you'll lose all Dapps connections
+                  you already made using WalletConnect.
+                </Text>
+              ) : (
+                <Text variant="normal" color="text80">
+                  If you connect your external wallet using WalletConnect, you won't be able to connect to any
+                  other Dapps during this session. <br /> <br />
+                  If you need to connect Dapps, please consider using a different external wallet instead.
+                </Text>
+              )}
             </Box>
+            <Image src={WarningIcon} width="8" height="8" />
           </Card>
-        ))}
-      </Box>
+          <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="6">
+            <Button width="full" label="Cancel" shape="square" onClick={() => onSelectProvider()} />
+
+            <Button
+              width="full"
+              variant="primary"
+              label="Confirm"
+              shape="square"
+              onClick={() => handleConnectWalletConnect()}
+              data-id="signingContinue"
+            />
+          </Box>
+        </Box>
+      ) : (
+        <Box flexDirection="column" padding="6" gap="6">
+          <Text variant="large" color="text100">
+            Connect external wallet
+          </Text>
+          <Text variant="normal" color="text50">
+            You need an external wallet to relay transactions
+          </Text>
+          <Box flexDirection="column" gap="3">
+            <Card
+              flexDirection="row"
+              justifyContent="center"
+              gap="2"
+              cursor="pointer"
+              borderRadius="circle"
+              background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
+              onClick={() => {
+                setIsConfirmingWalletConnect(true)
+              }}
+            >
+              <Box flexDirection="row" alignItems="center" gap="2">
+                <Image src={WalletConnectIcon} width="5" height="auto" />
+                <Text variant="normal" fontWeight="bold" color="text100">
+                  {'Wallet Connect'}
+                </Text>
+              </Box>
+            </Card>
+
+            {providers.map(provider => (
+              <Card
+                key={provider.info.uuid}
+                flexDirection="row"
+                justifyContent="center"
+                gap="2"
+                cursor="pointer"
+                borderRadius="circle"
+                background={{ base: 'buttonGlass', hover: 'backgroundSecondary' }}
+                onClick={() => onSelectProvider(provider)}
+              >
+                <Box flexDirection="row" alignItems="center" gap="2">
+                  <Image src={provider.info.icon} width="5" height="auto" />
+                  <Text variant="normal" fontWeight="bold" color="text100">
+                    {provider.info.name}
+                  </Text>
+                </Box>
+              </Card>
+            ))}
+          </Box>
+        </Box>
+      )}
     </Box>
   )
 }

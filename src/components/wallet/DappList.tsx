@@ -1,4 +1,14 @@
-import { AddIcon, Box, Button, Divider, Image, Modal, Text, useMediaQuery } from '@0xsequence/design-system'
+import {
+  AddIcon,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Image,
+  Modal,
+  Text,
+  useMediaQuery
+} from '@0xsequence/design-system'
 import { useObservable } from 'micro-observables'
 import { useState } from 'react'
 
@@ -9,14 +19,15 @@ import { WalletStore } from '~/stores/WalletStore'
 import ConnectionList from '~/components/signing/ConnectionList'
 
 import LinkConnectionIcon from '~/assets/icons/link-connection.svg'
+import WarningIcon from '~/assets/icons/warning.svg'
 
 import ConnectDapp from '../signing/ConnectDapp'
 import WalletScan from '../signing/WalletScan'
 
 export default function DappList() {
+  const walletStore = useStore(WalletStore)
   const isMobile = useMediaQuery('isMobile')
 
-  const walletStore = useStore(WalletStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
   const sessionList = useObservable(walletConnectSignClientStore.allSessions)
@@ -24,13 +35,7 @@ export default function DappList() {
   const [isScanningQrWalletConnect, setIsScanningQrWalletConnect] = useState(false)
   const [isConnectingDapp, setIsConnectingDapp] = useState(false)
 
-  const handleConnectSignClient = async () => {
-    if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-      walletStore.signClientWarningType.set('isWalletConnect')
-    } else {
-      setIsScanningQrWalletConnect(true)
-    }
-  }
+  const provider = useObservable(walletStore.selectedExternalProvider)
 
   const handleOnQrUri = async () => {
     setIsConnectingDapp(true)
@@ -52,7 +57,8 @@ export default function DappList() {
           leftIcon={AddIcon}
           label="Connect"
           shape="square"
-          onClick={() => handleConnectSignClient()}
+          disabled={provider?.info.name === 'WalletConnect'}
+          onClick={() => setIsScanningQrWalletConnect(true)}
         />
       </Box>
 
@@ -61,9 +67,21 @@ export default function DappList() {
       {sessionList.length > 0 ? (
         <ConnectionList sessionList={sessionList}></ConnectionList>
       ) : (
-        <Text alignSelf="center" variant="large" color="text50" padding="4">
-          Connect an external wallet to relay transactions
-        </Text>
+        <Card flexDirection="column">
+          {provider?.info.name === 'WalletConnect' ? (
+            <Box flexDirection="column" alignItems="center" gap="4">
+              <Image src={WarningIcon} color="text50" width="8" height="8" />
+              <Text textAlign="center" variant="large" color="text50" padding="4">
+                To connect to Dapps, switch from WalletConnect to a different wallet as your External Wallet
+                connection method.
+              </Text>
+            </Box>
+          ) : (
+            <Text alignSelf="center" textAlign="center" variant="large" color="text50" padding="4">
+              Connect a Dapp with WalletConnect to sign actions
+            </Text>
+          )}
+        </Card>
       )}
 
       {isScanningQrWalletConnect && (

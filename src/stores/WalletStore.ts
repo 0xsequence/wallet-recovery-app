@@ -73,7 +73,7 @@ export class WalletStore {
   >(undefined)
 
   isCheckingWalletDeployment = observable<boolean>(false)
-  signClientWarningType = observable<'noProvider' | 'isWalletConnect' | 'notDeployed' | false>(false)
+  walletNotDeployed = observable<boolean>(false)
 
   walletRequestHandler: WalletRequestHandler
 
@@ -506,7 +506,7 @@ class Prompter implements WalletUserPrompter {
         const res = await this.promptConfirmWalletDeploy(message.chainId, options)
 
         if (!res) {
-          this.store.get(WalletStore).signClientWarningType.set('notDeployed')
+          this.store.get(WalletStore).walletNotDeployed.set(true)
           return Promise.reject('User rejected wallet deploy request')
         }
       }

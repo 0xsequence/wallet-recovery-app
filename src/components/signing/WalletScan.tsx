@@ -64,40 +64,27 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
 
       <Divider marginY="0" />
 
-      <Box justifyContent="space-between" padding="6">
+      <Box justifyContent="flex-end" padding="6" gap="2">
         <Button
-          variant="text"
-          label={
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <FilledCheckBox checked={false} size="md" />
-              <Text variant="normal" color="text100">
-                Label goes here
-              </Text>
-            </Box>
-          }
+          size="md"
+          shape="square"
+          label="Cancel"
+          onClick={() => {
+            onQrUri(false)
+          }}
         />
-        <Box gap="2">
-          <Button
-            size="md"
-            shape="square"
-            label="Cancel"
-            onClick={() => {
-              onQrUri(false)
-            }}
-          />
-          <Button
-            variant="primary"
-            size="md"
-            shape="square"
-            label="Connect Dapp"
-            disabled={!signClientUri}
-            onClick={() => {
-              if (signClientUri) {
-                handleSignClientUri()
-              }
-            }}
-          />
-        </Box>
+        <Button
+          variant="primary"
+          size="md"
+          shape="square"
+          label="Connect Dapp"
+          disabled={!signClientUri}
+          onClick={() => {
+            if (signClientUri) {
+              handleSignClientUri()
+            }
+          }}
+        />
       </Box>
     </Box>
   )
