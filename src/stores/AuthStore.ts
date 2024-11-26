@@ -37,7 +37,7 @@ export class AuthStore {
     })
   }
 
-  isLoadingAccount = observable(true)
+  isLoadingAccount = observable(false)
 
   account: Account | undefined
 

@@ -9,7 +9,6 @@ import {
   IconButton,
   Text
 } from '@0xsequence/design-system'
-import { ConnectOptions } from '@0xsequence/provider'
 import { ethers } from 'ethers'
 import { useEffect } from 'react'
 
@@ -25,8 +24,9 @@ export default function SignClientTransactionRelay({
   onClose: () => void
   handleSignTxn: (details: {
     txn: ethers.Transaction[] | ethers.TransactionRequest[]
-    chainId: number
-    options: ConnectOptions
+    chainId?: number
+    origin?: string
+    projectAccessKey?: string
   }) => void
 }) {
   const walletStore = useStore(WalletStore)
@@ -55,12 +55,12 @@ export default function SignClientTransactionRelay({
                 </Text>
                 <Box flexDirection="row" alignItems="center" gap="2">
                   <Text variant="normal" fontWeight="semibold" color="text100">
-                    {details.options?.origin?.split('//')[1]}
+                    {details?.origin?.split('//')[1]}
                   </Text>
                   <IconButton
                     size="xs"
                     icon={ExternalLinkIcon}
-                    onClick={() => window.open(details.options?.origin, '_blank')}
+                    onClick={() => window.open(details?.origin, '_blank')}
                     style={{ width: '24px', height: '24px' }}
                   />
                 </Box>

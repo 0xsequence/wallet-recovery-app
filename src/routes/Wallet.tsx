@@ -183,13 +183,13 @@ function Wallet() {
 
   async function handleSignTxn(details: {
     txn: ethers.Transaction[] | ethers.TransactionRequest[]
-    chainId: number
-    options: ConnectOptions
+    chainId?: number
+    origin?: string
+    projectAccessKey?: string
   }) {
     const signTransaction = async (
       txn: ethers.Transaction[] | ethers.TransactionRequest[],
-      chainId: number,
-      _options?: ConnectOptions
+      chainId?: number
     ): Promise<{ hash: string }> => {
       try {
         const providerAddress = await walletStore.getExternalProviderAddress(provider!)
@@ -223,7 +223,7 @@ function Wallet() {
     if (details) {
       try {
         walletStore.isSendingSignedTokenTransaction.set(details)
-        result = await signTransaction(details.txn, details.chainId, details.options)
+        result = await signTransaction(details.txn, details.chainId)
         handlePendingSignTransaction(result.hash, details.chainId!)
 
         walletStore.toSignResult.set(result)
