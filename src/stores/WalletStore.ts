@@ -314,8 +314,6 @@ export class WalletStore {
     this.selectedExternalProvider.set(providerDetail)
     this.selectedExternalWalletAddress.set(externalProviderAddress)
 
-    console.log('hey')
-
     this.toast({
       variant: 'success',
       title: 'External wallet added successfully',

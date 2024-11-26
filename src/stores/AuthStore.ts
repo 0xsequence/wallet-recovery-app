@@ -75,14 +75,6 @@ export class AuthStore {
     }
 
     this.isLoadingAccount.set(false)
-
-    // try {
-    //   // TODO: for testing, remove
-    //   const preparedMessage = prefixEIP191Message('message message')
-    //   console.log(await account.signMessage(preparedMessage, 137))
-    // } catch (error) {
-    //   console.warn(error)
-    // }
   }
 
   async loadAccount(password?: string) {
