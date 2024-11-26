@@ -51,9 +51,8 @@ function Landing() {
         justifyContent="center"
         alignItems="center"
         width="full"
-        style={{ maxWidth: WALLET_WIDTH }}
+        style={{ maxWidth: '1000px' }}
         gap="10"
-        paddingY="10"
       >
         <Box flexDirection="column" gap="6">
           <SequenceLogo variant="lg" justifyContent="center" />
@@ -64,7 +63,7 @@ function Landing() {
             color="text100"
             style={{ fontSize: '40px', lineHeight: '44px' }}
           >
-            A fully open source and forever accessible <br /> way to recover your Sequence Wallet
+            A fully open source and forever accessible way to recover your Sequence Wallet
           </Text>
         </Box>
 

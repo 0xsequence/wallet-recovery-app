@@ -297,7 +297,7 @@ function Recovery() {
           </>
         )}
 
-        <Box flexDirection="row" justifyContent="space-between">
+        <Box flexDirection="row">
           {!showManualAddress && (
             <Button
               label="Enter wallet address manually"
@@ -312,6 +312,7 @@ function Recovery() {
             size="md"
             shape="square"
             label="Recover wallet"
+            marginLeft="auto"
             disabled={
               !mnemonic ||
               !ethers.isAddress(wallet) ||
