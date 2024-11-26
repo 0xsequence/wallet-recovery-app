@@ -3,6 +3,7 @@ import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
+import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
@@ -16,6 +17,7 @@ import TokenBalanceItem from './TokenBalanceItem'
 export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance: TokenBalance) => void }) {
   const walletStore = useStore(WalletStore)
   const tokenStore = useStore(TokenStore)
+  const networkStore = useStore(NetworkStore)
   const balances = useObservable(tokenStore.balances)
 
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
@@ -30,6 +32,10 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
     const shouldIncludeBalance = (balance: TokenBalance) => !filterZeroBalances || balance.balance !== '0'
 
     balances.forEach(balance => {
+      if (networkStore.networks.get().find(network => network.chainId === balance.chainId)?.disabled) {
+        return
+      }
+
       const key = `${balance.contractAddress}-${balance.chainId}`
       if (!uniqueBalances.has(key) && shouldIncludeBalance(balance)) {
         uniqueBalances.set(key, balance)

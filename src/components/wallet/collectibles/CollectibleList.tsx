@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useObservable, useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
+import { NetworkStore } from '~/stores/NetworkStore'
 
 import CollectionIcon from '~/assets/icons/collection.svg'
 
@@ -16,11 +17,19 @@ export default function CollectibleList({
   onSendClick: (collectibleInfo: CollectibleInfo) => void
 }) {
   const collectibleStore = useStore(CollectibleStore)
+  const networkStore = useStore(NetworkStore)
 
   const isFetchingBalances = useObservable(collectibleStore.isFetchingBalances)
   const userCollectibles = useObservable(collectibleStore.userCollectibles)
 
   const collectibles = useMemo(() => userCollectibles, [userCollectibles])
+  const filteredCollectibles = useMemo(() => {
+    return collectibles.filter(collectibleInfo => {
+      return !networkStore.networks
+        .get()
+        .find(network => network.chainId === collectibleInfo.collectibleInfoParams.chainId)?.disabled
+    })
+  }, [collectibles, networkStore])
 
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
@@ -52,27 +61,29 @@ export default function CollectibleList({
           </Box>
         ) : (
           <>
-            {collectibles.length > 0 ? (
+            {filteredCollectibles.length > 0 ? (
               <>
-                {collectibles.map(collectibleInfo => (
-                  <Box
-                    key={
-                      collectibleInfo.collectibleInfoParams.chainId +
-                      collectibleInfo.collectibleInfoParams.address +
-                      collectibleInfo.collectibleInfoParams.tokenId
-                    }
-                  >
-                    <CollectibleBalanceItem
-                      collectibleInfo={collectibleInfo}
-                      onSendClick={() => {
-                        onSendClick(collectibleInfo)
-                      }}
-                      onRemoveClick={() => {
-                        collectibleStore.removeCollectible(collectibleInfo)
-                      }}
-                    />
-                  </Box>
-                ))}
+                {collectibles.map(collectibleInfo => {
+                  return (
+                    <Box
+                      key={
+                        collectibleInfo.collectibleInfoParams.chainId +
+                        collectibleInfo.collectibleInfoParams.address +
+                        collectibleInfo.collectibleInfoParams.tokenId
+                      }
+                    >
+                      <CollectibleBalanceItem
+                        collectibleInfo={collectibleInfo}
+                        onSendClick={() => {
+                          onSendClick(collectibleInfo)
+                        }}
+                        onRemoveClick={() => {
+                          collectibleStore.removeCollectible(collectibleInfo)
+                        }}
+                      />
+                    </Box>
+                  )
+                })}
               </>
             ) : (
               <Card flexDirection="column">

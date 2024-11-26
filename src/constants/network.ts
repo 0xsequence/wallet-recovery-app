@@ -30,7 +30,12 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, string> = new Map([
   [8333, 'https://mainnet-rpc.b3.fun'],
   [13371, 'https://rpc.immutable.com'],
   [33139, 'https://rpc.apechain.com'],
-  [81457, 'https://blast-rpc.publicnode.com']
+  [81457, 'https://blast-rpc.publicnode.com'],
+  [33111, 'https://rpc.curtis.apechain.com'],
+  [1482601649, 'https://mainnet.skalenodes.com/v1/green-giddy-denebola'],
+  [37084624, 'https://testnet.skalenodes.com/v1/lanky-ill-funny-testnet'],
+  [13473, 'https://rpc.immutable.com'],
+  [7672, 'https://porcini.rootnet.app/archive']
 ])
 
 // These are hardhat test networks

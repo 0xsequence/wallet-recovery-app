@@ -44,8 +44,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   >()
 
   const [isAddingCollectible, setIsAddingCollectible] = useState(false)
+  const [tokenDirectory, setTokenDirectory] = useState<string | undefined>()
 
   useEffect(() => {
+    if (selectedNetwork) {
+      setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
+    }
+
     if (selectedNetwork && collectibleAddress && collectibleTokenId && contractType) {
       collectibleStore
         .getCollectibleInfo({
@@ -62,10 +67,12 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     }
   }, [selectedNetwork, collectibleAddress, collectibleTokenId, contractType])
 
-  const selectOptions = mainnetNetworks.map(network => ({
-    label: network.title,
-    value: network.chainId.toString()
-  }))
+  const selectOptions = mainnetNetworks
+    .filter(network => !network.disabled)
+    .map(network => ({
+      label: network.title,
+      value: network.chainId.toString()
+    }))
 
   const handleAdd = async () => {
     if (
@@ -139,10 +146,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               <Text
                 variant="normal"
                 color="text50"
-                underline
-                cursor="pointer"
-                // TODO: add variable link for network directory
-                onClick={() => window.open('https://docs.sequence.xyz/')}
+                underline={!!tokenDirectory}
+                cursor={tokenDirectory ? 'pointer' : 'default'}
+                onClick={() => {
+                  if (tokenDirectory) {
+                    window.open(tokenDirectory)
+                  }
+                }}
               >
                 directory
               </Text>

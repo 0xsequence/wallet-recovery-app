@@ -38,7 +38,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     if (selectedNetwork) {
-      console.log('selectedNetwork', selectedNetwork)
       setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
     }
 
@@ -51,10 +50,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     }
   }, [selectedNetwork, tokenAddress])
 
-  const selectOptions = mainnetNetworks.map(network => ({
-    label: network.title,
-    value: network.chainId.toString()
-  }))
+  const selectOptions = mainnetNetworks
+    .filter(network => !network.disabled)
+    .map(network => ({
+      label: network.title,
+      value: network.chainId.toString()
+    }))
 
   const handleAdd = async () => {
     if (selectedNetwork && tokenAddress && tokenInfo) {
