@@ -1,9 +1,19 @@
-import { Box, Button, Divider, Select, Text, TextInput, useToast } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  Select,
+  Spinner,
+  Text,
+  TextInput,
+  useToast
+} from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 
@@ -14,6 +24,8 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const tokenStore = useStore(TokenStore)
 
+  const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
+
   const toast = useToast()
 
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig | undefined>()
@@ -22,8 +34,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
 
   const [isAddingToken, setIsAddingToken] = useState(false)
-
-  const [isNativeToken, setIsNativeToken] = useState(false)
 
   useEffect(() => {
     if (selectedNetwork && tokenAddress) {
@@ -54,7 +64,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       setIsAddingToken(false)
       toast({
         variant: 'success',
-        title: isNativeToken ? 'Native token added sucessfully' : 'ERC20 token added sucessfully',
+        title: 'ERC20 token added sucessfully',
         description: "You'll be able to see this token on your browser as long as you don't clear your cache."
       })
       resetInputs()
@@ -75,36 +85,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
         </Text>
         <Box flexDirection="column">
           <Box flexDirection="row" style={{ paddingBottom: '5px' }}>
-            <Box cursor="pointer" onClick={() => setIsNativeToken(false)}>
-              <Text
-                variant="normal"
-                fontWeight="semibold"
-                color={!isNativeToken ? 'text100' : 'text50'}
-                paddingY="2"
-                paddingX="4"
-              >
+            <Box>
+              <Text variant="normal" fontWeight="semibold" color="text100" paddingY="2" paddingX="4">
                 ERC20 Token
               </Text>
 
-              {!isNativeToken && (
-                <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
-              )}
-            </Box>
-
-            <Box cursor="pointer" onClick={() => setIsNativeToken(true)}>
-              <Text
-                variant="normal"
-                fontWeight="semibold"
-                color={isNativeToken ? 'text100' : 'text50'}
-                paddingY="2"
-                paddingX="4"
-              >
-                Native Token
-              </Text>
-
-              {isNativeToken && (
-                <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
-              )}
+              <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
             </Box>
           </Box>
 
@@ -153,7 +139,28 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             />
           </Box>
         </Box>
+
+        {isFetchingTokenInfo && (
+          <Box alignItems="center" justifyContent="center">
+            <Spinner size="lg" />
+          </Box>
+        )}
+
+        {!isFetchingTokenInfo && tokenInfo && (
+          <Card flexDirection="column" gap="2">
+            <Text variant="medium" color="text100">
+              {tokenInfo.symbol ?? ''}
+            </Text>
+            <Text variant="small" color="text80">
+              Your Balance:
+            </Text>
+            <Text variant="medium" color="text100">
+              {tokenInfo.balance}
+            </Text>
+          </Card>
+        )}
       </Box>
+
       <Divider marginY="0" />
       <Box flexDirection="row" justifyContent="flex-end" padding="6" gap="2">
         <Button label="Cancel" size="md" shape="square" onClick={onClose} />

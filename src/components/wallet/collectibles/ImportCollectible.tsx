@@ -212,36 +212,32 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         )}
 
         {collectibleInfoResponse && collectibleInfoResponse.isOwner && !isFetchingCollectibleInfo && (
-          <Box alignItems="center" justifyContent="center">
-            <Card flexDirection="column" gap="2">
-              <Box flexDirection="row" gap="6">
-                <Image src={collectibleInfoResponse.image} style={{ width: '120px', height: 'auto' }} />
+          <Card flexDirection="row" gap="6">
+            <Image src={collectibleInfoResponse.image} style={{ width: '120px', height: 'auto' }} />
 
-                <Box flexDirection="column" gap="2">
-                  <Text variant="medium" color="text100">
-                    {collectibleInfoResponse.name ?? ''}
-                  </Text>
+            <Box flexDirection="column" gap="2">
+              <Text variant="medium" color="text100">
+                {collectibleInfoResponse.name ?? ''}
+              </Text>
+              <>
+                {collectibleInfoResponse.balance && (
                   <>
-                    {collectibleInfoResponse.balance && (
-                      <>
-                        <Text variant="small" color="text80">
-                          Your Balance:
-                        </Text>
-                        <Text variant="medium" color="text100">
-                          {Number(
-                            ethers.formatUnits(
-                              collectibleInfoResponse.balance as BigNumberish,
-                              collectibleInfoResponse.decimals ?? 0
-                            )
-                          )}
-                        </Text>
-                      </>
-                    )}
+                    <Text variant="small" color="text80">
+                      Your Balance:
+                    </Text>
+                    <Text variant="medium" color="text100">
+                      {Number(
+                        ethers.formatUnits(
+                          collectibleInfoResponse.balance as BigNumberish,
+                          collectibleInfoResponse.decimals ?? 0
+                        )
+                      )}
+                    </Text>
                   </>
-                </Box>
-              </Box>
-            </Card>
-          </Box>
+                )}
+              </>
+            </Box>
+          </Card>
         )}
       </Box>
 

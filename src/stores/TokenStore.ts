@@ -23,6 +23,7 @@ export type UserAddedToken = {
 export type UserAddedTokenInitialInfo = {
   symbol: string
   decimals: number
+  balance: string
 }
 
 export class TokenStore {
@@ -235,17 +236,20 @@ export class TokenStore {
     this.isFetchingTokenInfo.set(true)
 
     try {
+      const accountAddress = this.store.get(AuthStore).accountAddress.get()
       const erc20 = new ethers.Contract(address, ERC20_ABI, provider)
 
       const decimals = await erc20.decimals()
       const symbol = await erc20.symbol()
+      const balance = await erc20.balanceOf(accountAddress)
 
       this.isFetchingTokenInfo.set(false)
 
       if (decimals && symbol) {
         return {
           decimals: Number(decimals),
-          symbol
+          symbol,
+          balance: ethers.formatUnits(balance, decimals)
         }
       } else {
         throw new Error(`Could not get decimals and symbol for token at ${address}`)

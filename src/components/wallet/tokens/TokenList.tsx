@@ -20,7 +20,6 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
   const isFetchingBalances = useObservable(tokenStore.isFetchingBalances)
   const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
-  const isFetchingTokenInfo = useObservable(tokenStore.isFetchingTokenInfo)
 
   const [isImportTokenViewOpen, setIsImportTokenViewOpen] = useState(false)
   const [filterZeroBalances, setFilterZeroBalances] = useState(true)
@@ -77,17 +76,14 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
               Filter zero balances
             </Text>
           </Box>
-          {isFetchingTokenInfo ? (
-            <Spinner size="lg" />
-          ) : (
-            <Button
-              size="sm"
-              leftIcon={AddIcon}
-              label="Import"
-              shape="square"
-              onClick={() => setIsImportTokenViewOpen(true)}
-            />
-          )}
+
+          <Button
+            size="sm"
+            leftIcon={AddIcon}
+            label="Import"
+            shape="square"
+            onClick={() => setIsImportTokenViewOpen(true)}
+          />
         </Box>
       </Box>
 
