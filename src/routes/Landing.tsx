@@ -5,8 +5,6 @@ import { Link } from 'react-router-dom'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
-import { WALLET_WIDTH } from '~/routes/Wallet'
-
 import SequenceLogo from '~/components/helpers/SequenceLogo'
 import RecoveryFooter from '~/components/recovery/RecoveryFooter'
 
