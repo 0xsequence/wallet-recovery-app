@@ -100,15 +100,12 @@ export class TokenStore {
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
       const balance = await erc20.balanceOf(accountAddress)
 
-      const updatedBalances = this.balances.get()
+      const currentBalances = this.balances.get()
+      const existingTokenIndex = currentBalances.findIndex(
+        b => b.contractAddress === token.address && b.chainId === token.chainId
+      )
 
-      // Remove token if balance is 0
-      if (!balance) {
-        this.removeToken(token)
-        return
-      }
-
-      updatedBalances.push({
+      const tokenBalance: TokenBalance = {
         contractType: token.contractType,
         contractAddress: token.address,
         tokenID: '',
@@ -142,15 +139,22 @@ export class TokenStore {
         },
         uniqueCollectibles: '0',
         isSummary: true
-      })
+      }
 
-      this.balances.set(updatedBalances)
+      if (existingTokenIndex !== -1) {
+        // Update existing token balance
+        currentBalances[existingTokenIndex] = tokenBalance
+      } else {
+        // Add new token balance
+        currentBalances.push(tokenBalance)
+      }
+
+      this.balances.set([...currentBalances])
     } catch (err) {
       console.error(err)
     }
   }
 
-  // TODO: refactor this part so it can be reused in load
   async updateTokenBalance(tokenBalance: TokenBalance) {
     const provider = this.store.get(NetworkStore).providerForChainId(tokenBalance.chainId)
 
@@ -181,7 +185,7 @@ export class TokenStore {
         }
       })
 
-      this.balances.set(update)
+      this.balances.set([...update])
     } catch (err) {
       console.error(err)
     }
@@ -202,7 +206,7 @@ export class TokenStore {
 
     userAddedTokens.push(token)
     this.local.userAddedTokens.set(userAddedTokens)
-    this.userAddedTokens.set(userAddedTokens)
+    this.userAddedTokens.set([...userAddedTokens])
 
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
@@ -221,13 +225,13 @@ export class TokenStore {
     )
 
     this.local.userAddedTokens.set(filtered)
-    this.userAddedTokens.set(filtered)
+    this.userAddedTokens.set([...filtered])
 
     const filteredBalances = this.balances
       .get()
       .filter(b => !(b.chainId === token.chainId && b.contractAddress === token.address))
 
-    this.balances.set(filteredBalances)
+    this.balances.set([...filteredBalances])
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
