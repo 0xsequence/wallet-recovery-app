@@ -15,7 +15,7 @@ export default function ConnectionList({ sessionList }: { sessionList: SessionTy
       {sessionList.map((session, index) => (
         <Card key={index} flexDirection="row" justifyContent="space-between" alignItems="center" gap="2">
           <Box alignItems="center" gap="4">
-            <ExternalIcon src={session.peer.metadata.icons[0]} />
+            <ExternalIcon background="text80" src={session.peer.metadata.icons[0]} />
 
             <Text variant="medium" color="text100">
               {!!!session.peer.metadata.name ? session.peer.metadata.url : session.peer.metadata.name}

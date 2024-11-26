@@ -88,7 +88,7 @@ export default function ExternalWallet() {
         {selectedExternalProvider ? (
           <Box justifyContent="space-between" alignItems="center">
             <Box flexDirection="row" gap="4">
-              <ExternalIcon src={selectedExternalProvider.info.icon} />
+              <ExternalIcon background="text80" src={selectedExternalProvider.info.icon} />
 
               <Box flexDirection="column" gap="1">
                 <Text variant="medium" color="text100">

@@ -23,10 +23,7 @@ export default function CollectibleBalanceItem({
       <Box flexDirection="row" gap="3">
         {collectibleInfo.collectibleInfoResponse.image && (
           <Box>
-            <ExternalIcon
-              src={collectibleInfo.collectibleInfoResponse.image}
-              background="backgroundSecondary"
-            />
+            <ExternalIcon background="text80" src={collectibleInfo.collectibleInfoResponse.image} />
           </Box>
         )}
         <Box flexDirection="column">

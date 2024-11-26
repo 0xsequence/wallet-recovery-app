@@ -26,7 +26,10 @@ export default function TokenBalanceItem({
 
   return (
     <Card flexDirection="row" alignItems="center" gap="3">
-      <ExternalIcon src={tokenImageUrl(tokenBalance?.chainId!, tokenBalance?.contractAddress!)} />
+      <ExternalIcon
+        background="text80"
+        src={tokenImageUrl(tokenBalance?.chainId!, tokenBalance?.contractAddress!)}
+      />
 
       <Box flexDirection="column">
         <Box gap="2" alignItems="center">
