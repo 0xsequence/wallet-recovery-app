@@ -82,6 +82,7 @@ function Landing() {
                 <TextInput
                   type="password"
                   value={password}
+                  autoFocus
                   onKeyPress={(ev: KeyboardEvent) => {
                     if (ev.key === 'Enter') {
                       handleUnlock()
