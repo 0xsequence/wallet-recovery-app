@@ -1,5 +1,6 @@
 import { Account } from '@0xsequence/account'
 import { commons } from '@0xsequence/core'
+import { useToast } from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import {
   ConnectOptions,
@@ -37,6 +38,8 @@ declare global {
 }
 
 export class WalletStore {
+  toast = useToast()
+
   networkStore = useStore(NetworkStore)
   authStore = useStore(AuthStore)
   accountAddress = this.authStore.accountAddress.get()
@@ -310,6 +313,14 @@ export class WalletStore {
 
     this.selectedExternalProvider.set(providerDetail)
     this.selectedExternalWalletAddress.set(externalProviderAddress)
+
+    console.log('hey')
+
+    this.toast({
+      variant: 'success',
+      title: 'External wallet added successfully',
+      description: 'You can now relay transactions.'
+    })
 
     providerDetail.provider.on('accountsChanged', async accounts => {
       if (accounts.length === 0) {

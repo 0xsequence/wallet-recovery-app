@@ -24,8 +24,6 @@ import { ButtonWithIcon } from '../helpers/ButtonWithIcon'
 import { ExternalIcon } from '../helpers/ExternalIcon'
 
 export default function ExternalWallet() {
-  const toast = useToast()
-
   const walletStore = useStore(WalletStore)
   const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
@@ -130,12 +128,6 @@ export default function ExternalWallet() {
                     ?.provider as EthereumProvider
                   await walletConnectProvider.disconnect()
                 }
-
-                toast({
-                  variant: 'success',
-                  title: 'External wallet added successfully',
-                  description: 'You can now relay transactions.'
-                })
 
                 walletStore.setExternalProvider(provider)
               }
