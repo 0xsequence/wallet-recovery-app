@@ -6,8 +6,7 @@ import {
   Divider,
   ExternalLinkIcon,
   IconButton,
-  Text,
-  useMediaQuery
+  Text
 } from '@0xsequence/design-system'
 import { ConnectOptions, MessageToSign, trimEIP191Prefix } from '@0xsequence/provider'
 import { ethers } from 'ethers'

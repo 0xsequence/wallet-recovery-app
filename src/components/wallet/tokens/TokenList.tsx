@@ -1,15 +1,4 @@
-import {
-  AddIcon,
-  Box,
-  Button,
-  Card,
-  Divider,
-  Image,
-  Modal,
-  Spinner,
-  Switch,
-  Text
-} from '@0xsequence/design-system'
+import { AddIcon, Box, Button, Card, Divider, Image, Modal, Spinner, Text } from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 

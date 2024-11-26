@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import { Box, Button, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'

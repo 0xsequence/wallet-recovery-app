@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import { Box, Button, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
 import { ethers } from 'ethers'
 import { BigNumberish } from 'ethers'
 import { ChangeEvent, useEffect, useState } from 'react'
@@ -25,7 +25,6 @@ export default function SendCollectible({
   const [amount, setAmount] = useState<string | undefined>(undefined)
   const [address, setAddress] = useState<string | undefined>(undefined)
   const [sendToExternalWallet, setSendToExternalWallet] = useState(false)
-  const [isExternalWalletSelected, setIsExternalWalletSelected] = useState(false)
 
   useEffect(() => {
     const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
@@ -34,10 +33,6 @@ export default function SendCollectible({
       setAddress(walletStore.selectedExternalWalletAddress.get())
     }
   }, [sendToExternalWallet])
-
-  useEffect(() => {
-    setIsExternalWalletSelected(walletStore.selectedExternalWalletAddress.get() !== undefined)
-  }, [walletStore.selectedExternalWalletAddress])
 
   if (!collectibleInfo) {
     return null

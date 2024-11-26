@@ -1,19 +1,9 @@
-import {
-  Box,
-  Button,
-  Card,
-  Divider,
-  Select,
-  Spinner,
-  Text,
-  TextInput,
-  useToast
-} from '@0xsequence/design-system'
+import { Box, Button, Divider, Select, Text, TextInput, useToast } from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
-import { useObservable, useStore } from '~/stores'
+import { useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 

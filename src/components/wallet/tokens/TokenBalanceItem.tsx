@@ -8,7 +8,6 @@ import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
 import { ExternalIcon } from '~/components/helpers/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
 
-import EyeHiddenIcon from '~/assets/icons/eye-hidden.svg'
 import SendIcon from '~/assets/icons/send.svg'
 
 export default function TokenBalanceItem({

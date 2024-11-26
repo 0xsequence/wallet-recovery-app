@@ -1,4 +1,4 @@
-import { Box, BoxProps, Text } from '@0xsequence/design-system'
+import { Box, BoxProps } from '@0xsequence/design-system'
 import { useObservable } from 'micro-observables'
 
 import { useStore } from '~/stores'

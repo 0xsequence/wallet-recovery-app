@@ -3,7 +3,6 @@ import { TokenBalance } from '@0xsequence/indexer'
 import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
 import { getWalletConnectProviderDetail } from '~/utils/ethereumprovider'
@@ -41,8 +40,6 @@ function Wallet() {
   const walletStore = useStore(WalletStore)
   const networkStore = useStore(NetworkStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
-
-  const navigate = useNavigate()
 
   const accountAddress = useObservable(authStore.accountAddress)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)

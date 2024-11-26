@@ -5,8 +5,6 @@ import { useObservable, useStore } from '~/stores'
 import { CollectibleStore } from '~/stores/CollectibleStore'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 
-import FilledCheckbox from '~/components/helpers/FilledCheckBox'
-
 import CollectionIcon from '~/assets/icons/collection.svg'
 
 import CollectibleBalanceItem from './CollectibleBalanceItem'

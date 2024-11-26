@@ -1,4 +1,4 @@
-import { Box, Button, Card, CloseIcon, Image, Text } from '@0xsequence/design-system'
+import { Box, Card, CloseIcon, Image, Text } from '@0xsequence/design-system'
 import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
@@ -7,7 +7,6 @@ import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
 import { ExternalIcon } from '~/components/helpers/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
 
-import EyeHiddenIcon from '~/assets/icons/eye-hidden.svg'
 import SendIcon from '~/assets/icons/send.svg'
 
 export default function CollectibleBalanceItem({

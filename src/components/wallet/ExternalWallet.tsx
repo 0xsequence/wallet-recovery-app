@@ -9,8 +9,7 @@ import {
   Divider,
   Modal,
   Text,
-  WalletIcon,
-  useToast
+  WalletIcon
 } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useObservable } from 'micro-observables'

@@ -1,4 +1,4 @@
-import { Box, Card, CloseIcon, ExternalLinkIcon, IconButton, Image, Text } from '@0xsequence/design-system'
+import { Box, Card, CloseIcon, ExternalLinkIcon, Text } from '@0xsequence/design-system'
 import { SessionTypes } from '@walletconnect/types'
 
 import { useStore } from '~/stores'
