@@ -150,32 +150,17 @@ function Landing() {
 
       {isReseting && (
         <Modal size="md" onClose={() => setIsReseting(false)}>
-          <Box flexDirection="column" alignItems="center" padding="16">
-            <Text variant="md" color="text100">
-              Click <Text fontWeight="bold">Reset</Text> to start over. This will require you to re-enter your
-              mnemonic.
+          <Box flexDirection="column" padding="6" gap="6">
+            <Text variant="large" color="text100" marginRight="8">
+              Are you sure you want to sign out?
             </Text>
-            <Box flexDirection={{ sm: 'column', md: 'row' }} gap="2" width="full" marginTop="10">
-              <Button
-                width="full"
-                label={`Cancel`}
-                onClick={() => {
-                  setIsReseting(false)
-                }}
-                shape="square"
-                data-id="signingCancel"
-              />
-
-              <Button
-                width="full"
-                variant="primary"
-                label={'Reset'}
-                onClick={() => {
-                  handleReset()
-                }}
-                shape="square"
-                data-id="signingContinue"
-              />
+            <Text variant="normal" color="text50">
+              If you do not remember your password, you can reset and start over.
+              <br /> This will require you to re-enter your mnemonic.
+            </Text>
+            <Box flexDirection="row" justifyContent="flex-end" gap="2">
+              <Button label="Yes, reset" shape="square" variant="primary" onClick={() => handleReset()} />
+              <Button label="Cancel" shape="square" onClick={() => setIsReseting(false)} />
             </Box>
           </Box>
         </Modal>

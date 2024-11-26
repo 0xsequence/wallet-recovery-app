@@ -34,8 +34,14 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
 
   const [isAddingToken, setIsAddingToken] = useState(false)
+  const [tokenDirectory, setTokenDirectory] = useState<string | undefined>()
 
   useEffect(() => {
+    if (selectedNetwork) {
+      console.log('selectedNetwork', selectedNetwork)
+      setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
+    }
+
     if (selectedNetwork && tokenAddress) {
       tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
         setTokenInfo(tokenInfo)
@@ -120,10 +126,13 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               <Text
                 variant="normal"
                 color="text50"
-                underline
-                cursor="pointer"
-                // TODO: add variable link for network directory
-                onClick={() => window.open('https://docs.sequence.xyz/')}
+                underline={!!tokenDirectory}
+                cursor={tokenDirectory ? 'pointer' : 'default'}
+                onClick={() => {
+                  if (tokenDirectory) {
+                    window.open(tokenDirectory)
+                  }
+                }}
               >
                 directory
               </Text>
