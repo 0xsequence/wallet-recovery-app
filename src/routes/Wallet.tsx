@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Text, useMediaQuery, useToast } from '@0xsequence/design-system'
+import { Box, Modal, Text, useMediaQuery, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
 import { ethers } from 'ethers'
@@ -19,13 +19,13 @@ import { TokenStore } from '~/stores/TokenStore'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import PendingTxn from '~/components/PendingTxn'
 import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
 import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
 import DappList from '~/components/wallet/DappList'
 import ExternalWallet from '~/components/wallet/ExternalWallet'
+import PendingIndicator from '~/components/wallet/PendingIndicator'
 import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
 import SendCollectible from '~/components/wallet/collectibles/SendCollectible'
 import SendToken from '~/components/wallet/tokens/SendToken'
@@ -86,14 +86,9 @@ function Wallet() {
     }
   }, [externalProviders])
 
-  const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
-  const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
-  const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
-
   const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
   const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
 
-  const [isConfirmSignOutModalOpen, setIsConfirmSignOutModalOpen] = useState(false)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
@@ -320,7 +315,7 @@ function Wallet() {
         style={{ maxWidth: '800px' }}
         paddingBottom="20"
       >
-        <Box flexDirection="column" gap="12">
+        <Box flexDirection="column">
           <Box flexDirection="column" gap="5">
             <Text variant="normal" fontWeight="bold" color="text50">
               External connections
@@ -330,6 +325,9 @@ function Wallet() {
 
             <DappList />
           </Box>
+
+          <PendingIndicator paddingY="6" />
+
           <Box flexDirection="column" gap="5">
             <Text variant="normal" fontWeight="bold" color="text50">
               My Sequence wallet
@@ -341,68 +339,7 @@ function Wallet() {
           </Box>
         </Box>
       </Box>
-      <Box
-        flexDirection="column"
-        background="backgroundPrimary"
-        width="full"
-        height="full"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }}>
-          {isSendingToken && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={isSendingToken.tokenBalance?.contractInfo?.symbol ?? ''}
-                chainId={isSendingToken.tokenBalance.chainId}
-                to={isSendingToken.to}
-                amount={isSendingToken.amount}
-              />
-            </Box>
-          )}
-          {isSendingCollectible && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
-                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
-                to={isSendingCollectible.to}
-                amount={isSendingCollectible.amount}
-              />
-            </Box>
-          )}
-          {isSendingSignedTokenTransaction && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={'tokens'}
-                chainId={isSendingSignedTokenTransaction.chainId!}
-                to={isSendingSignedTokenTransaction.txn[0].to as string}
-                amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
-              />
-            </Box>
-          )}
-        </Box>
-      </Box>
-      {isConfirmSignOutModalOpen && (
-        <Modal size="sm" onClose={() => setIsConfirmSignOutModalOpen(false)}>
-          <Box flexDirection="column" padding="8">
-            <Text variant="medium" color="text80" marginRight="8">
-              You will need to re-enter your mnemonic if you sign out. Continue?
-            </Text>
-            <Box flexDirection="row" width="full" justifyContent="flex-end" marginTop="8" gap="4">
-              <Button
-                label="Sign Out"
-                shape="square"
-                variant="primary"
-                onClick={() => {
-                  authStore.logout()
-                  navigate('/')
-                }}
-              />
-              <Button label="Cancel" shape="square" onClick={() => setIsConfirmSignOutModalOpen(false)} />
-            </Box>
-          </Box>
-        </Modal>
-      )}
+
       {isNetworkModalOpen && (
         <Modal
           onClose={() => {
@@ -437,6 +374,7 @@ function Wallet() {
           />
         </Modal>
       )}
+
       {isSigningMsg && (
         <Modal
           isDismissible={false}
@@ -457,6 +395,7 @@ function Wallet() {
           />
         </Modal>
       )}
+
       {isSendTokenModalOpen && (
         <Modal size="md" onClose={() => setIsSendTokenModalOpen(false)}>
           <SendToken
@@ -471,6 +410,7 @@ function Wallet() {
           />
         </Modal>
       )}
+
       {isSendCollectibleModalOpen && (
         <Modal size="md" onClose={() => setIsSendCollectibleModalOpen(false)}>
           <SendCollectible
