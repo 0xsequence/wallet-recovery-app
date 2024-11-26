@@ -1,6 +1,6 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
-import { ethers } from 'ethers'
+import { ethers, isError } from 'ethers'
 import { WritableObservable } from 'micro-observables'
 
 import { DEFAULT_TRACKER_OPTIONS, TRACKER_OPTIONS } from '~/utils/tracker'
@@ -44,6 +44,12 @@ export class NetworkStore {
     arweaveGraphqlUrl: new LocalStore<string>(LocalStorageKey.ARWEAVE_GRAPHQL_URL)
   }
 
+  unsavedNetworkEdits = observable<NetworkConfig[]>([])
+  unsavedNetworkEditChainIds = observable<number[]>([])
+  unsavedArweaveURLs = observable<{ gatewayUrl?: string; graphQLUrl?: string }>({})
+
+  isAddingNetwork = observable<boolean>(false)
+
   constructor(_store: Store) {
     this.prepareNetworks()
 
@@ -77,7 +83,7 @@ export class NetworkStore {
   private async prepareNetworks() {
     const updatedNetworkConfigs: NetworkConfig[] = []
 
-    const userEdits = this.local.networksUserEdits.get()
+    var userEdits = this.local.networksUserEdits.get()
 
     for (const [key, value] of Object.entries(networks)) {
       if (IGNORED_CHAIN_IDS.has(Number(key))) {
@@ -90,15 +96,24 @@ export class NetworkStore {
 
       const updatedNetworkConfig = value as NetworkConfig
 
+      const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))
+
       const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
 
       if (userEdit) {
-        userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
-        updatedNetworkConfigs.push(userEdit)
-        continue
+        if (
+          userEdit.rpcUrl !== rpcForCurrent ||
+          userEdit.blockExplorer?.rootUrl !== updatedNetworkConfig.blockExplorer?.rootUrl ||
+          userEdit.disabled !== false
+        ) {
+          userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
+          updatedNetworkConfigs.push(userEdit)
+          continue
+        } else {
+          userEdits = userEdits?.filter(n => n.chainId !== updatedNetworkConfig.chainId)
+          this.local.networksUserEdits.set(userEdits)
+        }
       }
-
-      const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))
 
       if (rpcForCurrent) {
         updatedNetworkConfig.rpcUrl = rpcForCurrent
@@ -123,6 +138,22 @@ export class NetworkStore {
     this.userAdditionNetworkChainIds.set(this.local.networksUserAdditions.get()?.map(n => n.chainId) ?? [])
 
     this.networks.set(updatedNetworkConfigs)
+  }
+
+  async isValidRpcUrl(rpcUrl: string) {
+    try {
+      const provider = new ethers.JsonRpcProvider(rpcUrl)
+      provider.on('error', e => {
+        if (isError(e, 'NETWORK_ERROR')) {
+          provider.destroy()
+        }
+      })
+      await provider.getBlockNumber()
+      return true
+    } catch (error) {
+      console.error(`Invalid RPC URL (${rpcUrl}):`, error)
+      return false
+    }
   }
 
   networkForChainId(chainId: number) {
@@ -153,6 +184,74 @@ export class NetworkStore {
     }
 
     this.prepareNetworks()
+  }
+
+  async editUserNetwork(network: NetworkConfig) {
+    const userNetworks = this.local.networksUserAdditions.get() ?? []
+
+    const filtered = userNetworks.filter(n => n.chainId !== network.chainId)
+    filtered.push(network)
+    this.local.networksUserAdditions.set(filtered)
+
+    this.prepareNetworks()
+  }
+
+  addUnsavedNetworkEdit(network: NetworkConfig) {
+    const existingUnsaved = this.unsavedNetworkEdits.get() || []
+    const chainIds = this.unsavedNetworkEditChainIds.get()
+    const saved = this.networks.get()
+
+    if (
+      saved.some(n => {
+        return (
+          n.chainId === network.chainId &&
+          n.rpcUrl === network.rpcUrl &&
+          n.blockExplorer?.rootUrl === network.blockExplorer?.rootUrl &&
+          n.disabled === network.disabled
+        )
+      })
+    ) {
+      this.unsavedNetworkEdits.set(existingUnsaved.filter(n => n.chainId !== network.chainId))
+      this.unsavedNetworkEditChainIds.set(chainIds.filter(id => id !== network.chainId))
+      return
+    }
+
+    if (existingUnsaved.some(n => n.chainId === network.chainId)) {
+      this.unsavedNetworkEdits.set(existingUnsaved.map(n => (n.chainId !== network.chainId ? n : network)))
+    } else {
+      this.unsavedNetworkEdits.set([...existingUnsaved, network])
+      this.unsavedNetworkEditChainIds.set([...chainIds, network.chainId])
+    }
+  }
+
+  addUnsavedArweaveURLs(gatewayUrl: string, graphQLUrl: string) {
+    this.unsavedArweaveURLs.set({ gatewayUrl, graphQLUrl })
+  }
+
+  discardUnsavedNetworkEdits() {
+    this.unsavedNetworkEdits.set([])
+    this.unsavedNetworkEditChainIds.set([])
+    this.unsavedArweaveURLs.set({})
+  }
+
+  saveUnsavedNetworkEdits() {
+    const unsavedArweaveURLs = this.unsavedArweaveURLs.get()
+
+    if (unsavedArweaveURLs) {
+      this.local.arweaveGatewayUrl.set(unsavedArweaveURLs.gatewayUrl)
+      this.local.arweaveGraphqlUrl.set(unsavedArweaveURLs.graphQLUrl)
+    }
+
+    for (const network of this.unsavedNetworkEdits.get() || []) {
+      if (this.userAdditionNetworkChainIds.get()?.includes(network.chainId)) {
+        this.editUserNetwork(network)
+      } else {
+        this.editNetwork(network)
+      }
+    }
+    this.unsavedNetworkEdits.set([])
+    this.unsavedNetworkEditChainIds.set([])
+    this.unsavedArweaveURLs.set({})
   }
 
   resetNetworkEdit(chainId: number) {

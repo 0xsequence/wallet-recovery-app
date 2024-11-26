@@ -1,5 +1,6 @@
 import { Account } from '@0xsequence/account'
 import { commons } from '@0xsequence/core'
+import { useToast } from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import {
   ConnectOptions,
@@ -37,6 +38,8 @@ declare global {
 }
 
 export class WalletStore {
+  toast = useToast()
+
   networkStore = useStore(NetworkStore)
   authStore = useStore(AuthStore)
   accountAddress = this.authStore.accountAddress.get()
@@ -73,7 +76,7 @@ export class WalletStore {
   >(undefined)
 
   isCheckingWalletDeployment = observable<boolean>(false)
-  signClientWarningType = observable<'noProvider' | 'isWalletConnect' | 'notDeployed' | false>(false)
+  walletNotDeployed = observable<boolean>(false)
 
   walletRequestHandler: WalletRequestHandler
 
@@ -105,7 +108,7 @@ export class WalletStore {
       })
 
       if (lastConnectedProvider) {
-        this.setExternalProvider(lastConnectedProvider)
+        this.setExternalProvider(lastConnectedProvider, true)
       }
     })
 
@@ -295,7 +298,7 @@ export class WalletStore {
     }
   }
 
-  setExternalProvider = async (providerDetail: ProviderDetail | undefined) => {
+  setExternalProvider = async (providerDetail: ProviderDetail | undefined, noToast?: boolean) => {
     if (!providerDetail) {
       this.selectedExternalProvider.set(undefined)
       this.selectedExternalWalletAddress.set(undefined)
@@ -310,6 +313,14 @@ export class WalletStore {
 
     this.selectedExternalProvider.set(providerDetail)
     this.selectedExternalWalletAddress.set(externalProviderAddress)
+
+    if (!noToast) {
+      this.toast({
+        variant: 'success',
+        title: 'External wallet added successfully',
+        description: 'You can now relay transactions.'
+      })
+    }
 
     providerDetail.provider.on('accountsChanged', async accounts => {
       if (accounts.length === 0) {
@@ -506,7 +517,7 @@ class Prompter implements WalletUserPrompter {
         const res = await this.promptConfirmWalletDeploy(message.chainId, options)
 
         if (!res) {
-          this.store.get(WalletStore).signClientWarningType.set('notDeployed')
+          this.store.get(WalletStore).walletNotDeployed.set(true)
           return Promise.reject('User rejected wallet deploy request')
         }
       }
@@ -556,7 +567,7 @@ class Prompter implements WalletUserPrompter {
 
     console.log('prompt sign txn:', transactions, chainId, options)
 
-    // TODO find out if we need to implement multiple transaction handling
+    // TODO implement multiple transaction handling
 
     validateTransactionRequest(accountAddress, newTxn)
 

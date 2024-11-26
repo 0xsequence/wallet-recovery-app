@@ -1,6 +1,6 @@
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
-import { ethers } from 'ethers'
+import { ethers, isError } from 'ethers'
 
 import { getNativeTokenInfo } from '~/utils/network'
 
@@ -23,6 +23,7 @@ export type UserAddedToken = {
 export type UserAddedTokenInitialInfo = {
   symbol: string
   decimals: number
+  balance: string
 }
 
 export class TokenStore {
@@ -52,6 +53,11 @@ export class TokenStore {
           return
         }
         const provider = new ethers.JsonRpcProvider(network.rpcUrl)
+        provider.on('error', e => {
+          if (isError(e, 'NETWORK_ERROR')) {
+            provider.destroy()
+          }
+        })
         try {
           const balance = await provider.getBalance(account)
           update.push({
@@ -94,15 +100,12 @@ export class TokenStore {
       const erc20 = new ethers.Contract(token.address, ERC20_ABI, provider)
       const balance = await erc20.balanceOf(accountAddress)
 
-      const updatedBalances = this.balances.get()
+      const currentBalances = this.balances.get()
+      const existingTokenIndex = currentBalances.findIndex(
+        b => b.contractAddress === token.address && b.chainId === token.chainId
+      )
 
-      // Remove token if balance is 0
-      if (!balance) {
-        this.removeToken(token)
-        return
-      }
-
-      updatedBalances.push({
+      const tokenBalance: TokenBalance = {
         contractType: token.contractType,
         contractAddress: token.address,
         tokenID: '',
@@ -136,15 +139,22 @@ export class TokenStore {
         },
         uniqueCollectibles: '0',
         isSummary: true
-      })
+      }
 
-      this.balances.set(updatedBalances)
+      if (existingTokenIndex !== -1) {
+        // Update existing token balance
+        currentBalances[existingTokenIndex] = tokenBalance
+      } else {
+        // Add new token balance
+        currentBalances.push(tokenBalance)
+      }
+
+      this.balances.set([...currentBalances])
     } catch (err) {
       console.error(err)
     }
   }
 
-  // TODO: refactor this part so it can be reused in load
   async updateTokenBalance(tokenBalance: TokenBalance) {
     const provider = this.store.get(NetworkStore).providerForChainId(tokenBalance.chainId)
 
@@ -175,7 +185,7 @@ export class TokenStore {
         }
       })
 
-      this.balances.set(update)
+      this.balances.set([...update])
     } catch (err) {
       console.error(err)
     }
@@ -196,7 +206,7 @@ export class TokenStore {
 
     userAddedTokens.push(token)
     this.local.userAddedTokens.set(userAddedTokens)
-    this.userAddedTokens.set(userAddedTokens)
+    this.userAddedTokens.set([...userAddedTokens])
 
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
@@ -215,13 +225,13 @@ export class TokenStore {
     )
 
     this.local.userAddedTokens.set(filtered)
-    this.userAddedTokens.set(filtered)
+    this.userAddedTokens.set([...filtered])
 
     const filteredBalances = this.balances
       .get()
       .filter(b => !(b.chainId === token.chainId && b.contractAddress === token.address))
 
-    this.balances.set(filteredBalances)
+    this.balances.set([...filteredBalances])
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
@@ -230,17 +240,20 @@ export class TokenStore {
     this.isFetchingTokenInfo.set(true)
 
     try {
+      const accountAddress = this.store.get(AuthStore).accountAddress.get()
       const erc20 = new ethers.Contract(address, ERC20_ABI, provider)
 
       const decimals = await erc20.decimals()
       const symbol = await erc20.symbol()
+      const balance = await erc20.balanceOf(accountAddress)
 
       this.isFetchingTokenInfo.set(false)
 
       if (decimals && symbol) {
         return {
           decimals: Number(decimals),
-          symbol
+          symbol,
+          balance: ethers.formatUnits(balance, decimals)
         }
       } else {
         throw new Error(`Could not get decimals and symbol for token at ${address}`)

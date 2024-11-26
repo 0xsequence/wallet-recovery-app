@@ -1,22 +1,11 @@
-import {
-  Box,
-  Button,
-  Card,
-  Modal,
-  ScanIcon,
-  Switch,
-  Text,
-  useMediaQuery,
-  useToast
-} from '@0xsequence/design-system'
+import { Box, Modal, Text, useMediaQuery, useToast } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ConnectOptions, MessageToSign } from '@0xsequence/provider'
-import EthereumProvider from '@walletconnect/ethereum-provider'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { useWalletConnectProvider } from '~/utils/ethereumprovider'
+import { getWalletConnectProviderDetail } from '~/utils/ethereumprovider'
 import { getTransactionReceipt } from '~/utils/receipt'
 
 import { useSyncProviders } from '~/hooks/useSyncProviders'
@@ -29,33 +18,19 @@ import { TokenStore } from '~/stores/TokenStore'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import CollectibleList from '~/components/CollectibleList'
-import Networks from '~/components/Networks'
-import PendingTxn from '~/components/PendingTxn'
-import SelectProvider from '~/components/SelectProvider'
-import SendCollectible from '~/components/SendCollectible'
-import SendToken from '~/components/SendToken'
-import TokenList from '~/components/TokenList'
-import ConnectDapp from '~/components/signing/ConnectDapp'
-import ConnectionList from '~/components/signing/ConnectionList'
-import SignClientMessageRequest from '~/components/signing/SignClientMessageRequest'
-import SignClientTransactionRequest from '~/components/signing/SignClientTransactionRequest'
-import SignClientWarning from '~/components/signing/SignClientWarning'
-import WalletScan from '~/components/signing/WalletScan'
+import Networks from '~/components/network/Networks'
+import RecoveryHeader from '~/components/recovery/RecoveryHeader'
+import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
+import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
+import DappList from '~/components/wallet/DappList'
+import ExternalWallet from '~/components/wallet/ExternalWallet'
+import PendingIndicator from '~/components/wallet/PendingIndicator'
+import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
+import SendCollectible from '~/components/wallet/collectibles/SendCollectible'
+import SendToken from '~/components/wallet/tokens/SendToken'
+import TokenList from '~/components/wallet/tokens/TokenList'
 
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
-
-export const getWalletConnectProviderDetail = (provider: EthereumProvider) => {
-  return {
-    info: {
-      walletId: '',
-      uuid: '',
-      name: 'WalletConnect',
-      icon: 'https://avatars.githubusercontent.com/u/37784886'
-    },
-    provider: provider
-  }
-}
+export const WALLET_WIDTH = 800
 
 function Wallet() {
   const externalProviders = useSyncProviders()
@@ -66,14 +41,9 @@ function Wallet() {
   const networkStore = useStore(NetworkStore)
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
-  const navigate = useNavigate()
-
   const accountAddress = useObservable(authStore.accountAddress)
-  const isPasswordSet = useObservable(authStore.isPasswordSet)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
   const isSigningMsg = useObservable(walletStore.isSigningMsg)
-
-  const sessionList = useObservable(walletConnectSignClientStore.allSessions)
 
   const networks = useObservable(networkStore.networks)
 
@@ -113,26 +83,12 @@ function Wallet() {
     }
   }, [externalProviders])
 
-  const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
-  const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
-  const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)
-  const isSendingCollectible = useObservable(walletStore.isSendingCollectibleTransaction)
-  const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
-
-  const [filterZeroBalances, setFilterZeroBalances] = useState(true)
-
   const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
   const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
 
-  const [isConfirmSignOutModalOpen, setIsConfirmSignOutModalOpen] = useState(false)
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
-  const [isSelectProviderModalOpen, setIsSelectProviderModalOpen] = useState(false)
-  const [isConnectingDapp, setIsConnectingDapp] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
-  const [isScanningQrWalletConnect, setIsScanningQrWalletConnect] = useState(false)
-
-  const signClientWarningType = useObservable(walletStore.signClientWarningType)
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
@@ -146,23 +102,6 @@ function Wallet() {
     walletStore.isSendingTokenTransaction.set(undefined)
     setPendingSendCollectible(collectibleInfo)
     setIsSendCollectibleModalOpen(true)
-  }
-
-  // First step of sending txn
-  const handleSelectProvider = async (isChange: boolean = false) => {
-    if (selectedExternalProvider === undefined || isChange) {
-      setIsSelectProviderModalOpen(true)
-    }
-  }
-
-  const handleDisconnect = async () => {
-    walletStore.setExternalProvider(undefined)
-
-    const extProvider = selectedExternalProvider
-    if (extProvider?.info.name === 'WalletConnect') {
-      const WCProvider = extProvider.provider as EthereumProvider
-      WCProvider.disconnect()
-    }
   }
 
   // Third step of sending txn
@@ -237,6 +176,7 @@ function Wallet() {
   }
 
   const cancelRequest = () => {
+    walletStore.resetSignObservables()
     walletConnectSignClientStore.rejectRequest()
     walletStore.toSignPermission.set('cancelled')
   }
@@ -251,7 +191,6 @@ function Wallet() {
       chainId: number,
       _options?: ConnectOptions
     ): Promise<{ hash: string }> => {
-      // TODO do we need options?
       try {
         const providerAddress = await walletStore.getExternalProviderAddress(provider!)
 
@@ -289,7 +228,13 @@ function Wallet() {
 
         walletStore.toSignResult.set(result)
         walletStore.toSignPermission.set('approved')
+        walletStore.isSigningTxn.set(false)
       } catch (error) {
+        toast({
+          variant: 'error',
+          title: 'Transaction failed',
+          description: `Please try again.`
+        })
         walletStore.isSendingSignedTokenTransaction.set(undefined)
         cancelRequest()
         throw error
@@ -303,7 +248,6 @@ function Wallet() {
     options?: ConnectOptions
   }) {
     const signMessage = async (msg: MessageToSign, _options?: ConnectOptions): Promise<{ hash: string }> => {
-      // TODO do we need options?
       try {
         let hash: string | undefined
 
@@ -342,6 +286,11 @@ function Wallet() {
         walletStore.toSignResult.set(result)
         walletStore.toSignPermission.set('approved')
       } catch (error) {
+        toast({
+          variant: 'error',
+          title: 'Transaction failed',
+          description: `Please try again.`
+        })
         walletStore.isSendingSignedTokenTransaction.set(undefined)
         cancelRequest()
         throw error
@@ -349,257 +298,61 @@ function Wallet() {
     }
   }
 
-  const handleConnectSignClient = async () => {
-    if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-      walletStore.signClientWarningType.set('isWalletConnect')
-    } else {
-      setIsScanningQrWalletConnect(true)
-    }
-  }
-
-  const handleOnQrUri = async () => {
-    setIsConnectingDapp(true)
-  }
-
   return (
-    <>
+    <Box>
+      <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
+
       <Box
+        justifySelf="center"
         flexDirection="column"
-        background="backgroundPrimary"
+        padding="5"
         width="full"
-        height="full"
-        alignItems="center"
-        justifyContent="center"
+        style={{ maxWidth: '800px' }}
+        paddingBottom="20"
       >
-        <Box
-          flexDirection="row"
-          width="full"
-          background="backgroundMuted"
-          paddingX="8"
-          paddingY="4"
-          alignItems="center"
-        >
-          <img src={sequenceLogo} alt="Sequence Logo" width="40" />
-          <Box marginLeft="auto" marginRight="16">
-            <Button
-              label="Networks"
-              variant="text"
-              marginRight="8"
-              onClick={() => setIsNetworkModalOpen(true)}
-            />
-
-            {isPasswordSet && (
-              <Button
-                label="Password Lock"
-                variant="text"
-                marginRight="8"
-                onClick={() => window.location.reload()}
-              />
-            )}
-
-            <Button label="Sign Out" variant="text" onClick={() => setIsConfirmSignOutModalOpen(true)} />
-          </Box>
-        </Box>
-        <Box width="full" paddingX="8" style={{ maxWidth: '800px' }} marginBottom="16">
-          <Card flexDirection="column" alignItems="center" padding="6" marginTop="10">
-            <Text variant="large" color="text80" marginBottom="4">
-              Your recovered wallet address
-            </Text>
-            <Text variant="normal" fontWeight="bold" color="text100">
-              {accountAddress}
+        <Box flexDirection="column">
+          <Box flexDirection="column" gap="5">
+            <Text variant="normal" fontWeight="bold" color="text50">
+              External connections
             </Text>
 
-            <ConnectionList sessionList={sessionList}></ConnectionList>
-            <Button
-              marginTop="4"
-              variant="primary"
-              size="sm"
-              shape="square"
-              label="Connect to a dapp via WalletConnect"
-              leftIcon={ScanIcon}
-              onClick={() => {
-                handleConnectSignClient()
-              }}
-            />
-          </Card>
+            <ExternalWallet />
 
-          <Card alignItems="center" flexDirection="column" padding="6" marginTop="4">
-            <Text variant="large" color="text80" marginBottom="4">
-              {selectedExternalProvider
-                ? 'Your external wallet that will be used to relay transactions'
-                : 'Connect an external wallet to relay transactions'}
-            </Text>
-            {selectedExternalProvider && (
-              <Box flexDirection="row" alignItems="center" gap="2">
-                <Box flexDirection="column" alignItems="center" gap="2">
-                  <Box flexDirection="row" gap="2">
-                    <img
-                      src={selectedExternalProvider.info.icon}
-                      alt={selectedExternalProvider.info.name}
-                      style={{ width: '20px', height: '20px' }}
-                    />
-                    <Text variant="normal" color="text100">
-                      {selectedExternalProvider.info.name}
-                    </Text>
-                  </Box>
-                  {selectedExternalWalletAddress && (
-                    <Text variant="normal" color="text100">
-                      ({selectedExternalWalletAddress})
-                    </Text>
-                  )}
-                  <Box flexDirection={'row'}>
-                    <Button
-                      size="xs"
-                      label="Change external wallet"
-                      variant="text"
-                      shape="square"
-                      marginRight="10"
-                      onClick={() => handleSelectProvider(true)}
-                    />
-                    <Button
-                      size="xs"
-                      label="Disconnect"
-                      variant="text"
-                      shape="square"
-                      onClick={() => handleDisconnect()}
-                    />
-                  </Box>
-                </Box>
-              </Box>
-            )}
-            {!selectedExternalProvider && (
-              <Button
-                label="Connect"
-                variant="primary"
-                size="md"
-                shape="square"
-                onClick={handleSelectProvider}
-              />
-            )}
-          </Card>
-
-          {isSendingToken && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={isSendingToken.tokenBalance?.contractInfo?.symbol ?? ''}
-                chainId={isSendingToken.tokenBalance.chainId}
-                to={isSendingToken.to}
-                amount={isSendingToken.amount}
-              />
-            </Box>
-          )}
-          {isSendingCollectible && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
-                chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
-                to={isSendingCollectible.to}
-                amount={isSendingCollectible.amount}
-              />
-            </Box>
-          )}
-          {isSendingSignedTokenTransaction && (
-            <Box marginTop="8" alignItems="center" justifyContent="center">
-              <PendingTxn
-                symbol={'tokens'}
-                chainId={isSendingSignedTokenTransaction.chainId!}
-                to={isSendingSignedTokenTransaction.txn[0].to as string}
-                amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
-              />
-            </Box>
-          )}
-          <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
-            <Box width="full" flexDirection="row" alignItems="center" marginBottom="4">
-              <Text variant="large" color="text80">
-                Coins
-              </Text>
-
-              <Box marginLeft="auto">
-                <Switch
-                  label="Filter zero balances"
-                  checked={filterZeroBalances}
-                  onCheckedChange={setFilterZeroBalances}
-                />
-              </Box>
-            </Box>
-
-            <TokenList filterZeroBalances={filterZeroBalances} onSendClick={handleTokenOnSendClick} />
+            <DappList />
           </Box>
 
-          <Box flexDirection="column" alignItems="flex-start" justifyContent="flex-start" marginTop="8">
-            <Text variant="large" color="text80" marginBottom="4">
-              Collectibles
+          <PendingIndicator paddingY="5" />
+
+          <Box flexDirection="column" gap="5">
+            <Text variant="normal" fontWeight="bold" color="text50">
+              My Sequence wallet
             </Text>
+
+            <TokenList onSendClick={handleTokenOnSendClick} />
+
             <CollectibleList onSendClick={handleCollectibleOnSendClick} />
           </Box>
         </Box>
       </Box>
-      {isConfirmSignOutModalOpen && (
-        <Modal size="sm" onClose={() => setIsConfirmSignOutModalOpen(false)}>
-          <Box flexDirection="column" padding="8">
-            <Text variant="medium" color="text80" marginRight="8">
-              You will need to re-enter your mnemonic if you sign out. Continue?
-            </Text>
-            <Box flexDirection="row" width="full" justifyContent="flex-end" marginTop="8" gap="4">
-              <Button
-                label="Sign Out"
-                shape="square"
-                variant="primary"
-                onClick={() => {
-                  authStore.logout()
-                  navigate('/')
-                }}
-              />
-              <Button label="Cancel" shape="square" onClick={() => setIsConfirmSignOutModalOpen(false)} />
-            </Box>
-          </Box>
-        </Modal>
-      )}
+
       {isNetworkModalOpen && (
-        <Modal onClose={() => setIsNetworkModalOpen(false)}>
+        <Modal
+          onClose={() => {
+            setIsNetworkModalOpen(false)
+            networkStore.discardUnsavedNetworkEdits()
+            networkStore.isAddingNetwork.set(false)
+          }}
+          contentProps={{
+            style: {
+              scrollbarColor: 'gray black',
+              scrollbarWidth: 'thin'
+            }
+          }}
+        >
           <Networks />
         </Modal>
       )}
-      {isSelectProviderModalOpen && (
-        <Modal size="md" onClose={() => setIsSelectProviderModalOpen(false)}>
-          <SelectProvider
-            onSelectProvider={async provider => {
-              if (provider) {
-                if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-                  const walletConnectProvider = walletStore.selectedExternalProvider.get()
-                    ?.provider as EthereumProvider
-                  await walletConnectProvider.disconnect()
-                }
-                walletStore.setExternalProvider(provider)
-              }
-              setIsSelectProviderModalOpen(false)
-            }}
-          />
-        </Modal>
-      )}
-      {isConnectingDapp && (
-        <Modal size="md" onClose={() => setIsConnectingDapp(false)}>
-          <ConnectDapp onClose={() => setIsConnectingDapp(false)} />
-        </Modal>
-      )}
-      {isScanningQrWalletConnect && (
-        <Modal
-          size="md"
-          contentProps={{
-            style: { width: !isMobile ? '600px' : '100%', height: !isMobile ? '750px' : '' }
-          }}
-          onClose={() => setIsScanningQrWalletConnect(false)}
-        >
-          <WalletScan
-            onQrUri={isPaired => {
-              if (isPaired) {
-                handleOnQrUri()
-              }
-              setIsScanningQrWalletConnect(false)
-            }}
-          />
-        </Modal>
-      )}
+
       {isSigningTxn && (
         <Modal
           isDismissible={false}
@@ -608,24 +361,15 @@ function Wallet() {
             style: { width: !isMobile ? '800px' : '100%', maxHeight: '100%', overflowY: 'auto' }
           }}
         >
-          <SignClientTransactionRequest
-            onClose={details => {
-              walletStore.isSigningTxn.set(false)
-              if (!details) {
-                cancelRequest()
-              } else if (walletStore.selectedExternalProvider.get() === undefined) {
-                cancelRequest()
-                walletStore.signClientWarningType.set('noProvider')
-              } else if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-                cancelRequest()
-                walletStore.signClientWarningType.set('isWalletConnect')
-              } else {
-                handleSignTxn(details)
-              }
+          <SignClientTransactionRelay
+            onClose={() => {
+              cancelRequest()
             }}
+            handleSignTxn={details => handleSignTxn(details)}
           />
         </Modal>
       )}
+
       {isSigningMsg && (
         <Modal
           isDismissible={false}
@@ -634,17 +378,11 @@ function Wallet() {
             style: { width: !isMobile ? '800px' : '100%', maxHeight: '90%', overflowY: 'auto' }
           }}
         >
-          <SignClientMessageRequest
+          <SignClientTransactionConfirm
             onClose={details => {
               walletStore.isSigningMsg.set(false)
               if (!details) {
                 cancelRequest()
-              } else if (walletStore.selectedExternalProvider.get() === undefined) {
-                cancelRequest()
-                walletStore.signClientWarningType.set('noProvider')
-              } else if (walletStore.selectedExternalProvider.get()?.info.name === 'WalletConnect') {
-                cancelRequest()
-                walletStore.signClientWarningType.set('isWalletConnect')
               } else {
                 handleSignMsg(details)
               }
@@ -652,11 +390,7 @@ function Wallet() {
           />
         </Modal>
       )}
-      {signClientWarningType && (
-        <Modal size="md" onClose={() => walletStore.signClientWarningType.set(false)}>
-          <SignClientWarning warningType={signClientWarningType} />
-        </Modal>
-      )}
+
       {isSendTokenModalOpen && (
         <Modal size="md" onClose={() => setIsSendTokenModalOpen(false)}>
           <SendToken
@@ -671,6 +405,7 @@ function Wallet() {
           />
         </Modal>
       )}
+
       {isSendCollectibleModalOpen && (
         <Modal size="md" onClose={() => setIsSendCollectibleModalOpen(false)}>
           <SendCollectible
@@ -687,7 +422,7 @@ function Wallet() {
           />
         </Modal>
       )}
-    </>
+    </Box>
   )
 }
 

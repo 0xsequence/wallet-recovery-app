@@ -35,19 +35,13 @@ export class AuthStore {
         networkStore.accountLoaded.set(true)
       }
     })
-
-    getIndexedDB(IndexedDBKey.SECURITY).then(async db => {
-      this.isPasswordSet.set(!db.get(IndexedDBKey.SECURITY, 'key'))
-    })
   }
 
   isLoadingAccount = observable(true)
-  isPasswordSet = observable(true)
 
   account: Account | undefined
 
   accountAddress = observable<string | undefined>(undefined)
-  isPromptingForPassword = observable<boolean>(false)
 
   async signInWithRecoveryMnemonic(wallet: string, mnemonic: string, password?: string) {
     try {
@@ -81,14 +75,6 @@ export class AuthStore {
     }
 
     this.isLoadingAccount.set(false)
-
-    // try {
-    //   // TODO: for testing, remove
-    //   const preparedMessage = prefixEIP191Message('message message')
-    //   console.log(await account.signMessage(preparedMessage, 137))
-    // } catch (error) {
-    //   console.warn(error)
-    // }
   }
 
   async loadAccount(password?: string) {
@@ -97,12 +83,6 @@ export class AuthStore {
     var key = await db.get(IndexedDBKey.SECURITY, 'key')
 
     let mnemonic: { wallet: string; mnemonic: string } | undefined = undefined
-
-    // Check if mnemonic is stored in IndexedDB, key is not stored (meaning password needed), and flow is from constructor not from login
-    if (encryptedMnemonic && !key && !password) {
-      this.isPromptingForPassword.set(true)
-      return
-    }
 
     if (encryptedMnemonic) {
       if (key) {
@@ -138,8 +118,6 @@ export class AuthStore {
     const db = await getIndexedDB(IndexedDBKey.SECURITY)
     await db.put(IndexedDBKey.SECURITY, key, 'key')
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
-
-    this.isPasswordSet.set(false)
   }
 
   async encryptRecoveryMnemonicWithPassword(mnemonic: string, address: string, password: string) {
@@ -155,8 +133,6 @@ export class AuthStore {
     // Store encrypted data (minus key) in indexed db
     const db = await getIndexedDB(IndexedDBKey.SECURITY)
     await db.put(IndexedDBKey.SECURITY, encrypted, 'mnemonic')
-
-    this.isPasswordSet.set(true)
   }
 
   async decryptRecoveryMnemonic(
@@ -189,5 +165,6 @@ export class AuthStore {
 
     // Not sure if we should abstract this to LocalStore but we'd have to instantiate a LocalStore to access the class function
     localStorage.clear()
+    window.location.reload()
   }
 }

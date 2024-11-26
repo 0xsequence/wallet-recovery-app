@@ -33,8 +33,7 @@ export class WalletConnectSignClientStore {
       metadata: {
         name: 'Sequence Recovery Wallet',
         description: 'Sequence Recovery Wallet - Recover Your Wallet',
-        // TODO replace url with recovery wallet url
-        url: 'http://localhost:5173',
+        url: 'https://recovery.sequence.app',
         icons: ['https://sequence.app/apple-touch-icon.png']
       }
     })
