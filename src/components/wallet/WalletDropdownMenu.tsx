@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Card,
+  CheckmarkIcon,
   CopyIcon,
   GradientAvatar,
   Modal,
@@ -9,7 +10,7 @@ import {
   Text
 } from '@0xsequence/design-system'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { truncateMiddle } from '~/utils/truncatemiddle'
@@ -26,7 +27,22 @@ export default function SettingsDropdownMenu() {
 
   const [isOpen, toggleOpen] = useState(false)
   const [isConfirmSignOutModalOpen, setIsConfirmSignOutModalOpen] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (isCopied) {
+      const timer = setTimeout(() => {
+        setIsCopied(false)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [isCopied])
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(walletAddress!)
+    setIsCopied(true)
+  }
 
   return (
     <PopoverPrimitive.Root open={isOpen} onOpenChange={toggleOpen}>
@@ -49,12 +65,12 @@ export default function SettingsDropdownMenu() {
           <PopoverPrimitive.Content asChild side="bottom" sideOffset={8} align="center">
             <Card flexDirection="column" backdropFilter="blur" gap="2">
               <Button
-                leftIcon={CopyIcon}
+                leftIcon={isCopied ? CheckmarkIcon : CopyIcon}
                 label="Copy wallet address"
                 shape="square"
                 size="sm"
                 width="full"
-                onClick={() => navigator.clipboard.writeText(walletAddress!)}
+                onClick={handleCopy}
               />
               <Button
                 leftIcon={SignoutIcon}
