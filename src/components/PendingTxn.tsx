@@ -14,35 +14,33 @@ export default function PendingTxn({
   amount?: string
 }) {
   return (
-    <Box
-      background="backgroundSecondary"
-      width="full"
-      borderRadius="sm"
-      alignItems="center"
-      padding="4"
-      gap="5"
-    >
-      <Spinner size="lg" />
+    <Box flexDirection="column" width="full" gap="5" paddingTop="7">
+      <Text variant="normal" fontWeight="bold" color="text100">
+        Pending transactions
+      </Text>
+      <Box background="backgroundSecondary" borderRadius="sm" alignItems="center" padding="4" gap="5">
+        <Spinner size="lg" />
 
-      <Box flexDirection="column" gap="1">
-        <Box flexDirection="row" alignItems="center" gap="1">
-          <Text variant="normal" fontWeight="semibold" color="text100">
-            Sending {amount} {symbol} on
-          </Text>
+        <Box flexDirection="column" gap="1">
+          <Box flexDirection="row" alignItems="center" gap="1">
+            <Text variant="normal" fontWeight="semibold" color="text100">
+              Sending {amount} {symbol} on
+            </Text>
 
-          <NetworkTag chainId={chainId} paddingTop="0" paddingBottom="1" />
+            <NetworkTag chainId={chainId} paddingTop="0" paddingBottom="1" />
 
-          <Text variant="normal" fontWeight="semibold" color="text100">
-            to
-          </Text>
-          <Text variant="normal" fontWeight="semibold" color="text80" style={{ fontFamily: 'monospace' }}>
-            {to}
+            <Text variant="normal" fontWeight="semibold" color="text100">
+              to
+            </Text>
+            <Text variant="normal" fontWeight="semibold" color="text80" style={{ fontFamily: 'monospace' }}>
+              {to}
+            </Text>
+          </Box>
+
+          <Text variant="normal" color="text50">
+            Your external wallet will prompt you to confirm the transaction
           </Text>
         </Box>
-
-        <Text variant="normal" color="text50">
-          Your external wallet will prompt you to confirm the transaction
-        </Text>
       </Box>
     </Box>
   )

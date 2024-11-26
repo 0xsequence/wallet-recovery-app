@@ -326,7 +326,7 @@ function Wallet() {
             <DappList />
           </Box>
 
-          <PendingIndicator paddingY="6" />
+          <PendingIndicator paddingY="5" />
 
           <Box flexDirection="column" gap="5">
             <Text variant="normal" fontWeight="bold" color="text50">

@@ -1,4 +1,4 @@
-import { Box } from '@0xsequence/design-system'
+import { Box, Text } from '@0xsequence/design-system'
 import { useObservable } from 'micro-observables'
 
 import { useStore } from '~/stores'
@@ -14,36 +14,30 @@ export default function PendingIndicator({ ...rest }: { [key: string]: any }) {
   const isSendingSignedTokenTransaction = useObservable(walletStore.isSendingSignedTokenTransaction)
 
   return (
-    <Box flexDirection="column" width="full" gap="4" {...rest}>
+    <Box flexDirection="column" justifyContent="center" alignItems="center" width="full" gap="4" {...rest}>
       {isSendingToken && (
-        <Box alignItems="center" justifyContent="center">
-          <PendingTxn
-            symbol={isSendingToken.tokenBalance?.contractInfo?.symbol ?? ''}
-            chainId={isSendingToken.tokenBalance.chainId}
-            to={isSendingToken.to}
-            amount={isSendingToken.amount}
-          />
-        </Box>
+        <PendingTxn
+          symbol={isSendingToken.tokenBalance?.contractInfo?.symbol ?? ''}
+          chainId={isSendingToken.tokenBalance.chainId}
+          to={isSendingToken.to}
+          amount={isSendingToken.amount}
+        />
       )}
       {isSendingCollectible && (
-        <Box alignItems="center" justifyContent="center">
-          <PendingTxn
-            symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
-            chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
-            to={isSendingCollectible.to}
-            amount={isSendingCollectible.amount}
-          />
-        </Box>
+        <PendingTxn
+          symbol={isSendingCollectible.collectibleInfo.collectibleInfoResponse.name ?? ''}
+          chainId={isSendingCollectible.collectibleInfo.collectibleInfoParams.chainId}
+          to={isSendingCollectible.to}
+          amount={isSendingCollectible.amount}
+        />
       )}
       {isSendingSignedTokenTransaction && (
-        <Box alignItems="center" justifyContent="center">
-          <PendingTxn
-            symbol={'tokens'}
-            chainId={isSendingSignedTokenTransaction.chainId!}
-            to={isSendingSignedTokenTransaction.txn[0].to as string}
-            amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
-          />
-        </Box>
+        <PendingTxn
+          symbol={'tokens'}
+          chainId={isSendingSignedTokenTransaction.chainId!}
+          to={isSendingSignedTokenTransaction.txn[0].to as string}
+          amount={String(Number(isSendingSignedTokenTransaction.txn[0].value))}
+        />
       )}
     </Box>
   )
