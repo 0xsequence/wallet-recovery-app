@@ -5,8 +5,8 @@ import { AuthStore } from '~/stores/AuthStore'
 
 import networkIcon from '~/assets/icons/chain.svg'
 import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
-import sequenceLogo from '~/assets/images/sequence-logo.svg'
 
+import SequenceLogo from '../helpers/SequenceLogo'
 import SettingsDropdownMenu from '../wallet/WalletDropdownMenu'
 
 export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkModal: () => void }) {
@@ -23,15 +23,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
           alignItems="center"
           style={{ height: '59px' }}
         >
-          <Box marginX="5" gap="2">
-            <Image src={sequenceLogo} height="7" />
-            <Text variant="large" color="text100">
-              Sequence
-            </Text>
-            <Text variant="large" color="text50">
-              Wallet Recovery
-            </Text>
-          </Box>
+          <SequenceLogo variant="md" marginLeft="5" />
           <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>
             <Button
               label={

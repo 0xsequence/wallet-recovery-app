@@ -1,4 +1,4 @@
-import { Box, Text } from '@0xsequence/design-system'
+import { Box, BoxProps, Text } from '@0xsequence/design-system'
 import { useObservable } from 'micro-observables'
 
 import { useStore } from '~/stores'
@@ -6,7 +6,7 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import PendingTxn from '../PendingTxn'
 
-export default function PendingIndicator({ ...rest }: { [key: string]: any }) {
+export default function PendingIndicator({ ...rest }: BoxProps) {
   const walletStore = useStore(WalletStore)
 
   const isSendingToken = useObservable(walletStore.isSendingTokenTransaction)

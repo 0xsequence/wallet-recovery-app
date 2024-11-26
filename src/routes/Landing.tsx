@@ -7,11 +7,11 @@ import { AuthStore } from '~/stores/AuthStore'
 
 import { WALLET_WIDTH } from '~/routes/Wallet'
 
+import SequenceLogo from '~/components/helpers/SequenceLogo'
 import RecoveryFooter from '~/components/recovery/RecoveryFooter'
 
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
-import sequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
 function Landing() {
   const authStore = useStore(AuthStore)
@@ -53,7 +53,7 @@ function Landing() {
         paddingY="10"
       >
         <Box flexDirection="column" gap="6">
-          <Image src={sequenceRecoveryLogo} height="7" />
+          <SequenceLogo variant="lg" justifyContent="center" />
 
           <Text
             textAlign="center"
