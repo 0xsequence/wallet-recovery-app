@@ -1,5 +1,4 @@
 import { Box, Button, Text } from '@0xsequence/design-system'
-import { Link } from 'react-router-dom'
 
 export default function RecoveryFooter() {
   return (
@@ -14,8 +13,7 @@ export default function RecoveryFooter() {
         }
         variant="medium"
         //TODO: Change link
-        as={Link}
-        to="/"
+        onClick={() => window.open('https://docs.sequence.xyz/')}
       />
     </Box>
   )

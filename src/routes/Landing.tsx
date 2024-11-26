@@ -41,7 +41,6 @@ function Landing() {
   }
 
   return (
-    // TODO Change background to match figma
     <Box
       justifyContent="center"
       height="vh"
@@ -114,7 +113,11 @@ function Landing() {
           <>
             <Box gap="2">
               {/* TODO: Change link */}
-              <Button label="Learn more" size="md" />
+              <Button
+                label="Learn more"
+                size="md"
+                onClick={() => window.open('https://docs.sequence.xyz/')}
+              />
               <Button as={Link} to="/recovery" label="Start Recovery" variant="primary" size="md" />
             </Box>
             <Box flexDirection="row" gap="2" width="2/3">

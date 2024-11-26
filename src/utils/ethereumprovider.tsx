@@ -26,7 +26,7 @@ export async function createProvider(showQr: boolean): Promise<EthereumProvider>
     metadata: {
       name: 'Sequence Recovery Wallet External Wallet',
       description: '',
-      url: 'TODO_CHANGE_LATER',
+      url: 'https://recovery.sequence.app',
       icons: []
     }
   })

@@ -29,6 +29,3 @@
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
-
-
-// TODO: set 'noUnusedLocals' and 'noUnusedParameters' to true

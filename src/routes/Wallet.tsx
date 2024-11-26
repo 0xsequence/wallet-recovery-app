@@ -191,7 +191,6 @@ function Wallet() {
       chainId: number,
       _options?: ConnectOptions
     ): Promise<{ hash: string }> => {
-      // TODO do we need options?
       try {
         const providerAddress = await walletStore.getExternalProviderAddress(provider!)
 
@@ -249,7 +248,6 @@ function Wallet() {
     options?: ConnectOptions
   }) {
     const signMessage = async (msg: MessageToSign, _options?: ConnectOptions): Promise<{ hash: string }> => {
-      // TODO do we need options?
       try {
         let hash: string | undefined
 

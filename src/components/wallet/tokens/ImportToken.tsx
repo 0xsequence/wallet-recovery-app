@@ -51,7 +51,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }))
 
   const handleAdd = async () => {
-    // TODO: add form validation
     if (selectedNetwork && tokenAddress && tokenInfo) {
       setIsAddingToken(true)
       await tokenStore.addToken({

@@ -108,7 +108,7 @@ export class WalletStore {
       })
 
       if (lastConnectedProvider) {
-        this.setExternalProvider(lastConnectedProvider)
+        this.setExternalProvider(lastConnectedProvider, true)
       }
     })
 
@@ -298,7 +298,7 @@ export class WalletStore {
     }
   }
 
-  setExternalProvider = async (providerDetail: ProviderDetail | undefined) => {
+  setExternalProvider = async (providerDetail: ProviderDetail | undefined, noToast?: boolean) => {
     if (!providerDetail) {
       this.selectedExternalProvider.set(undefined)
       this.selectedExternalWalletAddress.set(undefined)
@@ -314,11 +314,13 @@ export class WalletStore {
     this.selectedExternalProvider.set(providerDetail)
     this.selectedExternalWalletAddress.set(externalProviderAddress)
 
-    this.toast({
-      variant: 'success',
-      title: 'External wallet added successfully',
-      description: 'You can now relay transactions.'
-    })
+    if (!noToast) {
+      this.toast({
+        variant: 'success',
+        title: 'External wallet added successfully',
+        description: 'You can now relay transactions.'
+      })
+    }
 
     providerDetail.provider.on('accountsChanged', async accounts => {
       if (accounts.length === 0) {
@@ -565,7 +567,7 @@ class Prompter implements WalletUserPrompter {
 
     console.log('prompt sign txn:', transactions, chainId, options)
 
-    // TODO find out if we need to implement multiple transaction handling
+    // TODO implement multiple transaction handling
 
     validateTransactionRequest(accountAddress, newTxn)
 

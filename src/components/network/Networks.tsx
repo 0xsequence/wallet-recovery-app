@@ -19,7 +19,6 @@ export default function Networks() {
 
   const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
 
-  // TODO: Move user additions to top
   const sortedMainnets = mainnets.sort((a, _) => (userAdditions.includes(a.chainId) ? -1 : 1))
 
   const testnets = networks.filter(network => network.type === NetworkType.TESTNET)

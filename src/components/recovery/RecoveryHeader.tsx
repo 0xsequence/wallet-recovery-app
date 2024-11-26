@@ -35,6 +35,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
                 </Box>
               }
               variant="text"
+              // TODO: change link
               onClick={() => window.open('https://docs.sequence.xyz/')}
             />
             <Button
