@@ -80,6 +80,9 @@ export class AuthStore {
   async loadAccount(password?: string) {
     const db = await getIndexedDB(IndexedDBKey.SECURITY)
     const encryptedMnemonic = await db.get(IndexedDBKey.SECURITY, 'mnemonic')
+    if (encryptedMnemonic) {
+      this.isLoadingAccount.set(true)
+    }
     var key = await db.get(IndexedDBKey.SECURITY, 'key')
 
     let mnemonic: { wallet: string; mnemonic: string } | undefined = undefined
