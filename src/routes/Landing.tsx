@@ -42,7 +42,11 @@ function Landing() {
 
   return (
     // TODO Change background to match figma
-    <Box justifyContent="center" background="backgroundPrimary" height="vh">
+    <Box
+      justifyContent="center"
+      height="vh"
+      style={{ background: 'linear-gradient(to bottom, #280a6b, #000000 50%)' }}
+    >
       <Box
         flexDirection="column"
         justifyContent="center"
