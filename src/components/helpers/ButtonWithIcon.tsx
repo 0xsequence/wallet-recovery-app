@@ -1,4 +1,4 @@
-import { Box } from '@0xsequence/design-system'
+import { Box, Button } from '@0xsequence/design-system'
 import React from 'react'
 
 export const ButtonWithIcon = ({
@@ -11,20 +11,19 @@ export const ButtonWithIcon = ({
   disabled?: boolean
 }) => {
   return (
-    <Box
-      justifyContent="center"
-      alignItems="center"
-      background="backgroundMuted"
-      opacity={disabled ? '50' : '100'}
+    <Button
+      shape="square"
       borderRadius="sm"
-      height="9"
-      width="9"
-      cursor={disabled ? 'default' : 'pointer'}
+      disabled={disabled}
       onClick={() => {
         if (!disabled) onClick()
       }}
-    >
-      {icon}
-    </Box>
+      label={
+        <Box justifyContent="center" alignItems="center">
+          <Box position="absolute">{icon}</Box>
+        </Box>
+      }
+      style={{ height: '40px', width: '40px', background: 'rgba(255, 255, 255, 0.05)' }}
+    />
   )
 }
