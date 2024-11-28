@@ -18,9 +18,9 @@ import { useEffect, useState } from 'react'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import SelectProvider from '../SelectProvider'
-import { ButtonWithIcon } from '../helpers/ButtonWithIcon'
-import { ExternalIcon } from '../helpers/ExternalIcon'
+import SelectProvider from '~/components/SelectProvider'
+import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
+import { ExternalIcon } from '~/components/helpers/ExternalIcon'
 
 export default function ExternalWallet() {
   const walletStore = useStore(WalletStore)

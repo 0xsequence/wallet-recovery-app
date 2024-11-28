@@ -3,11 +3,11 @@ import { Box, Button, Divider, Image, Text } from '@0xsequence/design-system'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
+import SettingsDropdownMenu from '~/components/wallet/WalletDropdownMenu'
+
 import networkIcon from '~/assets/icons/chain.svg'
 import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
-
-import SequenceLogo from '../helpers/SequenceLogo'
-import SettingsDropdownMenu from '../wallet/WalletDropdownMenu'
+import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
 export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkModal: () => void }) {
   const authStore = useStore(AuthStore)
@@ -23,7 +23,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
           alignItems="center"
           style={{ height: '59px' }}
         >
-          <SequenceLogo variant="md" marginLeft="5" />
+          <Image src={SequenceRecoveryLogo} height="7" paddingLeft="5" />
           <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>
             <Button
               label={

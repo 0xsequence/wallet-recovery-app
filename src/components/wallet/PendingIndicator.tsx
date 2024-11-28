@@ -4,7 +4,7 @@ import { useObservable } from 'micro-observables'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import PendingTxn from '../PendingTxn'
+import PendingTxn from '~/components/PendingTxn'
 
 export default function PendingIndicator({ ...rest }: BoxProps) {
   const walletStore = useStore(WalletStore)

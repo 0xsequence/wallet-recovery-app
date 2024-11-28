@@ -16,13 +16,12 @@ import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
+import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
+import WalletScan from '~/components/signing/WalletScan'
 
 import LinkConnectionIcon from '~/assets/icons/link-connection.svg'
 import WarningIcon from '~/assets/icons/warning.svg'
-
-import ConnectDapp from '../signing/ConnectDapp'
-import WalletScan from '../signing/WalletScan'
 
 export default function DappList() {
   const walletStore = useStore(WalletStore)

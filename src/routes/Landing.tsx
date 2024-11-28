@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
-import SequenceLogo from '~/components/helpers/SequenceLogo'
 import RecoveryFooter from '~/components/recovery/RecoveryFooter'
 
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
+import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
 function Landing() {
   const authStore = useStore(AuthStore)
@@ -53,7 +53,7 @@ function Landing() {
         gap="10"
       >
         <Box flexDirection="column" gap="6">
-          <SequenceLogo variant="lg" justifyContent="center" />
+          <Image src={SequenceRecoveryLogo} height="8" />
 
           <Text
             textAlign="center"
