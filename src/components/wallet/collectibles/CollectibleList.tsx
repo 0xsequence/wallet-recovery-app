@@ -87,7 +87,7 @@ export default function CollectibleList({
               </>
             ) : (
               <Card flexDirection="column">
-                <Text alignSelf="center" variant="large" color="text50" padding="4">
+                <Text textAlign="center" variant="medium" color="text50" padding="4">
                   Import ERC721 or ERC1155 Collectibles
                 </Text>
               </Card>

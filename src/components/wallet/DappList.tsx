@@ -76,7 +76,7 @@ export default function DappList() {
               </Text>
             </Box>
           ) : (
-            <Text alignSelf="center" textAlign="center" variant="large" color="text50" padding="4">
+            <Text textAlign="center" variant="medium" color="text50" padding="4">
               Connect a Dapp with WalletConnect to sign actions
             </Text>
           )}

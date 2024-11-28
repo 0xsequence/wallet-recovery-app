@@ -116,7 +116,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
               </>
             ) : (
               <Card flexDirection="column">
-                <Text alignSelf="center" variant="large" color="text50" padding="4">
+                <Text textAlign="center" variant="medium" color="text50" padding="4">
                   Import ERC 20 token address
                 </Text>
               </Card>
