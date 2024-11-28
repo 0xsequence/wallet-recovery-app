@@ -299,17 +299,10 @@ function Wallet() {
   }
 
   return (
-    <Box>
+    <Box justifyContent="center">
       <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
 
-      <Box
-        justifySelf="center"
-        flexDirection="column"
-        padding="5"
-        width="full"
-        style={{ maxWidth: '800px' }}
-        paddingBottom="20"
-      >
+      <Box flexDirection="column" padding="5" width="full" style={{ maxWidth: '800px' }} paddingBottom="20">
         <Box flexDirection="column">
           <Box flexDirection="column" gap="5">
             <Text variant="normal" fontWeight="bold" color="text50">

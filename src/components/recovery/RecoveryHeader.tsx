@@ -16,14 +16,14 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
 
   return (
     <Box flexDirection="column" style={{ paddingBottom: '60px' }}>
-      <Box background="backgroundPrimary" position="fixed" width="full">
+      <Box background="backgroundPrimary" position="fixed" left="0" width="full">
         <Box
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
           style={{ height: '59px' }}
         >
-          <Image src={SequenceRecoveryLogo} height="7" paddingLeft="5" />
+          <Image src={SequenceRecoveryLogo} paddingLeft="5" />
           <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>
             <Button
               label={
