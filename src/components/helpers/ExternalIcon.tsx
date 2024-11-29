@@ -9,7 +9,7 @@ export const ExternalIcon = ({ src, ...rest }: { src: string } & BoxProps) => {
       style={{ height: '44px', width: '44px' }}
       {...rest}
     >
-      <Image width="10" height="10" src={src} borderRadius="xs" />
+      <Image width="10" height="auto" src={src} borderRadius="xs" />
     </Box>
   )
 }

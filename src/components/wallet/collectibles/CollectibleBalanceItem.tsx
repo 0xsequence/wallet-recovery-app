@@ -26,7 +26,7 @@ export default function CollectibleBalanceItem({
         </Box>
       )}
 
-      <Box flexDirection="column">
+      <Box flexDirection="column" justifyContent="center">
         <Box gap="2" alignItems="center">
           <Text variant="normal" fontWeight="bold" color="text80">
             {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
