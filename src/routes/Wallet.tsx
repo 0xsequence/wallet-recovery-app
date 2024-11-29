@@ -44,6 +44,7 @@ function Wallet() {
   const accountAddress = useObservable(authStore.accountAddress)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
   const isSigningMsg = useObservable(walletStore.isSigningMsg)
+  const isNetworkModalOpenObservable = useObservable(walletStore.isNetworkModalOpen)
 
   const networks = useObservable(networkStore.networks)
 
@@ -89,6 +90,10 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
+
+  useEffect(() => {
+    setIsNetworkModalOpen(isNetworkModalOpenObservable)
+  }, [isNetworkModalOpenObservable])
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
@@ -300,7 +305,7 @@ function Wallet() {
 
   return (
     <Box>
-      <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
+      <RecoveryHeader />
 
       <Box flexDirection="column" alignItems="center">
         <Box
@@ -339,7 +344,7 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal
           onClose={() => {
-            setIsNetworkModalOpen(false)
+            walletStore.isNetworkModalOpen.set(false)
             networkStore.discardUnsavedNetworkEdits()
             networkStore.isAddingNetwork.set(false)
           }}

@@ -21,9 +21,10 @@ import { TRACKER } from '~/utils/tracker'
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 import { WALLETS } from '~/constants/wallets'
 
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
+import { WalletStore } from '~/stores/WalletStore'
 
 import FilledCheckBox from '~/components/helpers/FilledCheckBox'
 import Networks from '~/components/network/Networks'
@@ -35,6 +36,7 @@ import { WALLET_WIDTH } from './Wallet'
 function Recovery() {
   const authStore = useStore(AuthStore)
   const networkStore = useStore(NetworkStore)
+  const walletStore = useStore(WalletStore)
   const networks = networkStore.networks.get()
 
   const [wallet, setWallet] = useState('')
@@ -52,6 +54,8 @@ function Recovery() {
   const [isCheckingWallet, setIsCheckingWallet] = useState(false)
   const [isReadyToContinue, setIsReadyToContinue] = useState(false)
 
+  const isNetworkModalOpenObservable = useObservable(walletStore.isNetworkModalOpen)
+
   useEffect(() => {
     setWarningVisible(false)
     if (!ethers.isAddress(wallet)) {
@@ -62,6 +66,10 @@ function Recovery() {
     const walletAddress = ethers.getAddress(wallet)
     validateAddress(walletAddress)
   }, [wallet])
+
+  useEffect(() => {
+    setIsNetworkModalOpen(isNetworkModalOpenObservable)
+  }, [isNetworkModalOpenObservable])
 
   const handleSignInWithRecoveryMnemonic = () => {
     const walletAddress = ethers.getAddress(wallet)
@@ -149,7 +157,7 @@ function Recovery() {
 
   return (
     <Box flexDirection="column" background="backgroundPrimary">
-      <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
+      <RecoveryHeader />
 
       <Box
         alignSelf="center"
@@ -329,7 +337,7 @@ function Recovery() {
       </Box>
 
       {isNetworkModalOpen && (
-        <Modal onClose={() => setIsNetworkModalOpen(false)}>
+        <Modal onClose={() => walletStore.isNetworkModalOpen.set(false)}>
           <Networks />
         </Modal>
       )}

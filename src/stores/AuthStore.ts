@@ -168,6 +168,5 @@ export class AuthStore {
 
     // Not sure if we should abstract this to LocalStore but we'd have to instantiate a LocalStore to access the class function
     localStorage.clear()
-    window.location.reload()
   }
 }
