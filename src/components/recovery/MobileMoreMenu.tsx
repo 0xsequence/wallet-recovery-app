@@ -4,8 +4,8 @@ import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { useObservable, useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import networkIcon from '~/assets/icons/chain.svg'
-import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
+import networkIcon from '~/assets/icons/chain-white.svg'
+import externalArrowIcon from '~/assets/icons/external-link-arrow-white.svg'
 
 export default function MobileMoreMenu() {
   const walletStore = useStore(WalletStore)
