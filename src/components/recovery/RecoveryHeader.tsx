@@ -18,7 +18,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
 
   return (
     <Box flexDirection="column" style={{ paddingBottom: '60px' }}>
-      <Box background="backgroundPrimary" position="fixed" left="0" width="full">
+      <Box background="backgroundPrimary" position="fixed" width="full">
         <Box
           flexDirection="row"
           justifyContent="space-between"

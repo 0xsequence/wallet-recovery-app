@@ -20,7 +20,6 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
-import { RECOVERY_HEADER_HEIGHT } from '~/components/recovery/RecoveryHeader'
 import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
 import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
 import DappList from '~/components/wallet/DappList'
@@ -300,7 +299,7 @@ function Wallet() {
   }
 
   return (
-    <Box justifyContent="center">
+    <Box>
       <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
 
       <Box flexDirection="column" alignItems="center">
