@@ -162,17 +162,17 @@ function Recovery() {
         <Button leftIcon={ChevronLeftIcon} label="Back" size="sm" as={Link} to="/" />
 
         <Box flexDirection="column">
-          <Text variant="xlarge" color="text100">
+          <Text variant="xlarge" color="text80">
             Recover your wallet
           </Text>
 
           <Divider marginY="6" />
 
-          <Text variant="normal" color="text100">
+          <Text variant="normal" fontWeight="medium" color="text80">
             Recovery phrase
           </Text>
 
-          <Text variant="normal" color="text50" marginBottom="1">
+          <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
             Paste your 12-word mnemonic, with each word separated by a space.
           </Text>
 
@@ -195,7 +195,7 @@ function Recovery() {
           label={
             <Box flexDirection="row" alignItems="center" gap="1">
               <FilledCheckBox checked={showMnemonic} />
-              <Text variant="normal" color="text100">
+              <Text variant="normal" fontWeight="medium" color="text80">
                 Show secret recovery phrase
               </Text>
             </Box>
@@ -204,10 +204,10 @@ function Recovery() {
         />
 
         <Box flexDirection="column">
-          <Text variant="normal" color="text100">
+          <Text variant="normal" fontWeight="medium" color="text80">
             Create password
           </Text>
-          <Text variant="normal" color="text50" marginBottom="1">
+          <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
             Encrypt your mnemonic with an 8+ character password.
           </Text>
 
@@ -226,7 +226,7 @@ function Recovery() {
         </Box>
 
         <Box flexDirection="column">
-          <Text variant="normal" color="text100" marginBottom="1">
+          <Text variant="normal" fontWeight="medium" color="text80" marginBottom="1">
             Confirm password
           </Text>
 
@@ -247,7 +247,7 @@ function Recovery() {
         {isLoadingWallets && (
           <Box alignSelf="center" alignItems="center" gap="1">
             <Spinner size="md" />
-            <Text variant="small" color="text100">
+            <Text variant="small" color="text80">
               Looking for wallet address...
             </Text>
           </Box>
@@ -262,7 +262,7 @@ function Recovery() {
 
         {showManualAddress && (
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="bold" color="text100">
               Enter wallet address manually
             </Text>
             <TextInput
@@ -277,7 +277,7 @@ function Recovery() {
         {isCheckingWallet && (
           <Box alignSelf="center" alignItems="center" gap="1">
             <Spinner size="md" />
-            <Text variant="small" color="text100">
+            <Text variant="small" color="text80">
               Checking wallet address...
             </Text>
           </Box>

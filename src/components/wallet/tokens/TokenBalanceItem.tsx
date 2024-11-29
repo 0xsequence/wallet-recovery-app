@@ -41,7 +41,7 @@ export default function TokenBalanceItem({
         </Box>
 
         <Box>
-          <Text variant="normal" fontWeight="bold" color="text50">
+          <Text variant="normal" fontWeight="medium" color="text50">
             {truncatedBalance}
           </Text>
         </Box>

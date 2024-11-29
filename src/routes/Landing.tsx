@@ -67,12 +67,12 @@ function Landing() {
 
         {isLoadingAccount ? (
           <>
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Enter your password to continue and unlock your wallet
             </Text>
             <Box flexDirection="column" gap="4" width="3/4">
               <Box flexDirection="column" gap="1">
-                <Text variant="normal" color="text100">
+                <Text variant="normal" fontWeight="medium" color="text80">
                   Password
                 </Text>
                 <TextInput
@@ -125,7 +125,7 @@ function Landing() {
                     Connect to Applications
                   </Text>
                 </Box>
-                <Text variant="normal" color="text50">
+                <Text variant="normal" fontWeight="medium" color="text50">
                   Connect your wallet to any web3 application via Walletconnect
                 </Text>
               </Card>
@@ -136,7 +136,7 @@ function Landing() {
                     Move funds anywhere
                   </Text>
                 </Box>
-                <Text variant="normal" color="text50">
+                <Text variant="normal" fontWeight="medium" color="text50">
                   Transfer funds securely to any wallet, fully decentralized
                 </Text>
               </Card>
@@ -151,7 +151,7 @@ function Landing() {
             <Text variant="large" color="text100" marginRight="8">
               Are you sure you want to sign out?
             </Text>
-            <Text variant="normal" color="text50">
+            <Text variant="normal" fontWeight="medium" color="text50">
               If you do not remember your password, you can reset and start over.
               <br /> This will require you to re-enter your mnemonic.
             </Text>

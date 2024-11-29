@@ -145,7 +145,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
               <Text
                 variant="normal"
-                fontWeight="medium"
                 color="text50"
                 underline={!!tokenDirectory}
                 cursor={tokenDirectory ? 'pointer' : 'default'}
@@ -230,7 +229,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               <Text variant="medium" fontWeight="bold" color="text80">
                 {collectibleInfoResponse.name ?? ''}
               </Text>
-              <Text variant="small" fontWeight="medium" color="text80">
+              <Text variant="small" color="text80">
                 Your Balance:
               </Text>
               <Text variant="medium" fontWeight="bold" color="text80">

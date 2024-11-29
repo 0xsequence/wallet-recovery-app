@@ -126,7 +126,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               </Text>
               <Text
                 variant="normal"
-                fontWeight="medium"
                 color="text50"
                 underline={!!tokenDirectory}
                 cursor={tokenDirectory ? 'pointer' : 'default'}
@@ -161,7 +160,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             <Text variant="medium" fontWeight="bold" color="text80">
               {tokenInfo.symbol ?? ''}
             </Text>
-            <Text variant="small" fontWeight="medium" color="text80">
+            <Text variant="small" color="text80">
               Your Balance:
             </Text>
             <Text variant="medium" fontWeight="bold" color="text80">

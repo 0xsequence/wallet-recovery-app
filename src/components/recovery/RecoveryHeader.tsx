@@ -31,7 +31,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
               label={
                 <Box flexDirection="row" alignItems="center" gap="2">
                   <Image src={externalArrowIcon} height="5" />
-                  <Text variant="medium" lineHeight="5" color="text50">
+                  <Text variant="normal" fontWeight="bold" color="text50">
                     Docs
                   </Text>
                 </Box>
@@ -44,7 +44,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
               label={
                 <Box flexDirection="row" alignItems="center" gap="2">
                   <Image src={networkIcon} height="5" />
-                  <Text variant="medium" lineHeight="5" color="text50">
+                  <Text variant="normal" fontWeight="bold" color="text50">
                     Networks
                   </Text>
                 </Box>

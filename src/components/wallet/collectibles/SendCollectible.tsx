@@ -112,7 +112,7 @@ export default function SendCollectible({
           label={
             <Box flexDirection="row" alignItems="center" gap="2">
               <FilledCheckBox checked={sendToExternalWallet} size="md" />
-              <Text variant="small" fontWeight="medium" color="text80">
+              <Text variant="small" color="text80">
                 Send to connected external wallet address
               </Text>
             </Box>

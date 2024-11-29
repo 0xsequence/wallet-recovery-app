@@ -60,11 +60,11 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
 
         <Box flexDirection="column" gap="3">
           <Card flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Text variant="normal" fontWeight="semibold" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text100">
               Origin
             </Text>
             <Box flexDirection="row" alignItems="center" gap="2">
-              <Text variant="normal" fontWeight="semibold" color="text100">
+              <Text variant="normal" fontWeight="medium" color="text100">
                 {connectOptions?.origin?.split('//')[1]}
               </Text>
               <IconButton
@@ -76,10 +76,10 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
             </Box>
           </Card>
           <Card flexDirection="row" justifyContent="space-between">
-            <Text variant="normal" fontWeight="semibold" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text100">
               Network
             </Text>
-            <Text variant="normal" fontWeight="semibold" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text100">
               {getNetworkTitle(Number(connectOptions?.networkId))}
             </Text>
           </Card>

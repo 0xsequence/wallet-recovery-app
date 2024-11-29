@@ -18,7 +18,7 @@ export default function WalletList({
 
   return (
     <Box flexDirection="column" gap={`${gapWidth}`}>
-      <Text variant="normal" color="text100">
+      <Text variant="normal" fontWeight="medium" color="text80">
         Wallets found
       </Text>
       {possibleWallets.map(wallet => {
@@ -40,7 +40,12 @@ export default function WalletList({
                     paddingX="4"
                     style={{ width: `${WALLET_WIDTH - ROUND_CHECKBOX_SIZE * 4 - gapWidth * 4}px` }}
                   >
-                    <Text variant="normal" color="text100" style={{ fontFamily: 'monospace' }}>
+                    <Text
+                      variant="normal"
+                      fontWeight="medium"
+                      color="text100"
+                      style={{ fontFamily: 'monospace' }}
+                    >
                       {wallet}
                     </Text>
                   </Box>

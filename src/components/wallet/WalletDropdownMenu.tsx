@@ -51,7 +51,7 @@ export default function SettingsDropdownMenu() {
           label={
             <Box flexDirection="row" alignItems="center" gap="2">
               <GradientAvatar address={walletAddress} size="sm" />
-              <Text variant="normal" fontWeight="bold" color="text100">
+              <Text variant="normal" fontWeight="medium" fontWeight="bold" color="text100">
                 {truncateMiddle(walletAddress!, 4, 4)}
               </Text>
             </Box>

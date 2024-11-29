@@ -73,7 +73,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               </Text>
 
               {(hasPreviousEdit || isUserAddition) && (
-                <Text variant="normal" color="text50">
+                <Text variant="normal" fontWeight="medium" color="text50">
                   {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
                 </Text>
               )}

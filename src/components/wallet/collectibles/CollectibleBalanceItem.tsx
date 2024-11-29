@@ -38,7 +38,7 @@ export default function CollectibleBalanceItem({
         </Box>
 
         <Box>
-          <Text variant="normal" fontWeight="bold" color="text50">
+          <Text variant="normal" fontWeight="medium" color="text50">
             {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
               ? Number(
                   ethers.formatUnits(

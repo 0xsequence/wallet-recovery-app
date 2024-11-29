@@ -78,7 +78,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
           >
             <FilledCheckbox checked={filterZeroBalances} size="md" />
 
-            <Text variant="small" fontWeight="medium" color="text80">
+            <Text variant="small" color="text80">
               Filter zero balances
             </Text>
           </Box>
@@ -116,7 +116,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
               </>
             ) : (
               <Card flexDirection="column">
-                <Text textAlign="center" variant="normal" fontWeight="medium" color="text50" padding="4">
+                <Text textAlign="center" variant="normal" color="text50" padding="4">
                   Import ERC 20 token address
                 </Text>
               </Card>

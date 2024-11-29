@@ -96,7 +96,7 @@ export default function ExternalWallet() {
                 </Text>
 
                 <Box gap="1">
-                  <Text variant="normal" color="text50" width="full">
+                  <Text variant="normal" fontWeight="medium" color="text50" width="full">
                     {selectedExternalWalletAddress}
                   </Text>
 
@@ -112,7 +112,7 @@ export default function ExternalWallet() {
             <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => handleDisconnect()} />
           </Box>
         ) : (
-          <Text textAlign="center" variant="normal" fontWeight="medium" color="text50" padding="4">
+          <Text textAlign="center" variant="normal" color="text50" padding="4">
             Connect an external wallet to relay transactions
           </Text>
         )}
