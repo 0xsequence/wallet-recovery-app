@@ -11,11 +11,11 @@ export default function NetworkHeader({
   return (
     <Box flexDirection="column" width="full" position="absolute" background="backgroundPrimary">
       <Box paddingTop="6" paddingX="6">
-        <Text variant="xlarge" color="text100">
+        <Text variant="large" fontWeight="bold" color="text80">
           Networks
         </Text>
         <TabsPrimitive.TabsList style={{ marginTop: '24px' }}>
-          <Box flexDirection="row" style={{ height: '36px' }}>
+          <Box flexDirection="row" style={{ height: '32px' }}>
             <NetworkTab value={NetworkType.MAINNET} selectedNetworkType={selectedNetworkType} />
 
             <NetworkTab value={NetworkType.TESTNET} selectedNetworkType={selectedNetworkType} />

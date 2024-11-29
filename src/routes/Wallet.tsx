@@ -20,6 +20,7 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import Networks from '~/components/network/Networks'
 import RecoveryHeader from '~/components/recovery/RecoveryHeader'
+import { RECOVERY_HEADER_HEIGHT } from '~/components/recovery/RecoveryHeader'
 import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
 import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
 import DappList from '~/components/wallet/DappList'
@@ -302,28 +303,36 @@ function Wallet() {
     <Box justifyContent="center">
       <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
 
-      <Box flexDirection="column" padding="5" width="full" style={{ maxWidth: '800px' }} paddingBottom="20">
-        <Box flexDirection="column">
-          <Box flexDirection="column" gap="5">
-            <Text variant="normal" fontWeight="bold" color="text50">
-              External connections
-            </Text>
+      <Box flexDirection="column" alignItems="center">
+        <Box
+          flexDirection="column"
+          padding="5"
+          width="full"
+          style={{ maxWidth: WALLET_WIDTH }}
+          paddingBottom="20"
+        >
+          <Box flexDirection="column">
+            <Box flexDirection="column" gap="5">
+              <Text variant="small" fontWeight="bold" color="text50">
+                External connections
+              </Text>
 
-            <ExternalWallet />
+              <ExternalWallet />
 
-            <DappList />
-          </Box>
+              <DappList />
+            </Box>
 
-          <PendingIndicator paddingY="5" />
+            <PendingIndicator paddingY="5" />
 
-          <Box flexDirection="column" gap="5">
-            <Text variant="normal" fontWeight="bold" color="text50">
-              My Sequence wallet
-            </Text>
+            <Box flexDirection="column" gap="5">
+              <Text variant="small" fontWeight="bold" color="text50">
+                My Sequence wallet
+              </Text>
 
-            <TokenList onSendClick={handleTokenOnSendClick} />
+              <TokenList onSendClick={handleTokenOnSendClick} />
 
-            <CollectibleList onSendClick={handleCollectibleOnSendClick} />
+              <CollectibleList onSendClick={handleCollectibleOnSendClick} />
+            </Box>
           </Box>
         </Box>
       </Box>

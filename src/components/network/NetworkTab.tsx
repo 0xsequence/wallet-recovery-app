@@ -22,7 +22,7 @@ export default function NetworkTab({
       }}
     >
       <Text
-        variant="medium"
+        variant="normal"
         fontWeight="semibold"
         color={selectedNetworkType === value ? 'text100' : 'text50'}
         paddingX="4"

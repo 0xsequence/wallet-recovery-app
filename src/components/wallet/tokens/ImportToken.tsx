@@ -86,13 +86,13 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   return (
     <Box flexDirection="column">
       <Box flexDirection="column" padding="6" gap="6">
-        <Text variant="large" fontWeight="bold" color="text100">
+        <Text variant="large" fontWeight="bold" color="text80">
           Import Token
         </Text>
         <Box flexDirection="column">
           <Box flexDirection="row" style={{ paddingBottom: '5px' }}>
             <Box>
-              <Text variant="normal" fontWeight="semibold" color="text100" paddingY="2" paddingX="4">
+              <Text variant="normal" fontWeight="medium" color="text80" paddingY="2" paddingX="4">
                 ERC20 Token
               </Text>
 
@@ -104,7 +104,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
         </Box>
         <Box flexDirection="column" gap="3">
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Token Network
             </Text>
 
@@ -116,16 +116,17 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           </Box>
 
           <Box flexDirection="column" gap="0.5">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Token Address
             </Text>
 
             <Box flexDirection="row" gap="1" paddingBottom="0.5">
-              <Text variant="normal" color="text50">
+              <Text variant="normal" fontWeight="medium" color="text50">
                 See addresses on network's
               </Text>
               <Text
                 variant="normal"
+                fontWeight="medium"
                 color="text50"
                 underline={!!tokenDirectory}
                 cursor={tokenDirectory ? 'pointer' : 'default'}
@@ -157,13 +158,13 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
         {!isFetchingTokenInfo && tokenInfo && (
           <Card flexDirection="column" gap="2">
-            <Text variant="medium" color="text100">
+            <Text variant="medium" fontWeight="bold" color="text80">
               {tokenInfo.symbol ?? ''}
             </Text>
-            <Text variant="small" color="text80">
+            <Text variant="small" fontWeight="medium" color="text80">
               Your Balance:
             </Text>
-            <Text variant="medium" color="text100">
+            <Text variant="medium" fontWeight="bold" color="text80">
               {tokenInfo.balance}
             </Text>
           </Card>

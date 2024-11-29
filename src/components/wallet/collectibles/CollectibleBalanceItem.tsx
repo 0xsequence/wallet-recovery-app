@@ -19,40 +19,39 @@ export default function CollectibleBalanceItem({
   onRemoveClick?: () => void
 }) {
   return (
-    <Card flexDirection="row" justifyContent="space-between">
-      <Box flexDirection="row" gap="3">
-        {collectibleInfo.collectibleInfoResponse.image && (
-          <Box>
-            <ExternalIcon background="text80" src={collectibleInfo.collectibleInfoResponse.image} />
-          </Box>
-        )}
-        <Box flexDirection="column">
-          <Box gap="2" alignItems="center">
-            <Text variant="large" fontWeight="bold" color="text100">
-              {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
-            </Text>
-            <Text variant="small" fontWeight="bold" color="text50">
-              #{collectibleInfo.collectibleInfoParams.tokenId}
-            </Text>
-            <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
-          </Box>
+    <Card flexDirection="row" alignItems="center" gap="3">
+      {collectibleInfo.collectibleInfoResponse.image && (
+        <Box>
+          <ExternalIcon background="buttonGlass" src={collectibleInfo.collectibleInfoResponse.image} />
+        </Box>
+      )}
 
-          <Box>
-            <Text variant="normal" fontWeight="bold" color="text50">
-              {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
-                ? Number(
-                    ethers.formatUnits(
-                      collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
-                      collectibleInfo.collectibleInfoResponse.decimals ?? 0
-                    )
+      <Box flexDirection="column">
+        <Box gap="2" alignItems="center">
+          <Text variant="normal" fontWeight="bold" color="text80">
+            {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
+          </Text>
+          <Text variant="small" fontWeight="bold" color="text50">
+            #{collectibleInfo.collectibleInfoParams.tokenId}
+          </Text>
+          <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
+        </Box>
+
+        <Box>
+          <Text variant="normal" fontWeight="bold" color="text50">
+            {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
+              ? Number(
+                  ethers.formatUnits(
+                    collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                    collectibleInfo.collectibleInfoResponse.decimals ?? 0
                   )
-                : 1}
-            </Text>
-          </Box>
+                )
+              : 1}
+          </Text>
         </Box>
       </Box>
 
-      <Box flexDirection="row" alignItems="center" gap="2">
+      <Box marginLeft="auto" gap="3">
         <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={false} onClick={onSendClick} />
 
         {onRemoveClick && (

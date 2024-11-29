@@ -36,10 +36,10 @@ export default function CollectibleList({
   return (
     <Box width="full">
       <Box justifyContent="space-between" alignItems="center">
-        <Box gap="2">
-          <Image src={CollectionIcon} width="7" height="7" />
+        <Box alignItems="center" gap="2">
+          <Image src={CollectionIcon} width="5" height="5" />
 
-          <Text variant="large" fontWeight="bold" color="text100">
+          <Text variant="normal" fontWeight="bold" color="text100">
             Collectibles
           </Text>
         </Box>
@@ -87,7 +87,7 @@ export default function CollectibleList({
               </>
             ) : (
               <Card flexDirection="column">
-                <Text textAlign="center" variant="medium" color="text50" padding="4">
+                <Text textAlign="center" variant="normal" fontWeight="medium" color="text50" padding="4">
                   Import ERC721 or ERC1155 Collectibles
                 </Text>
               </Card>

@@ -9,6 +9,8 @@ import networkIcon from '~/assets/icons/chain.svg'
 import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
 import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
+export const RECOVERY_HEADER_HEIGHT = 60
+
 export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkModal: () => void }) {
   const authStore = useStore(AuthStore)
 
@@ -21,7 +23,7 @@ export default function RecoveryHeader({ handleNetworkModal }: { handleNetworkMo
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
-          style={{ height: '59px' }}
+          style={{ height: RECOVERY_HEADER_HEIGHT - 1 }}
         >
           <Image src={SequenceRecoveryLogo} paddingLeft="5" />
           <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>

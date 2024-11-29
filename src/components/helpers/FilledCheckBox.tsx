@@ -10,7 +10,12 @@ export default function FilledCheckBox({ checked, size = 'lg' }: { checked: bool
       height={size === 'lg' ? '7' : '5'}
       justifyContent="center"
       alignItems="center"
-      style={{ borderRadius: size === 'lg' ? '6px' : '3px', background: checked ? '#4F4F4F' : 'inherit' }}
+      style={{
+        width: size === 'lg' ? '28px' : '22px',
+        height: size === 'lg' ? '28px' : '22px',
+        borderRadius: size === 'lg' ? '6px' : '3px',
+        background: checked ? '#4F4F4F' : 'inherit'
+      }}
     >
       {checked ? (
         <img

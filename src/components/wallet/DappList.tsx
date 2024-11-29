@@ -44,9 +44,9 @@ export default function DappList() {
     <Box flexDirection="column">
       <Box justifyContent="space-between" alignItems="center" gap="2">
         <Box alignItems="center" gap="2">
-          <Image src={LinkConnectionIcon} width="7" height="7" />
+          <Image src={LinkConnectionIcon} width="5" height="5" />
 
-          <Text variant="large" fontWeight="bold" color="text100">
+          <Text variant="normal" fontWeight="bold" color="text100">
             Connected Dapps
           </Text>
         </Box>
@@ -70,13 +70,13 @@ export default function DappList() {
           {provider?.info.name === 'WalletConnect' ? (
             <Box flexDirection="column" alignItems="center" gap="4">
               <Image src={WarningIcon} color="text50" width="8" height="8" />
-              <Text textAlign="center" variant="large" color="text50" padding="4">
+              <Text textAlign="center" variant="normal" fontWeight="medium" color="text50" padding="4">
                 To connect to Dapps, switch from WalletConnect to a different wallet as your External Wallet
                 connection method.
               </Text>
             </Box>
           ) : (
-            <Text textAlign="center" variant="medium" color="text50" padding="4">
+            <Text textAlign="center" variant="normal" fontWeight="medium" color="text50" padding="4">
               Connect a Dapp with WalletConnect to sign actions
             </Text>
           )}

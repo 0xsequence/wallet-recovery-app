@@ -32,8 +32,8 @@ export default function TokenBalanceItem({
       />
 
       <Box flexDirection="column">
-        <Box gap="2" alignItems="center">
-          <Text variant="large" fontWeight="bold" color="text100">
+        <Box gap="1" alignItems="center">
+          <Text variant="normal" fontWeight="bold" color="text80">
             {tokenBalance.contractInfo?.symbol ?? 'Native Token'}
           </Text>
 
@@ -47,7 +47,7 @@ export default function TokenBalanceItem({
         </Box>
       </Box>
 
-      <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
+      <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="3">
         <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={disabled} onClick={onSendClick} />
 
         {onRemoveClick && (

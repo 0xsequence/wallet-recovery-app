@@ -116,13 +116,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   return (
     <Box flexDirection="column">
       <Box flexDirection="column" padding="6" gap="6">
-        <Text variant="large" fontWeight="bold" color="text100">
+        <Text variant="large" fontWeight="bold" color="text80">
           Import ERC721 or ERC1155 Collectible
         </Text>
 
         <Box flexDirection="column" gap="3">
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Collectible Network
             </Text>
 
@@ -134,17 +134,18 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           </Box>
 
           <Box flexDirection="column" gap="0.5">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Collectible Address
             </Text>
 
             <Box flexDirection="row" gap="1" paddingBottom="0.5">
-              <Text variant="normal" color="text50">
+              <Text variant="normal" fontWeight="medium" color="text50">
                 See addresses on network's
               </Text>
 
               <Text
                 variant="normal"
+                fontWeight="medium"
                 color="text50"
                 underline={!!tokenDirectory}
                 cursor={tokenDirectory ? 'pointer' : 'default'}
@@ -168,7 +169,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           </Box>
 
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Collectible Type
             </Text>
 
@@ -183,7 +184,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           </Box>
 
           <Box flexDirection="column" gap="0.5">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               Collectible Token ID
             </Text>
 
@@ -226,13 +227,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             <Image src={collectibleInfoResponse.image} style={{ width: '120px', height: 'auto' }} />
 
             <Box flexDirection="column" gap="2">
-              <Text variant="medium" color="text100">
+              <Text variant="medium" fontWeight="bold" color="text80">
                 {collectibleInfoResponse.name ?? ''}
               </Text>
-              <Text variant="small" color="text80">
+              <Text variant="small" fontWeight="medium" color="text80">
                 Your Balance:
               </Text>
-              <Text variant="medium" color="text100">
+              <Text variant="medium" fontWeight="bold" color="text80">
                 {Number(
                   ethers.formatUnits(
                     collectibleInfoResponse.balance as BigNumberish,

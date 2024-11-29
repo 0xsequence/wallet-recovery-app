@@ -54,7 +54,7 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
   return (
     <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
       <Box flexDirection="column" gap="6" padding="6">
-        <Text variant="large" fontWeight="bold" color="text100">
+        <Text variant="large" fontWeight="bold" color="text80">
           Would you like to connect to this dapp?
         </Text>
 

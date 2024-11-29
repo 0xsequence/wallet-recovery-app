@@ -21,7 +21,7 @@ export default function NetworkTag({
       paddingBottom={paddingBottom}
       paddingX="2"
     >
-      <Text variant="xsmall" color="text100">
+      <Text variant="xsmall" color="text80">
         {getNetworkTitle(chainId)}
       </Text>
     </Box>

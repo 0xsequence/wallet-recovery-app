@@ -28,7 +28,7 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
   return (
     <Box flexDirection="column">
       <Box flexDirection="column" justifyContent="space-between" padding="6" gap="6">
-        <Text variant="large" fontWeight="bold" color="text100">
+        <Text variant="large" fontWeight="bold" color="text80">
           Connect a Dapp
         </Text>
 
@@ -48,7 +48,7 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
           />
         </Box>
         <Box flexDirection="column" gap="1">
-          <Text variant="normal" color="text100">
+          <Text variant="normal" fontWeight="medium" color="text80">
             Paste connection string
           </Text>
 
