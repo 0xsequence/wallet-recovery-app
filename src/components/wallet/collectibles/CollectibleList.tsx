@@ -39,7 +39,7 @@ export default function CollectibleList({
         <Box alignItems="center" gap="2">
           <Image src={CollectionIcon} width="5" height="5" />
 
-          <Text variant="normal" fontWeight="medium" fontWeight="bold" color="text100">
+          <Text variant="normal" fontWeight="bold" color="text100">
             Collectibles
           </Text>
         </Box>
