@@ -1,6 +1,5 @@
 import { Box, Button, Divider, Image, MenuIcon, Text, useMediaQuery } from '@0xsequence/design-system'
 import { AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
