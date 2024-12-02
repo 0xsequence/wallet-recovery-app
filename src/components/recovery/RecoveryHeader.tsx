@@ -1,5 +1,6 @@
 import { Box, Button, Divider, Image, MenuIcon, Text, useMediaQuery } from '@0xsequence/design-system'
 import { AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -29,8 +30,8 @@ export default function RecoveryHeader() {
     walletStore.isNetworkModalOpen.set(true)
   }
 
-  const toggleNavDrawer = () => {
-    walletStore.isNavDrawerOpen.set(!isNavDrawerOpen)
+  const toggleNavDrawer = (isOpen: boolean) => {
+    walletStore.isNavDrawerOpen.set(isOpen)
   }
 
   return (
@@ -45,10 +46,13 @@ export default function RecoveryHeader() {
           {isMobile ? (
             <>
               <Box paddingLeft="5" flexDirection="row">
-                <AnimatePresence>
-                  {isNavDrawerOpen && <MobileDrawerContent />}
-                </AnimatePresence>
-                <Button variant="text" onClick={() => toggleNavDrawer()} leftIcon={MenuIcon} />
+                <AnimatePresence>{isNavDrawerOpen && <MobileDrawerContent />}</AnimatePresence>
+
+                <Button
+                  variant="text"
+                  onClick={() => toggleNavDrawer(!isNavDrawerOpen)}
+                  leftIcon={MenuIcon}
+                />
 
                 <Image src={SequenceLogo} paddingLeft="5" />
               </Box>
@@ -83,7 +87,9 @@ export default function RecoveryHeader() {
                     </Box>
                   }
                   variant="text"
-                  onClick={() => openNetworkModal()}
+                  onClick={() => {
+                    openNetworkModal()
+                  }}
                 />
                 {signedIn && <SettingsDropdownMenu />}
               </Box>

@@ -2,7 +2,6 @@ import { Box,  Image, Text } from '@0xsequence/design-system'
 import { motion } from 'framer-motion'
 
 import { useStore } from '~/stores'
-import { useObservable } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
 import networkIcon from '~/assets/icons/chain.svg'
@@ -13,10 +12,13 @@ import { navDrawer } from './styles.css'
 
 export const MobileDrawerContent = () => {
   const walletStore = useStore(WalletStore)
-  const isNetworkModalOpen = useObservable(walletStore.isNetworkModalOpen)
 
-  const toggleNetworkModal = () => {
-    walletStore.isNetworkModalOpen.set(!isNetworkModalOpen)
+  const openNetworkModal = () => {
+    walletStore.isNetworkModalOpen.set(true)
+  }
+
+  const toggleNavDrawer = (isOpen: boolean) => {
+    walletStore.isNavDrawerOpen.set(isOpen)
   }
 
   return (
@@ -77,7 +79,10 @@ export const MobileDrawerContent = () => {
             // borderRadius="sm"
             gap="2"
             // style={{ cursor: 'pointer', padding: '8px 16px 8px 8px' }}
-            onClick={() => toggleNetworkModal()}
+            onClick={() => {
+              openNetworkModal()
+              toggleNavDrawer(false)
+            }}
           >
             <Image src={networkIcon} height="5" />
             <Text variant="normal" fontWeight="bold" color="text50">
