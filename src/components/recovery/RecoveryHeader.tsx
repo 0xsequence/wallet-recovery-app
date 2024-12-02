@@ -1,4 +1,5 @@
-import { Box, Button, Divider, Image, Text, useMediaQuery } from '@0xsequence/design-system'
+import { Box, Button, Divider, Image, MenuIcon, Text, useMediaQuery } from '@0xsequence/design-system'
+import { AnimatePresence } from 'framer-motion'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -11,9 +12,9 @@ import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
 import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 import SequenceLogo from '~/assets/images/sequence.svg'
 
-import MobileMoreMenu from './MobileMoreMenu'
+import { MobileDrawerContent } from './MobileDrawerContent'
 
-export const RECOVERY_HEADER_HEIGHT = 60
+export const RECOVERY_HEADER_HEIGHT = 61
 
 export default function RecoveryHeader() {
   const isMobile = useMediaQuery('isMobile')
@@ -22,13 +23,18 @@ export default function RecoveryHeader() {
   const walletStore = useStore(WalletStore)
 
   const signedIn = useObservable(authStore.accountAddress)
+  const isNavDrawerOpen = useObservable(walletStore.isNavDrawerOpen)
 
   const openNetworkModal = () => {
     walletStore.isNetworkModalOpen.set(true)
   }
 
+  const toggleNavDrawer = () => {
+    walletStore.isNavDrawerOpen.set(!isNavDrawerOpen)
+  }
+
   return (
-    <Box flexDirection="column" style={{ paddingBottom: '60px' }}>
+    <Box flexDirection="column" style={{ paddingBottom: `${RECOVERY_HEADER_HEIGHT}px` }}>
       <Box background="backgroundPrimary" position="fixed" width="full">
         <Box
           flexDirection="row"
@@ -39,7 +45,10 @@ export default function RecoveryHeader() {
           {isMobile ? (
             <>
               <Box paddingLeft="5" flexDirection="row">
-                <MobileMoreMenu />
+                <AnimatePresence>
+                  {isNavDrawerOpen && <MobileDrawerContent />}
+                </AnimatePresence>
+                <Button variant="text" onClick={() => toggleNavDrawer()} leftIcon={MenuIcon} />
 
                 <Image src={SequenceLogo} paddingLeft="5" />
               </Box>
