@@ -1,17 +1,33 @@
-import { Box, Button, Card, Image, Modal, Text, TextInput } from '@0xsequence/design-system'
+import { Box, Button, Card, Divider, Image, Modal, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
-import RecoveryFooter from '~/components/recovery/RecoveryFooter'
-
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
+import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
+import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
 import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
-function Landing() {
+const mobileBg = {
+  backgroundImage: `url(${bgImageMobile})`,
+  backgroundSize: '100%',
+  backgroundPosition: 'top',
+  backgroundRepeat: 'no-repeat',
+  paddingTop: '60px'
+}
+
+const desktopBg = {
+  backgroundImage: `url(${bgImage})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center'
+}
+
+export default function Landing() {
+  const isMobile = useMediaQuery('isMobile')
+
   const authStore = useStore(AuthStore)
   const isLoadingAccountObservable = useObservable(authStore.isLoadingAccount)
 
@@ -45,26 +61,40 @@ function Landing() {
 
   return (
     <Box
-      justifyContent="center"
+      justifyContent={isMobile ? 'center' : 'flex-start'}
       height="vh"
-      style={{ background: 'linear-gradient(to bottom, #280a6b, #000000 50%)' }}
+      width="vw"
+      style={isMobile ? mobileBg : desktopBg}
+      padding={isMobile ? '4' : '20'}
+      marginBottom={isMobile ? '10' : undefined}
     >
       <Box
         flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        width="full"
+        justifyContent={isMobile ? 'flex-start' : 'center'}
+        alignItems={isMobile ? 'center' : 'flex-start'}
+        width={isMobile ? 'full' : '3/4'}
         style={{ maxWidth: '1000px' }}
         gap="10"
+        zIndex="20"
       >
-        <Box flexDirection="column" gap="6">
-          <Image src={SequenceRecoveryLogo} height="8" />
+        <Box
+          flexDirection="column"
+          justifyContent={isMobile ? 'space-between' : 'center'}
+          height={isMobile ? 'full' : undefined}
+          alignItems={isMobile ? 'center' : 'flex-start'}
+          gap="6"
+        >
+          <Image src={SequenceRecoveryLogo} height="8"/>
+
+          {isMobile && <Divider color="transparent" style={{ minHeight: '160px'}} />}
 
           <Text
-            textAlign="center"
+            textAlign={isMobile ? 'center' : 'left'}
             variant="xlarge"
             color="text100"
-            style={{ fontSize: '40px', lineHeight: '44px' }}
+            style={
+              isMobile ? { fontSize: '28px', lineHeight: '32px' } : { fontSize: '40px', lineHeight: '44px' }
+            }
           >
             A fully open source and forever accessible way to recover your Sequence Wallet
           </Text>
@@ -122,7 +152,7 @@ function Landing() {
               />
               <Button as={Link} to="/recovery" label="Start Recovery" variant="primary" size="md" />
             </Box>
-            <Box flexDirection="row" gap="2" width="2/3">
+            <Box flexDirection={isMobile ? 'column' : 'row'} gap="2" width={isMobile ? 'full' : '2/3'}>
               <Card flexDirection="column" gap="2">
                 <Box flexDirection="row" gap="2">
                   <Image src={contractsIcon} />
@@ -167,10 +197,8 @@ function Landing() {
           </Box>
         </Modal>
       )}
-
-      <RecoveryFooter />
     </Box>
   )
 }
 
-export default Landing
+

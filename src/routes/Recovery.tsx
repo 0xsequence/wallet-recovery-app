@@ -163,6 +163,7 @@ function Recovery() {
         alignSelf="center"
         flexDirection="column"
         marginY="10"
+        paddingX="4"
         gap="4"
         width="full"
         style={{ maxWidth: WALLET_WIDTH }}
@@ -312,6 +313,7 @@ function Recovery() {
               size="md"
               shape="square"
               onClick={() => setShowManualAddress(true)}
+              style={{ whiteSpace: 'normal' }}
             />
           )}
 
@@ -332,6 +334,7 @@ function Recovery() {
             onClick={() => {
               handleSignInWithRecoveryMnemonic()
             }}
+            style={{ whiteSpace: 'normal' }}
           />
         </Box>
       </Box>

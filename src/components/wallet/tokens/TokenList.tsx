@@ -60,7 +60,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
   return (
     <Box>
-      <Box justifyContent="space-between" alignItems="center">
+      <Box alignItems="center">
         <Box alignItems="center" gap="2">
           <Image src={CoinIcon} width="5" height="5" />
 
@@ -68,7 +68,8 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
             Coins
           </Text>
         </Box>
-        <Box gap="4">
+
+        <Box gap="4" marginLeft="auto">
           <Box
             flexDirection="row"
             alignItems="center"
