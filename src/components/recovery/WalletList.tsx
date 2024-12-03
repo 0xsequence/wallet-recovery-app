@@ -1,4 +1,4 @@
-import { Box, Text, truncateAddress, useMediaQuery } from '@0xsequence/design-system'
+import { Box, Text, truncateAddress } from '@0xsequence/design-system'
 import { useState } from 'react'
 
 import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '~/components/helpers/FilledRoundCheckBox'
@@ -10,7 +10,6 @@ export default function WalletList({
   possibleWallets: string[]
   handleSelectWallet: (wallet: string) => void
 }) {
-  const isMobile = useMediaQuery('isMobile')
   const [selectedWallet, setSelectedWallet] = useState<string>(possibleWallets[0])
 
   const gapWidth = 2

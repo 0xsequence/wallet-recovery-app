@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Card,
-  Divider,
   Image,
   Modal,
   Text,
@@ -18,8 +17,8 @@ import { AuthStore } from '~/stores/AuthStore'
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
 import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
+import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
 import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
-import trial from '~/assets/images/trial.jpg'
 
 const desktopBg = {
   backgroundImage: `url(${bgImage})`,
@@ -66,6 +65,7 @@ export default function Landing() {
       justifyContent={isMobile ? 'center' : 'flex-start'}
       style={isMobile ? { paddingTop: '40px' } : desktopBg}
       padding={isMobile ? '4' : '20'}
+      paddingBottom={isMobile ? '14' : '0'}
     >
       <Box
         flexDirection="column"
@@ -78,7 +78,7 @@ export default function Landing() {
         <Box flexDirection="column" justifyContent="center" alignItems={isMobile ? 'center' : 'flex-start'}>
           <Image src={SequenceRecoveryLogo} height="8" paddingX="4" />
 
-          {isMobile && <Image src={trial} style={{ maxWidth: 'calc(100% + 32px)' }} />}
+          {isMobile && <Image src={bgImageMobile} style={{ maxWidth: 'calc(100% + 32px)' }} />}
 
           <Text
             textAlign={isMobile ? 'center' : 'left'}
