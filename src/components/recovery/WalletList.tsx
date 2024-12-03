@@ -1,7 +1,5 @@
-import { Box, Button, Text } from '@0xsequence/design-system'
+import { Box, Text, truncateAddress, useMediaQuery } from '@0xsequence/design-system'
 import { useState } from 'react'
-
-import { WALLET_WIDTH } from '~/routes/Wallet'
 
 import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '~/components/helpers/FilledRoundCheckBox'
 
@@ -12,6 +10,7 @@ export default function WalletList({
   possibleWallets: string[]
   handleSelectWallet: (wallet: string) => void
 }) {
+  const isMobile = useMediaQuery('isMobile')
   const [selectedWallet, setSelectedWallet] = useState<string>(possibleWallets[0])
 
   const gapWidth = 2
@@ -24,38 +23,39 @@ export default function WalletList({
       {possibleWallets.map(wallet => {
         return (
           <Box key={wallet}>
-            <Button
-              shape="square"
-              width="full"
-              variant="text"
-              label={
-                <Box flexDirection="row" alignItems="center" gap={`${gapWidth}`} style={{ height: '52px' }}>
-                  <FilledRoundCheckBox checked={selectedWallet === wallet} />
-
-                  <Box
-                    background="buttonGlass"
-                    borderRadius="md"
-                    alignItems="center"
-                    height="full"
-                    paddingX="4"
-                    style={{ width: `${WALLET_WIDTH - ROUND_CHECKBOX_SIZE * 4 - gapWidth * 4}px` }}
-                  >
-                    <Text
-                      variant="normal"
-                      fontWeight="medium"
-                      color="text100"
-                      style={{ fontFamily: 'monospace' }}
-                    >
-                      {wallet}
-                    </Text>
-                  </Box>
-                </Box>
-              }
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              gap={`${gapWidth}`}
+              style={{ height: '52px' }}
+              cursor="pointer"
               onClick={() => {
                 setSelectedWallet(wallet)
                 handleSelectWallet(wallet)
               }}
-            />
+            >
+              <Box style={{ minWidth: `${ROUND_CHECKBOX_SIZE * 4}px` }}>
+                <FilledRoundCheckBox checked={selectedWallet === wallet} />
+              </Box>
+
+              <Box
+                background="buttonGlass"
+                borderRadius="md"
+                alignItems="center"
+                height="full"
+                paddingX="4"
+                width="full"
+              >
+                <Text
+                  variant='normal'
+                  fontWeight="medium"
+                  color="text100"
+                  style={{ fontFamily: 'monospace' }}
+                >
+                  {truncateAddress(wallet, 20, 6)}
+                </Text>
+              </Box>
+            </Box>
           </Box>
         )
       })}

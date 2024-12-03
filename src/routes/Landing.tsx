@@ -1,4 +1,14 @@
-import { Box, Button, Card, Divider, Image, Modal, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  Image,
+  Modal,
+  Text,
+  TextInput,
+  useMediaQuery
+} from '@0xsequence/design-system'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -7,17 +17,9 @@ import { AuthStore } from '~/stores/AuthStore'
 
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
-import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
 import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
 import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
-
-const mobileBg = {
-  backgroundImage: `url(${bgImageMobile})`,
-  backgroundSize: '100%',
-  backgroundPosition: 'top',
-  backgroundRepeat: 'no-repeat',
-  paddingTop: '60px'
-}
+import trial from '~/assets/images/trial.jpg'
 
 const desktopBg = {
   backgroundImage: `url(${bgImage})`,
@@ -62,36 +64,27 @@ export default function Landing() {
   return (
     <Box
       justifyContent={isMobile ? 'center' : 'flex-start'}
-      height="vh"
-      width="vw"
-      style={isMobile ? mobileBg : desktopBg}
+      style={isMobile ? { paddingTop: '40px' } : desktopBg}
       padding={isMobile ? '4' : '20'}
-      marginBottom={isMobile ? '10' : undefined}
     >
       <Box
         flexDirection="column"
         justifyContent={isMobile ? 'flex-start' : 'center'}
         alignItems={isMobile ? 'center' : 'flex-start'}
-        width={isMobile ? 'full' : '3/4'}
-        style={{ maxWidth: '1000px' }}
+        style={{ maxWidth: '800px' }}
         gap="10"
         zIndex="20"
       >
-        <Box
-          flexDirection="column"
-          justifyContent={isMobile ? 'space-between' : 'center'}
-          height={isMobile ? 'full' : undefined}
-          alignItems={isMobile ? 'center' : 'flex-start'}
-          gap="6"
-        >
-          <Image src={SequenceRecoveryLogo} height="8"/>
+        <Box flexDirection="column" justifyContent="center" alignItems={isMobile ? 'center' : 'flex-start'}>
+          <Image src={SequenceRecoveryLogo} height="8" paddingX="4" />
 
-          {isMobile && <Divider color="transparent" style={{ minHeight: '160px'}} />}
+          {isMobile && <Image src={trial} style={{ maxWidth: 'calc(100% + 32px)' }} />}
 
           <Text
             textAlign={isMobile ? 'center' : 'left'}
             variant="xlarge"
             color="text100"
+            paddingX="4"
             style={
               isMobile ? { fontSize: '28px', lineHeight: '32px' } : { fontSize: '40px', lineHeight: '44px' }
             }
@@ -102,10 +95,17 @@ export default function Landing() {
 
         {isLoadingAccount ? (
           <>
-            <Text variant="normal" fontWeight="medium" color="text80">
+            <Text
+              variant="normal"
+              fontWeight="medium"
+              textAlign="center"
+              color="text80"
+              paddingX="8"
+              style={{ marginBottom: '-16px' }}
+            >
               Enter your password to continue and unlock your wallet
             </Text>
-            <Box flexDirection="column" gap="4" width="3/4">
+            <Box flexDirection="column" gap="4" width="full">
               <Box flexDirection="column" gap="1">
                 <Text variant="normal" fontWeight="medium" color="text80">
                   Password
@@ -148,7 +148,7 @@ export default function Landing() {
               <Button
                 label="Learn more"
                 size="md"
-                onClick={() => window.open('https://docs.sequence.xyz/')}
+                onClick={() => window.open('https://github.com/0xsequence/wallet-recovery-app')}
               />
               <Button as={Link} to="/recovery" label="Start Recovery" variant="primary" size="md" />
             </Box>
@@ -157,22 +157,22 @@ export default function Landing() {
                 <Box flexDirection="row" gap="2">
                   <Image src={contractsIcon} />
                   <Text variant="normal" fontWeight="bold" color="text100">
-                    Connect to Applications
+                    Connect to apps
                   </Text>
                 </Box>
                 <Text variant="normal" fontWeight="medium" color="text50">
-                  Connect your wallet to any web3 application via Walletconnect
+                  Connect your wallet to any web3 application via WalletConnect
                 </Text>
               </Card>
               <Card flexDirection="column" gap="2">
                 <Box flexDirection="row" gap="2">
                   <Image src={walletIcon} />
                   <Text variant="normal" fontWeight="bold" color="text100">
-                    Move funds anywhere
+                    Move assets anywhere
                   </Text>
                 </Box>
                 <Text variant="normal" fontWeight="medium" color="text50">
-                  Transfer funds securely to any wallet, fully decentralized
+                  Transfer your assets securely to any wallet, fully decentralized
                 </Text>
               </Card>
             </Box>
@@ -200,5 +200,3 @@ export default function Landing() {
     </Box>
   )
 }
-
-

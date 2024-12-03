@@ -21,7 +21,16 @@ export default function NetworkTag({
       paddingBottom={paddingBottom}
       paddingX="2"
     >
-      <Text variant="xsmall" color="text80">
+      <Text
+        variant="xsmall"
+        color="text80"
+        style={{
+          whiteSpace: 'nowrap',
+          maxWidth: '100px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        }}
+      >
         {getNetworkTitle(chainId)}
       </Text>
     </Box>

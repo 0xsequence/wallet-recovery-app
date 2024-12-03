@@ -307,7 +307,7 @@ function Wallet() {
     <Box>
       <RecoveryHeader />
 
-      <Box flexDirection="column" alignItems="center" paddingX="4">
+      <Box flexDirection="column" alignItems="center" >
         <Box
           flexDirection="column"
           padding="5"

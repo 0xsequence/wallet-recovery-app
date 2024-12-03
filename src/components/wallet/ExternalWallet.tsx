@@ -9,7 +9,8 @@ import {
   Divider,
   Modal,
   Text,
-  WalletIcon
+  WalletIcon,
+  truncateAddress
 } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useObservable } from 'micro-observables'
@@ -97,7 +98,7 @@ export default function ExternalWallet() {
 
                 <Box gap="1">
                   <Text variant="normal" fontWeight="medium" color="text50" width="full">
-                    {selectedExternalWalletAddress}
+                    {truncateAddress(selectedExternalWalletAddress || '', 10, 4)}
                   </Text>
 
                   {isCopied ? (

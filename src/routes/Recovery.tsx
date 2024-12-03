@@ -8,7 +8,8 @@ import {
   Modal,
   Spinner,
   Text,
-  TextInput
+  TextInput,
+  useMediaQuery
 } from '@0xsequence/design-system'
 import { ChainId } from '@0xsequence/network'
 import { Orchestrator } from '@0xsequence/signhub'
@@ -34,6 +35,8 @@ import WalletList from '~/components/recovery/WalletList'
 import { WALLET_WIDTH } from './Wallet'
 
 function Recovery() {
+  const isMobile = useMediaQuery('isMobile')
+
   const authStore = useStore(AuthStore)
   const networkStore = useStore(NetworkStore)
   const walletStore = useStore(WalletStore)
@@ -120,9 +123,11 @@ function Recovery() {
     setIsLoadingWallets(false)
   }
 
-  const updateWallet = async (wallet: string) => {
-    setWallet(wallet)
-    setIsReadyToContinue(false)
+  const updateWallet = async (selectedWallet: string) => {
+    if (wallet !== selectedWallet) {
+      setWallet(selectedWallet)
+      setIsReadyToContinue(false)
+    }
   }
 
   const validateAddress = async (wallet: string) => {
@@ -271,7 +276,7 @@ function Recovery() {
 
         {showManualAddress && (
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" fontWeight="bold" color="text100">
+            <Text variant="normal" fontWeight="bold" color="text80">
               Enter wallet address manually
             </Text>
             <TextInput
@@ -306,11 +311,11 @@ function Recovery() {
           </>
         )}
 
-        <Box flexDirection="row">
+        <Box flexDirection="row" gap="4">
           {!showManualAddress && (
             <Button
               label="Enter wallet address manually"
-              size="md"
+              size={isMobile ? 'lg' : 'md'}
               shape="square"
               onClick={() => setShowManualAddress(true)}
               style={{ whiteSpace: 'normal' }}
@@ -319,7 +324,7 @@ function Recovery() {
 
           <Button
             variant="primary"
-            size="md"
+            size={isMobile ? 'lg' : 'md'}
             shape="square"
             label="Recover wallet"
             marginLeft="auto"
