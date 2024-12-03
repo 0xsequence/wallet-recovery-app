@@ -76,8 +76,8 @@ export default function Landing() {
         gap="10"
         zIndex="20"
       >
-        <Box flexDirection="column" justifyContent="center" alignItems={isMobile ? 'center' : 'flex-start'}>
-          <Image src={SequenceRecoveryLogo} height="8" paddingX="4" />
+        <Box flexDirection="column" justifyContent="center" alignItems={isMobile ? 'center' : 'flex-start'} gap={isMobile ? undefined : "6"}>
+          <Image src={SequenceRecoveryLogo} height="8" />
 
           {isMobile && <Image src={bgImageMobile} style={{ maxWidth: 'calc(100% + 32px)' }} />}
 
@@ -85,7 +85,6 @@ export default function Landing() {
             textAlign={isMobile ? 'center' : 'left'}
             variant="xlarge"
             color="text100"
-            paddingX="4"
             style={
               isMobile ? { fontSize: '28px', lineHeight: '32px' } : { fontSize: '40px', lineHeight: '44px' }
             }
