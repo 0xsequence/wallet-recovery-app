@@ -88,6 +88,9 @@ export class WalletStore {
   isCheckingWalletDeployment = observable<boolean>(false)
   walletNotDeployed = observable<boolean>(false)
 
+  isNavDrawerOpen = observable<boolean>(false)
+  isNetworkModalOpen = observable<boolean>(false)
+
   walletRequestHandler: WalletRequestHandler
 
   private local = {

@@ -44,6 +44,7 @@ function Wallet() {
   const accountAddress = useObservable(authStore.accountAddress)
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
   const isSigningMsg = useObservable(walletStore.isSigningMsg)
+  const isNetworkModalOpenObservable = useObservable(walletStore.isNetworkModalOpen)
 
   const networks = useObservable(networkStore.networks)
 
@@ -89,6 +90,10 @@ function Wallet() {
   const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
   const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
   const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
+
+  useEffect(() => {
+    setIsNetworkModalOpen(isNetworkModalOpenObservable)
+  }, [isNetworkModalOpenObservable])
 
   const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
     setPendingSendCollectible(undefined)
@@ -300,37 +305,38 @@ function Wallet() {
 
   return (
     <Box>
-      <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
+      <RecoveryHeader />
 
-      <Box
-        justifySelf="center"
-        flexDirection="column"
-        padding="5"
-        width="full"
-        style={{ maxWidth: '800px' }}
-        paddingBottom="20"
-      >
-        <Box flexDirection="column">
-          <Box flexDirection="column" gap="5">
-            <Text variant="normal" fontWeight="bold" color="text50">
-              External connections
-            </Text>
+      <Box flexDirection="column" alignItems="center" >
+        <Box
+          flexDirection="column"
+          padding="5"
+          width="full"
+          style={{ maxWidth: WALLET_WIDTH }}
+          paddingBottom="20"
+        >
+          <Box flexDirection="column">
+            <Box flexDirection="column" gap="5">
+              <Text variant="small" fontWeight="bold" color="text50">
+                External connections
+              </Text>
 
-            <ExternalWallet />
+              <ExternalWallet />
 
-            <DappList />
-          </Box>
+              <DappList />
+            </Box>
 
-          <PendingIndicator paddingY="5" />
+            <PendingIndicator paddingY="5" />
 
-          <Box flexDirection="column" gap="5">
-            <Text variant="normal" fontWeight="bold" color="text50">
-              My Sequence wallet
-            </Text>
+            <Box flexDirection="column" gap="5">
+              <Text variant="small" fontWeight="bold" color="text50">
+                My Sequence wallet
+              </Text>
 
-            <TokenList onSendClick={handleTokenOnSendClick} />
+              <TokenList onSendClick={handleTokenOnSendClick} />
 
-            <CollectibleList onSendClick={handleCollectibleOnSendClick} />
+              <CollectibleList onSendClick={handleCollectibleOnSendClick} />
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -338,7 +344,7 @@ function Wallet() {
       {isNetworkModalOpen && (
         <Modal
           onClose={() => {
-            setIsNetworkModalOpen(false)
+            walletStore.isNetworkModalOpen.set(false)
             networkStore.discardUnsavedNetworkEdits()
             networkStore.isAddingNetwork.set(false)
           }}

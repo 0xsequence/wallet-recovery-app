@@ -51,21 +51,21 @@ export default function SelectProvider({
     <Box>
       {isConfirmingWalletConnect ? (
         <Box flexDirection="column" padding="6" gap="6">
-          <Text variant="large" color="text100">
+          <Text variant="large" fontWeight="bold" color="text80">
             Use WalletConnect for External Wallet?
           </Text>
           <Card alignItems="center" gap="3" style={{ background: 'rgba(176, 126, 30, 0.3)' }}>
             <Box flexDirection="column" gap="2">
-              <Text variant="medium" color="text100">
+              <Text variant="medium" fontWeight="bold" color="text100">
                 Attention
               </Text>
               {walletConnectDappsConnected ? (
-                <Text variant="normal" color="text80">
+                <Text variant="normal" fontWeight="medium" color="text80">
                   If you connect your external wallet using WalletConnect, you'll lose all Dapps connections
                   you already made using WalletConnect.
                 </Text>
               ) : (
-                <Text variant="normal" color="text80">
+                <Text variant="normal" fontWeight="medium" color="text80">
                   If you connect your external wallet using WalletConnect, you won't be able to connect to any
                   other Dapps during this session. <br /> <br />
                   If you need to connect Dapps, please consider using a different external wallet instead.
@@ -89,10 +89,10 @@ export default function SelectProvider({
         </Box>
       ) : (
         <Box flexDirection="column" padding="6" gap="6">
-          <Text variant="large" color="text100">
+          <Text variant="large" fontWeight="bold" color="text80">
             Connect external wallet
           </Text>
-          <Text variant="normal" color="text50">
+          <Text variant="normal" fontWeight="medium" color="text50">
             You need an external wallet to relay transactions
           </Text>
           <Box flexDirection="column" gap="3">

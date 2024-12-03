@@ -54,17 +54,17 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
   return (
     <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
       <Box flexDirection="column" gap="6" padding="6">
-        <Text variant="large" fontWeight="bold" color="text100">
+        <Text variant="large" fontWeight="bold" color="text80">
           Would you like to connect to this dapp?
         </Text>
 
         <Box flexDirection="column" gap="3">
           <Card flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Text variant="normal" fontWeight="semibold" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text100">
               Origin
             </Text>
             <Box flexDirection="row" alignItems="center" gap="2">
-              <Text variant="normal" fontWeight="semibold" color="text100">
+              <Text variant="normal" fontWeight="medium" color="text100">
                 {connectOptions?.origin?.split('//')[1]}
               </Text>
               <IconButton
@@ -76,10 +76,10 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
             </Box>
           </Card>
           <Card flexDirection="row" justifyContent="space-between">
-            <Text variant="normal" fontWeight="semibold" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text100">
               Network
             </Text>
-            <Text variant="normal" fontWeight="semibold" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text100">
               {getNetworkTitle(Number(connectOptions?.networkId))}
             </Text>
           </Card>

@@ -16,13 +16,12 @@ import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
+import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
+import WalletScan from '~/components/signing/WalletScan'
 
 import LinkConnectionIcon from '~/assets/icons/link-connection.svg'
 import WarningIcon from '~/assets/icons/warning.svg'
-
-import ConnectDapp from '../signing/ConnectDapp'
-import WalletScan from '../signing/WalletScan'
 
 export default function DappList() {
   const walletStore = useStore(WalletStore)
@@ -45,9 +44,9 @@ export default function DappList() {
     <Box flexDirection="column">
       <Box justifyContent="space-between" alignItems="center" gap="2">
         <Box alignItems="center" gap="2">
-          <Image src={LinkConnectionIcon} width="7" height="7" />
+          <Image src={LinkConnectionIcon} width="5" height="5" />
 
-          <Text variant="large" fontWeight="bold" color="text100">
+          <Text variant="normal" fontWeight="bold" color="text100">
             Connected Dapps
           </Text>
         </Box>
@@ -71,13 +70,13 @@ export default function DappList() {
           {provider?.info.name === 'WalletConnect' ? (
             <Box flexDirection="column" alignItems="center" gap="4">
               <Image src={WarningIcon} color="text50" width="8" height="8" />
-              <Text textAlign="center" variant="large" color="text50" padding="4">
+              <Text textAlign="center" variant="normal" color="text50" padding="4">
                 To connect to Dapps, switch from WalletConnect to a different wallet as your External Wallet
                 connection method.
               </Text>
             </Box>
           ) : (
-            <Text alignSelf="center" textAlign="center" variant="large" color="text50" padding="4">
+            <Text textAlign="center" variant="normal" color="text50" padding="4">
               Connect a Dapp with WalletConnect to sign actions
             </Text>
           )}

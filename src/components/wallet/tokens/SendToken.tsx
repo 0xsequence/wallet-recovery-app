@@ -8,7 +8,7 @@ import { getNetworkTitle } from '~/utils/network'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import FilledCheckBox from '../../helpers/FilledCheckBox'
+import FilledCheckBox from '~/components/helpers/FilledCheckBox'
 
 export default function SendToken({
   tokenBalance,
@@ -49,11 +49,11 @@ export default function SendToken({
         <Box flexDirection="column" gap="3">
           <Box flexDirection="column" gap="1">
             <Box flexDirection="column" gap="0.5">
-              <Text variant="normal" color="text100">
+              <Text variant="normal" fontWeight="medium" color="text80">
                 Amount
               </Text>
 
-              <Text variant="normal" color="text50">
+              <Text variant="normal" fontWeight="medium" color="text80">
                 Current Balance:{' '}
                 {ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)}
               </Text>
@@ -81,7 +81,7 @@ export default function SendToken({
           </Box>
 
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="medium" color="text80">
               To
             </Text>
 
@@ -102,7 +102,7 @@ export default function SendToken({
           label={
             <Box flexDirection="row" alignItems="center" gap="2">
               <FilledCheckBox checked={sendToExternalWallet} size="md" />
-              <Text variant="small" color="text100">
+              <Text variant="small" color="text80">
                 Send to connected external wallet address
               </Text>
             </Box>

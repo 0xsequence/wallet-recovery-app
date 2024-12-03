@@ -13,7 +13,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore, createDebugLocalRelayer } from '~/stores/NetworkStore'
 
-import FilledCheckBox from '../helpers/FilledCheckBox'
+import FilledCheckBox from '~/components/helpers/FilledCheckBox'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)
@@ -65,15 +65,15 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               <FilledCheckBox checked={!disabled} />
 
               <Text
-                variant="medium"
-                fontWeight="semibold"
+                variant="normal"
+                fontWeight="medium"
                 color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
               >
                 {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
               </Text>
 
               {(hasPreviousEdit || isUserAddition) && (
-                <Text variant="normal" color="text50">
+                <Text variant="normal" fontWeight="medium" color="text50">
                   {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
                 </Text>
               )}
@@ -93,7 +93,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
           }}
         >
           <Box flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Text variant="medium" fontWeight="bold" color={disabled ? 'borderNormal' : 'text50'}>
+            <Text variant="normal" fontWeight="bold" color={disabled ? 'borderNormal' : 'text50'}>
               Network Settings
             </Text>
 

@@ -8,7 +8,8 @@ import {
   Modal,
   Spinner,
   Text,
-  TextInput
+  TextInput,
+  useMediaQuery
 } from '@0xsequence/design-system'
 import { ChainId } from '@0xsequence/network'
 import { Orchestrator } from '@0xsequence/signhub'
@@ -21,9 +22,10 @@ import { TRACKER } from '~/utils/tracker'
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 import { WALLETS } from '~/constants/wallets'
 
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { NetworkStore } from '~/stores/NetworkStore'
+import { WalletStore } from '~/stores/WalletStore'
 
 import FilledCheckBox from '~/components/helpers/FilledCheckBox'
 import Networks from '~/components/network/Networks'
@@ -33,8 +35,11 @@ import WalletList from '~/components/recovery/WalletList'
 import { WALLET_WIDTH } from './Wallet'
 
 function Recovery() {
+  const isMobile = useMediaQuery('isMobile')
+
   const authStore = useStore(AuthStore)
   const networkStore = useStore(NetworkStore)
+  const walletStore = useStore(WalletStore)
   const networks = networkStore.networks.get()
 
   const [wallet, setWallet] = useState('')
@@ -52,6 +57,8 @@ function Recovery() {
   const [isCheckingWallet, setIsCheckingWallet] = useState(false)
   const [isReadyToContinue, setIsReadyToContinue] = useState(false)
 
+  const isNetworkModalOpenObservable = useObservable(walletStore.isNetworkModalOpen)
+
   useEffect(() => {
     setWarningVisible(false)
     if (!ethers.isAddress(wallet)) {
@@ -62,6 +69,10 @@ function Recovery() {
     const walletAddress = ethers.getAddress(wallet)
     validateAddress(walletAddress)
   }, [wallet])
+
+  useEffect(() => {
+    setIsNetworkModalOpen(isNetworkModalOpenObservable)
+  }, [isNetworkModalOpenObservable])
 
   const handleSignInWithRecoveryMnemonic = () => {
     const walletAddress = ethers.getAddress(wallet)
@@ -112,9 +123,11 @@ function Recovery() {
     setIsLoadingWallets(false)
   }
 
-  const updateWallet = async (wallet: string) => {
-    setWallet(wallet)
-    setIsReadyToContinue(false)
+  const updateWallet = async (selectedWallet: string) => {
+    if (wallet !== selectedWallet) {
+      setWallet(selectedWallet)
+      setIsReadyToContinue(false)
+    }
   }
 
   const validateAddress = async (wallet: string) => {
@@ -149,12 +162,13 @@ function Recovery() {
 
   return (
     <Box flexDirection="column" background="backgroundPrimary">
-      <RecoveryHeader handleNetworkModal={() => setIsNetworkModalOpen(true)} />
+      <RecoveryHeader />
 
       <Box
         alignSelf="center"
         flexDirection="column"
         marginY="10"
+        paddingX="4"
         gap="4"
         width="full"
         style={{ maxWidth: WALLET_WIDTH }}
@@ -162,17 +176,17 @@ function Recovery() {
         <Button leftIcon={ChevronLeftIcon} label="Back" size="sm" as={Link} to="/" />
 
         <Box flexDirection="column">
-          <Text variant="xlarge" color="text100">
+          <Text variant="xlarge" color="text80">
             Recover your wallet
           </Text>
 
           <Divider marginY="6" />
 
-          <Text variant="normal" color="text100">
+          <Text variant="normal" fontWeight="medium" color="text80">
             Recovery phrase
           </Text>
 
-          <Text variant="normal" color="text50" marginBottom="1">
+          <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
             Paste your 12-word mnemonic, with each word separated by a space.
           </Text>
 
@@ -195,7 +209,7 @@ function Recovery() {
           label={
             <Box flexDirection="row" alignItems="center" gap="1">
               <FilledCheckBox checked={showMnemonic} />
-              <Text variant="normal" color="text100">
+              <Text variant="normal" fontWeight="medium" color="text80">
                 Show secret recovery phrase
               </Text>
             </Box>
@@ -204,10 +218,10 @@ function Recovery() {
         />
 
         <Box flexDirection="column">
-          <Text variant="normal" color="text100">
+          <Text variant="normal" fontWeight="medium" color="text80">
             Create password
           </Text>
-          <Text variant="normal" color="text50" marginBottom="1">
+          <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
             Encrypt your mnemonic with an 8+ character password.
           </Text>
 
@@ -226,7 +240,7 @@ function Recovery() {
         </Box>
 
         <Box flexDirection="column">
-          <Text variant="normal" color="text100" marginBottom="1">
+          <Text variant="normal" fontWeight="medium" color="text80" marginBottom="1">
             Confirm password
           </Text>
 
@@ -247,7 +261,7 @@ function Recovery() {
         {isLoadingWallets && (
           <Box alignSelf="center" alignItems="center" gap="1">
             <Spinner size="md" />
-            <Text variant="small" color="text100">
+            <Text variant="small" color="text80">
               Looking for wallet address...
             </Text>
           </Box>
@@ -262,7 +276,7 @@ function Recovery() {
 
         {showManualAddress && (
           <Box flexDirection="column" gap="1">
-            <Text variant="normal" color="text100">
+            <Text variant="normal" fontWeight="bold" color="text80">
               Enter wallet address manually
             </Text>
             <TextInput
@@ -277,7 +291,7 @@ function Recovery() {
         {isCheckingWallet && (
           <Box alignSelf="center" alignItems="center" gap="1">
             <Spinner size="md" />
-            <Text variant="small" color="text100">
+            <Text variant="small" color="text80">
               Checking wallet address...
             </Text>
           </Box>
@@ -297,19 +311,20 @@ function Recovery() {
           </>
         )}
 
-        <Box flexDirection="row">
+        <Box flexDirection="row" gap="4">
           {!showManualAddress && (
             <Button
               label="Enter wallet address manually"
-              size="md"
+              size={isMobile ? 'lg' : 'md'}
               shape="square"
               onClick={() => setShowManualAddress(true)}
+              style={{ whiteSpace: 'normal' }}
             />
           )}
 
           <Button
             variant="primary"
-            size="md"
+            size={isMobile ? 'lg' : 'md'}
             shape="square"
             label="Recover wallet"
             marginLeft="auto"
@@ -324,12 +339,13 @@ function Recovery() {
             onClick={() => {
               handleSignInWithRecoveryMnemonic()
             }}
+            style={{ whiteSpace: 'normal' }}
           />
         </Box>
       </Box>
 
       {isNetworkModalOpen && (
-        <Modal onClose={() => setIsNetworkModalOpen(false)}>
+        <Modal onClose={() => walletStore.isNetworkModalOpen.set(false)}>
           <Networks />
         </Modal>
       )}

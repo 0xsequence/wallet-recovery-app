@@ -6,11 +6,14 @@ import EmptyCheckBox from '~/assets/icons/square-checkbox.svg'
 export default function FilledCheckBox({ checked, size = 'lg' }: { checked: boolean; size?: 'lg' | 'md' }) {
   return (
     <Box
-      width={size === 'lg' ? '7' : '5'}
-      height={size === 'lg' ? '7' : '5'}
       justifyContent="center"
       alignItems="center"
-      style={{ borderRadius: size === 'lg' ? '6px' : '3px', background: checked ? '#4F4F4F' : 'inherit' }}
+      style={{
+        width: size === 'lg' ? '28px' : '22px',
+        height: size === 'lg' ? '28px' : '22px',
+        borderRadius: size === 'lg' ? '6px' : '3px',
+        background: checked ? '#4F4F4F' : 'inherit'
+      }}
     >
       {checked ? (
         <img
@@ -22,7 +25,7 @@ export default function FilledCheckBox({ checked, size = 'lg' }: { checked: bool
         <img
           src={EmptyCheckBox}
           alt="Empty Checkbox"
-          style={{ width: size === 'lg' ? '28px' : '20px', height: size === 'lg' ? '28px' : '20px' }}
+          style={{ width: size === 'lg' ? '28px' : '22px', height: size === 'lg' ? '28px' : '22px' }}
         />
       )}
     </Box>

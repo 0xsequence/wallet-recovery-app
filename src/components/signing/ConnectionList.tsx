@@ -4,8 +4,8 @@ import { SessionTypes } from '@walletconnect/types'
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
-import { ButtonWithIcon } from '../helpers/ButtonWithIcon'
-import { ExternalIcon } from '../helpers/ExternalIcon'
+import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
+import { ExternalIcon } from '~/components/helpers/ExternalIcon'
 
 export default function ConnectionList({ sessionList }: { sessionList: SessionTypes.Struct[] }) {
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
@@ -17,7 +17,7 @@ export default function ConnectionList({ sessionList }: { sessionList: SessionTy
           <Box alignItems="center" gap="4">
             <ExternalIcon background="text80" src={session.peer.metadata.icons[0]} />
 
-            <Text variant="medium" color="text100">
+            <Text variant="normal" fontWeight="bold" color="text100">
               {!!!session.peer.metadata.name ? session.peer.metadata.url : session.peer.metadata.name}
             </Text>
           </Box>

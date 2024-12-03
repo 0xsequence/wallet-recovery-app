@@ -9,7 +9,8 @@ import {
   Divider,
   Modal,
   Text,
-  WalletIcon
+  WalletIcon,
+  truncateAddress
 } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useObservable } from 'micro-observables'
@@ -18,9 +19,9 @@ import { useEffect, useState } from 'react'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import SelectProvider from '../SelectProvider'
-import { ButtonWithIcon } from '../helpers/ButtonWithIcon'
-import { ExternalIcon } from '../helpers/ExternalIcon'
+import SelectProvider from '~/components/SelectProvider'
+import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
+import { ExternalIcon } from '~/components/helpers/ExternalIcon'
 
 export default function ExternalWallet() {
   const walletStore = useStore(WalletStore)
@@ -63,9 +64,9 @@ export default function ExternalWallet() {
     <Box flexDirection="column" width="full">
       <Box justifyContent="space-between" alignItems="center" gap="2">
         <Box alignItems="center" gap="2">
-          <WalletIcon color="text100" style={{ width: '28px', height: '28px' }} />
+          <WalletIcon color="text100" width="5" height="5" />
 
-          <Text variant="large" fontWeight="bold" color="text100">
+          <Text variant="normal" fontWeight="bold" color="text100">
             External Wallet
           </Text>
         </Box>
@@ -91,13 +92,13 @@ export default function ExternalWallet() {
               <ExternalIcon background="text80" src={selectedExternalProvider.info.icon} />
 
               <Box flexDirection="column" gap="1">
-                <Text variant="medium" color="text100">
+                <Text variant="normal" fontWeight="bold" color="text80">
                   {selectedExternalProvider.info.name}
                 </Text>
 
                 <Box gap="1">
-                  <Text variant="normal" color="text50" width="full">
-                    {selectedExternalWalletAddress}
+                  <Text variant="normal" fontWeight="medium" color="text50" width="full">
+                    {truncateAddress(selectedExternalWalletAddress || '', 10, 4)}
                   </Text>
 
                   {isCopied ? (
@@ -112,7 +113,7 @@ export default function ExternalWallet() {
             <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => handleDisconnect()} />
           </Box>
         ) : (
-          <Text alignSelf="center" textAlign="center" variant="large" color="text50" padding="4">
+          <Text textAlign="center" variant="normal" color="text50" padding="4">
             Connect an external wallet to relay transactions
           </Text>
         )}

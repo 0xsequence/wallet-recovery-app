@@ -24,6 +24,8 @@ export default function TokenBalanceItem({
   const formattedBalance = ethers.formatUnits(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
 
+  console.log(tokenBalance)
+
   return (
     <Card flexDirection="row" alignItems="center" gap="3">
       <ExternalIcon
@@ -32,22 +34,22 @@ export default function TokenBalanceItem({
       />
 
       <Box flexDirection="column">
-        <Box gap="2" alignItems="center">
-          <Text variant="large" fontWeight="bold" color="text100">
-            {tokenBalance.contractInfo?.symbol ?? 'Native Token'}
+        <Box gap="1" alignItems="center">
+          <Text variant="normal" fontWeight="bold" color="text80">
+            {tokenBalance.contractInfo?.symbol ?? 'Native'}
           </Text>
 
           <NetworkTag chainId={tokenBalance.chainId} />
         </Box>
 
         <Box>
-          <Text variant="normal" fontWeight="bold" color="text50">
+          <Text variant="normal" fontWeight="medium" color="text50">
             {truncatedBalance}
           </Text>
         </Box>
       </Box>
 
-      <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
+      <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="3">
         <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={disabled} onClick={onSendClick} />
 
         {onRemoveClick && (

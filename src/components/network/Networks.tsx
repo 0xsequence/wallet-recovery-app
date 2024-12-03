@@ -35,7 +35,7 @@ export default function Networks() {
           >
             <NetworkHeader selectedNetworkType={selectedNetworkType} />
 
-            <Box paddingX="6" style={{ marginTop: '120px', marginBottom: '85px' }}>
+            <Box paddingX="6" style={{ marginTop: '108px', marginBottom: '85px' }}>
               <TabsContent value={NetworkType.MAINNET}>
                 <NetworkList networks={sortedMainnets} />
               </TabsContent>

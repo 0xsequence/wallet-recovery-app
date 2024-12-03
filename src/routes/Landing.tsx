@@ -1,23 +1,45 @@
-import { Box, Button, Card, Image, Modal, Text, TextInput } from '@0xsequence/design-system'
-import { ChangeEvent, useState } from 'react'
+import {
+  Box,
+  Button,
+  Card,
+  Image,
+  Modal,
+  Text,
+  TextInput,
+  useMediaQuery
+} from '@0xsequence/design-system'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
-import SequenceLogo from '~/components/helpers/SequenceLogo'
-import RecoveryFooter from '~/components/recovery/RecoveryFooter'
-
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
+import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
+import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
+import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
-function Landing() {
+const desktopBg = {
+  backgroundImage: `url(${bgImage})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center'
+}
+
+export default function Landing() {
+  const isMobile = useMediaQuery('isMobile')
+
   const authStore = useStore(AuthStore)
-  const isLoadingAccount = useObservable(authStore.isLoadingAccount)
+  const isLoadingAccountObservable = useObservable(authStore.isLoadingAccount)
 
   const [password, setPassword] = useState('')
   const [isReseting, setIsReseting] = useState(false)
   const [wrongPassword, setWrongPassword] = useState(false)
+  const [isLoadingAccount, setIsLoadingAccount] = useState(false)
+
+  useEffect(() => {
+    setIsLoadingAccount(isLoadingAccountObservable)
+  }, [isLoadingAccountObservable])
 
   const handleUnlock = async () => {
     try {
@@ -40,26 +62,32 @@ function Landing() {
 
   return (
     <Box
-      justifyContent="center"
-      height="vh"
-      style={{ background: 'linear-gradient(to bottom, #280a6b, #000000 50%)' }}
+      justifyContent={isMobile ? 'center' : 'flex-start'}
+      style={isMobile ? { paddingTop: '40px' } : desktopBg}
+      padding={isMobile ? '4' : '20'}
+      paddingBottom={isMobile ? '14' : '0'}
     >
       <Box
         flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        width="full"
-        style={{ maxWidth: '1000px' }}
+        justifyContent={isMobile ? 'flex-start' : 'center'}
+        alignItems={isMobile ? 'center' : 'flex-start'}
+        style={{ maxWidth: '800px' }}
         gap="10"
+        zIndex="20"
       >
-        <Box flexDirection="column" gap="6">
-          <SequenceLogo variant="lg" justifyContent="center" />
+        <Box flexDirection="column" justifyContent="center" alignItems={isMobile ? 'center' : 'flex-start'}>
+          <Image src={SequenceRecoveryLogo} height="8" paddingX="4" />
+
+          {isMobile && <Image src={bgImageMobile} style={{ maxWidth: 'calc(100% + 32px)' }} />}
 
           <Text
-            textAlign="center"
+            textAlign={isMobile ? 'center' : 'left'}
             variant="xlarge"
             color="text100"
-            style={{ fontSize: '40px', lineHeight: '44px' }}
+            paddingX="4"
+            style={
+              isMobile ? { fontSize: '28px', lineHeight: '32px' } : { fontSize: '40px', lineHeight: '44px' }
+            }
           >
             A fully open source and forever accessible way to recover your Sequence Wallet
           </Text>
@@ -67,12 +95,19 @@ function Landing() {
 
         {isLoadingAccount ? (
           <>
-            <Text variant="normal" color="text100">
+            <Text
+              variant="normal"
+              fontWeight="medium"
+              textAlign="center"
+              color="text80"
+              paddingX="8"
+              style={{ marginBottom: '-16px' }}
+            >
               Enter your password to continue and unlock your wallet
             </Text>
-            <Box flexDirection="column" gap="4" width="3/4">
+            <Box flexDirection="column" gap="4" width="full">
               <Box flexDirection="column" gap="1">
-                <Text variant="normal" color="text100">
+                <Text variant="normal" fontWeight="medium" color="text80">
                   Password
                 </Text>
                 <TextInput
@@ -113,31 +148,31 @@ function Landing() {
               <Button
                 label="Learn more"
                 size="md"
-                onClick={() => window.open('https://docs.sequence.xyz/')}
+                onClick={() => window.open('https://github.com/0xsequence/wallet-recovery-app')}
               />
               <Button as={Link} to="/recovery" label="Start Recovery" variant="primary" size="md" />
             </Box>
-            <Box flexDirection="row" gap="2" width="2/3">
+            <Box flexDirection={isMobile ? 'column' : 'row'} gap="2" width={isMobile ? 'full' : '2/3'}>
               <Card flexDirection="column" gap="2">
                 <Box flexDirection="row" gap="2">
                   <Image src={contractsIcon} />
                   <Text variant="normal" fontWeight="bold" color="text100">
-                    Connect to Applications
+                    Connect to apps
                   </Text>
                 </Box>
-                <Text variant="normal" color="text50">
-                  Connect your wallet to any web3 application via Walletconnect
+                <Text variant="normal" fontWeight="medium" color="text50">
+                  Connect your wallet to any web3 application via WalletConnect
                 </Text>
               </Card>
               <Card flexDirection="column" gap="2">
                 <Box flexDirection="row" gap="2">
                   <Image src={walletIcon} />
                   <Text variant="normal" fontWeight="bold" color="text100">
-                    Move funds anywhere
+                    Move assets anywhere
                   </Text>
                 </Box>
-                <Text variant="normal" color="text50">
-                  Transfer funds securely to any wallet, fully decentralized
+                <Text variant="normal" fontWeight="medium" color="text50">
+                  Transfer your assets securely to any wallet, fully decentralized
                 </Text>
               </Card>
             </Box>
@@ -151,7 +186,7 @@ function Landing() {
             <Text variant="large" color="text100" marginRight="8">
               Are you sure you want to sign out?
             </Text>
-            <Text variant="normal" color="text50">
+            <Text variant="normal" fontWeight="medium" color="text50">
               If you do not remember your password, you can reset and start over.
               <br /> This will require you to re-enter your mnemonic.
             </Text>
@@ -162,10 +197,6 @@ function Landing() {
           </Box>
         </Modal>
       )}
-
-      <RecoveryFooter />
     </Box>
   )
 }
-
-export default Landing
