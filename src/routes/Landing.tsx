@@ -62,6 +62,7 @@ export default function Landing() {
 
   return (
     <Box
+      height={isMobile ? undefined : 'vh'}
       justifyContent={isMobile ? 'center' : 'flex-start'}
       style={isMobile ? { paddingTop: '40px' } : desktopBg}
       padding={isMobile ? '4' : '20'}

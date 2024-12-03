@@ -17,6 +17,7 @@ const GitHubCorner: React.FC = () => {
             top: 0;
             border: 0;
             right: 0;
+            z-index: 100;
           }
 
           .github-corner:hover .octo-arm {
