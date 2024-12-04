@@ -100,7 +100,7 @@ export default function Landing() {
               fontWeight="medium"
               textAlign="center"
               color="text80"
-              paddingX="8"
+              paddingX={isMobile ? '8' : undefined}
               style={{ marginBottom: '-16px' }}
             >
               Enter your password to continue and unlock your wallet
