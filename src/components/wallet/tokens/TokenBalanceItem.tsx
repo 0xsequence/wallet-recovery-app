@@ -24,8 +24,6 @@ export default function TokenBalanceItem({
   const formattedBalance = ethers.formatUnits(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
 
-  console.log(tokenBalance)
-
   return (
     <Card flexDirection="row" alignItems="center" gap="3">
       <ExternalIcon

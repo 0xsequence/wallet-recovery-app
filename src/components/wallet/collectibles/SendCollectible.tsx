@@ -9,7 +9,7 @@ import { useStore } from '~/stores'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import FilledCheckBox from '~/components/helpers/FilledCheckBox'
+import { FilledCheckBox } from '~/components/helpers'
 
 export default function SendCollectible({
   collectibleInfo,

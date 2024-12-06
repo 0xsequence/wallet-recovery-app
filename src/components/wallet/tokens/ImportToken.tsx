@@ -36,10 +36,19 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [isAddingToken, setIsAddingToken] = useState(false)
   const [tokenDirectory, setTokenDirectory] = useState<string | undefined>()
 
+  const [isAddingTokenManually, setIsAddingTokenManually] = useState(false)
+
+  const [tokenList, setTokenList] = useState<any[] | undefined>(undefined)
+
   useEffect(() => {
-    if (selectedNetwork) {
-      setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
+    const fetchTokenList = async () => {
+      if (selectedNetwork) {
+        setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
+        setTokenList(await tokenStore.getDefaultTokenList(selectedNetwork.chainId))
+      }
     }
+
+    fetchTokenList()
 
     if (selectedNetwork && tokenAddress) {
       tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
@@ -87,7 +96,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     <Box flexDirection="column">
       <Box flexDirection="column" padding="6" gap="6">
         <Text variant="large" fontWeight="bold" color="text80">
-          Import Token
+          Import Tokens
         </Text>
         <Box flexDirection="column">
           <Box flexDirection="row" style={{ paddingBottom: '5px' }}>
@@ -117,36 +126,69 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
           <Box flexDirection="column" gap="0.5">
             <Text variant="normal" fontWeight="medium" color="text80">
-              Token Address
+              Token
             </Text>
 
-            <Box flexDirection="row" gap="1" paddingBottom="0.5">
+            <Box
+              onClick={() => {}}
+              width="fit"
+              cursor="pointer"
+              paddingBottom="0.5"
+              opacity={{ base: '100', hover: '80' }}
+            >
               <Text variant="normal" fontWeight="medium" color="text50">
-                See addresses on network's
-              </Text>
-              <Text
-                variant="normal"
-                color="text50"
-                underline={!!tokenDirectory}
-                cursor={tokenDirectory ? 'pointer' : 'default'}
-                onClick={() => {
-                  if (tokenDirectory) {
-                    window.open(tokenDirectory)
-                  }
-                }}
-              >
-                directory
+                Import external token list
               </Text>
             </Box>
 
-            <TextInput
-              name="tokenAddress"
-              value={tokenAddress ?? ''}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                setTokenAddress(ev.target.value)
-              }}
+            <Select
+              name="tokenList"
+              options={
+                tokenList?.slice(0, 20).map(token => {
+                  return {
+                    label: token.symbol,
+                    value: token.address
+                  }
+                }) ?? []
+              }
+              onValueChange={value => setTokenAddress(value)}
             />
           </Box>
+
+          {isAddingTokenManually && (
+            <Box flexDirection="column" gap="0.5">
+              <Text variant="normal" fontWeight="medium" color="text80">
+                Token Address
+              </Text>
+
+              <Box flexDirection="row" gap="1" paddingBottom="0.5">
+                <Text variant="normal" fontWeight="medium" color="text50">
+                  See addresses on network's
+                </Text>
+                <Text
+                  variant="normal"
+                  color="text50"
+                  underline={!!tokenDirectory}
+                  cursor={tokenDirectory ? 'pointer' : 'default'}
+                  onClick={() => {
+                    if (tokenDirectory) {
+                      window.open(tokenDirectory)
+                    }
+                  }}
+                >
+                  directory
+                </Text>
+              </Box>
+
+              <TextInput
+                name="tokenAddress"
+                value={tokenAddress ?? ''}
+                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                  setTokenAddress(ev.target.value)
+                }}
+              />
+            </Box>
+          )}
         </Box>
 
         {isFetchingTokenInfo && (
@@ -171,8 +213,19 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       </Box>
 
       <Divider marginY="0" />
-      <Box flexDirection="row" justifyContent="flex-end" padding="6" gap="2">
-        <Button label="Cancel" size="md" shape="square" onClick={onClose} />
+
+      <Box flexDirection="row" padding="6" gap="2">
+        {!isAddingTokenManually && (
+          <Button
+            label="Manual Import"
+            shape="square"
+            onClick={() => {
+              setIsAddingTokenManually(true)
+            }}
+          />
+        )}
+
+        <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
 
         <Button
           label="Add Token"

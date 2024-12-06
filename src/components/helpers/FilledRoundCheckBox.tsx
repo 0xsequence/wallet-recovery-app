@@ -5,7 +5,7 @@ import EmptyRoundCheckBox from '~/assets/icons/round-checkbox.svg'
 
 export const ROUND_CHECKBOX_SIZE = 8
 
-export default function FilledCheckBox({ checked }: { checked: boolean }) {
+export function FilledRoundCheckBox({ checked }: { checked: boolean }) {
   return (
     <Box
       width={`${ROUND_CHECKBOX_SIZE}`}

@@ -2,10 +2,12 @@ import { ContractType } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 
 import { IPFSGatewayHelper } from '~/utils/gateways'
+import { getIndexedDB } from '~/utils/indexeddb'
 import { subscribeImmediately } from '~/utils/observable'
 
 import { ERC721_ABI, ERC1155_ABI } from '~/constants/abi'
-import { LocalStorageKey } from '~/constants/storage'
+import { DEFAULT_PUBLIC_RPC_LIST } from '~/constants/network'
+import { IndexedDBKey, LocalStorageKey } from '~/constants/storage'
 
 import { Store, observable } from '.'
 import { AuthStore } from './AuthStore'
@@ -214,5 +216,47 @@ export class CollectibleStore {
         c.collectibleInfoParams.tokenId !== collectibleInfo.collectibleInfoParams.tokenId
     )
     this.userCollectibles.set(filteredBalances)
+  }
+
+  async getDefaultERC721List(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC721)
+
+    const tokenList = await db.get(IndexedDBKey.ERC721, chainName)
+    if (!tokenList) {
+      const fetchedTokenList = await fetch(
+        `https://raw.githubusercontent.com/0xsequence/token-directory/master/index/${chainName}/erc721.json`
+      ).then(res => res.json())
+
+      await db.put(IndexedDBKey.ERC721, fetchedTokenList.tokens, chainName)
+      return fetchedTokenList.tokens
+    }
+
+    return tokenList
+  }
+
+  async getDefaultERC1155List(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC1155)
+
+    const tokenList = await db.get(IndexedDBKey.ERC1155, chainName)
+    if (!tokenList) {
+      const fetchedTokenList = await fetch(
+        `https://raw.githubusercontent.com/0xsequence/token-directory/master/index/${chainName}/erc1155.json`
+      ).then(res => res.json())
+
+      await db.put(IndexedDBKey.ERC1155, fetchedTokenList.tokens, chainName)
+      return fetchedTokenList.tokens
+    }
+
+    return tokenList
   }
 }

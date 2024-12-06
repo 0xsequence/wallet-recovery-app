@@ -1,7 +1,7 @@
 import { Box, Text, truncateAddress } from '@0xsequence/design-system'
 import { useState } from 'react'
 
-import FilledRoundCheckBox, { ROUND_CHECKBOX_SIZE } from '~/components/helpers/FilledRoundCheckBox'
+import { FilledRoundCheckBox, ROUND_CHECKBOX_SIZE } from '~/components/helpers'
 
 export default function WalletList({
   possibleWallets,
@@ -46,7 +46,7 @@ export default function WalletList({
                 width="full"
               >
                 <Text
-                  variant='normal'
+                  variant="normal"
                   fontWeight="medium"
                   color="text100"
                   style={{ fontFamily: 'monospace' }}

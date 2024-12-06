@@ -46,10 +46,23 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   const [isAddingCollectible, setIsAddingCollectible] = useState(false)
   const [tokenDirectory, setTokenDirectory] = useState<string | undefined>()
 
+  const [isAddingCollectibleManually, setIsAddingCollectibleManually] = useState(false)
+
+  const [collectibleList, setCollectibleList] = useState<any[] | undefined>(undefined)
+
   useEffect(() => {
-    if (selectedNetwork) {
-      setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
+    const fetchCollectibleList = async () => {
+      if (selectedNetwork) {
+        setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
+        if (contractType === CollectibleContractTypeValues.ERC721) {
+          setCollectibleList(await collectibleStore.getDefaultERC721List(selectedNetwork.chainId))
+        } else if (contractType === CollectibleContractTypeValues.ERC1155) {
+          setCollectibleList(await collectibleStore.getDefaultERC1155List(selectedNetwork.chainId))
+        }
+      }
     }
+
+    fetchCollectibleList()
 
     if (selectedNetwork && collectibleAddress && collectibleTokenId && contractType) {
       collectibleStore
@@ -117,7 +130,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     <Box flexDirection="column">
       <Box flexDirection="column" padding="6" gap="6">
         <Text variant="large" fontWeight="bold" color="text80">
-          Import ERC721 or ERC1155 Collectible
+          Import ERC721 or ERC1155 Collectibles
         </Text>
 
         <Box flexDirection="column" gap="3">
@@ -130,40 +143,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               name="collectibleNetwork"
               options={selectOptions}
               onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
-            />
-          </Box>
-
-          <Box flexDirection="column" gap="0.5">
-            <Text variant="normal" fontWeight="medium" color="text80">
-              Collectible Address
-            </Text>
-
-            <Box flexDirection="row" gap="1" paddingBottom="0.5">
-              <Text variant="normal" fontWeight="medium" color="text50">
-                See addresses on network's
-              </Text>
-
-              <Text
-                variant="normal"
-                color="text50"
-                underline={!!tokenDirectory}
-                cursor={tokenDirectory ? 'pointer' : 'default'}
-                onClick={() => {
-                  if (tokenDirectory) {
-                    window.open(tokenDirectory)
-                  }
-                }}
-              >
-                directory
-              </Text>
-            </Box>
-
-            <TextInput
-              name="collectibleAddress"
-              value={collectibleAddress ?? ''}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                setCollectibleAddress(ev.target.value)
-              }}
             />
           </Box>
 
@@ -184,27 +163,96 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
           <Box flexDirection="column" gap="0.5">
             <Text variant="normal" fontWeight="medium" color="text80">
-              Collectible Token ID
+              Token
             </Text>
 
-            <TextInput
-              name="collectibleTokenId"
-              value={collectibleTokenId ?? ''}
-              onKeyPress={(event: { key: string; preventDefault: () => void }) => {
-                if (!/[0-9]/.test(event.key)) {
-                  event.preventDefault()
-                }
-              }}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                if (ev.target.value === '') {
-                  setCollectibleTokenId(undefined)
-                  return
-                }
+            <Box
+              onClick={() => {}}
+              width="fit"
+              cursor="pointer"
+              paddingBottom="0.5"
+              opacity={{ base: '100', hover: '80' }}
+            >
+              <Text variant="normal" fontWeight="medium" color="text50">
+                Import external token list
+              </Text>
+            </Box>
 
-                setCollectibleTokenId(ev.target.value as unknown as number)
-              }}
+            <Select
+              name="collectibleList"
+              options={
+                collectibleList?.slice(0, 20).map(collectible => {
+                  return {
+                    label: collectible.name,
+                    value: collectible.address
+                  }
+                }) ?? []
+              }
+              onValueChange={value => setCollectibleAddress(value)}
             />
           </Box>
+
+          {isAddingCollectibleManually && (
+            <>
+              <Box flexDirection="column" gap="0.5">
+                <Text variant="normal" fontWeight="medium" color="text80">
+                  Collectible Address
+                </Text>
+
+                <Box flexDirection="row" gap="1" paddingBottom="0.5">
+                  <Text variant="normal" fontWeight="medium" color="text50">
+                    See addresses on network's
+                  </Text>
+
+                  <Text
+                    variant="normal"
+                    color="text50"
+                    underline={!!tokenDirectory}
+                    cursor={tokenDirectory ? 'pointer' : 'default'}
+                    onClick={() => {
+                      if (tokenDirectory) {
+                        window.open(tokenDirectory)
+                      }
+                    }}
+                  >
+                    directory
+                  </Text>
+                </Box>
+
+                <TextInput
+                  name="collectibleAddress"
+                  value={collectibleAddress ?? ''}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                    setCollectibleAddress(ev.target.value)
+                  }}
+                />
+              </Box>
+
+              <Box flexDirection="column" gap="0.5">
+                <Text variant="normal" fontWeight="medium" color="text80">
+                  Collectible Token ID
+                </Text>
+
+                <TextInput
+                  name="collectibleTokenId"
+                  value={collectibleTokenId ?? ''}
+                  onKeyPress={(event: { key: string; preventDefault: () => void }) => {
+                    if (!/[0-9]/.test(event.key)) {
+                      event.preventDefault()
+                    }
+                  }}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                    if (ev.target.value === '') {
+                      setCollectibleTokenId(undefined)
+                      return
+                    }
+
+                    setCollectibleTokenId(ev.target.value as unknown as number)
+                  }}
+                />
+              </Box>
+            </>
+          )}
         </Box>
 
         {isFetchingCollectibleInfo && (
@@ -246,8 +294,19 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
       </Box>
 
       <Divider marginY="0" />
-      <Box flexDirection="row" justifyContent="flex-end" padding="6" gap="2">
-        <Button label="Cancel" size="md" shape="square" onClick={onClose} />
+
+      <Box flexDirection="row" padding="6" gap="2">
+        {!isAddingCollectibleManually && (
+          <Button
+            label="Manual Import"
+            shape="square"
+            onClick={() => {
+              setIsAddingCollectibleManually(true)
+            }}
+          />
+        )}
+
+        <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
 
         <Button
           label="Add Collectible"

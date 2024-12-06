@@ -96,7 +96,7 @@ export class NetworkStore {
 
       const updatedNetworkConfig = value as NetworkConfig
 
-      const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))
+      const rpcForCurrent = DEFAULT_PUBLIC_RPC_LIST.get(Number(key))?.[1]
 
       const userEdit = userEdits?.find(network => network.chainId === updatedNetworkConfig.chainId)
 
