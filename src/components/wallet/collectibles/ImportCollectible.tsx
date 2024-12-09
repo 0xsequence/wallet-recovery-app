@@ -83,7 +83,12 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   const selectOptions = mainnetNetworks
     .filter(network => !network.disabled)
     .map(network => ({
-      label: network.title,
+      label: (
+        <Box flexDirection="row" alignItems="center" gap="2">
+          <Image src={network.logoURI} maxWidth="8" maxHeight="8" />
+          <Text>{network.title}</Text>
+        </Box>
+      ),
       value: network.chainId.toString()
     }))
 

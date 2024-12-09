@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Divider,
+  Image,
   Select,
   Spinner,
   Text,
@@ -62,7 +63,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const selectOptions = mainnetNetworks
     .filter(network => !network.disabled)
     .map(network => ({
-      label: network.title,
+      label: (
+        <Box flexDirection="row" alignItems="center" gap="2">
+          <Image src={network.logoURI} maxWidth="8" maxHeight="8" />
+          <Text>{network.title}</Text>
+        </Box>
+      ),
       value: network.chainId.toString()
     }))
 
@@ -146,7 +152,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               options={
                 tokenList?.slice(0, 20).map(token => {
                   return {
-                    label: token.symbol,
+                    label: (
+                      <Box flexDirection="row" alignItems="center" gap="2">
+                        <Image src={token.logoURI} maxHeight="8" maxWidth="8" />
+                        <Text>{token.symbol}</Text>
+                      </Box>
+                    ),
                     value: token.address
                   }
                 }) ?? []
