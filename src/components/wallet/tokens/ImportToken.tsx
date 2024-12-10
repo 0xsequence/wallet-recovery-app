@@ -13,7 +13,7 @@ import {
 } from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
@@ -47,11 +47,15 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const [selectedTokens, setSelectedTokens] = useState<any[]>([])
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     if (tokenManualAddress) {
       const fetchTokenInfo = async () => {
-        const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork?.chainId ?? 1, tokenManualAddress)
-        setTokenInfo(tokenInfo)
+        if (selectedNetwork) {
+          const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork.chainId, tokenManualAddress)
+          setTokenInfo(tokenInfo)
+        }
       }
       fetchTokenInfo()
     }
@@ -80,7 +84,10 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!tokenListFilter) return setFilteredTokenList(tokenList?.slice(0, 8))
+    if (!tokenListFilter)
+      return setFilteredTokenList(
+        tokenList?.slice(0, 8)
+      )
     setFilteredTokenList(
       tokenList
         ?.filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
@@ -90,8 +97,8 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     selectedTokens.map(async token => {
-      if (!token.info?.balance) {
-        const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork?.chainId ?? 1, token.address)
+      if (!token.info?.balance && selectedNetwork) {
+        const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork.chainId, token.address)
         token.info = tokenInfo
       }
     })
@@ -136,7 +143,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
         setIsAddingToken(false)
         toast({
           variant: 'success',
-          title: `ERC20 token${selectedTokens.length + (tokenManualAddress ? 1 : 0) > 1 ? 's' : ''} added sucessfully`,
+          title: `ERC20 token${selectedTokens.length + (tokenManualAddress ? 1 : 0) > 1 ? 's' : ''} added successfully`,
           description:
             "You'll be able to see this token on your browser as long as you don't clear your cache."
         })
@@ -153,9 +160,52 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     }
   }
 
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      try {
+        const text = await file.text()
+        const tokenList = JSON.parse(text)
+
+        console.log(tokenList)
+
+        if (Array.isArray(tokenList)) {
+          tokenList.map(token => {
+            if (!token.address || !token.symbol) {
+              throw new Error('Invalid token list')
+            }
+          })
+
+          if (selectedNetwork) {
+            await tokenStore.addExternalTokenList(selectedNetwork.chainId, tokenList)
+          }
+
+          toast({
+            variant: 'success',
+            title: `Custom token list imported successfully`
+          })
+          onClose()
+        } else {
+          throw new Error('Invalid file format')
+        }
+      } catch (error) {
+        console.error(error)
+        toast({
+          variant: 'error',
+          title: 'Failed to import token list',
+          description: 'Please ensure the file format is correct.'
+        })
+      }
+    }
+  }
+
+  const handleImportCustomTokenList = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <Box flexDirection="column" height="full">
-      <Box flexDirection="column" padding="6" gap="6">
+      <Box flexDirection="column" height="full" padding="6" gap="6">
         <Box flexDirection="row" alignItems="center" gap="4">
           <Text variant="large" fontWeight="bold" color="text80">
             Import Tokens
@@ -217,6 +267,23 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             )
           })}
         </Box>
+
+        {selectedNetwork && (
+          <Button
+            label={`Import custom token list for ${' ' + selectedNetwork?.title}`}
+            shape="square"
+            marginTop="auto"
+            onClick={handleImportCustomTokenList}
+          />
+        )}
+
+        <input
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
       </Box>
 
       <Box marginTop="auto">

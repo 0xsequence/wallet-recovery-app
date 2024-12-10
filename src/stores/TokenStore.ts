@@ -288,14 +288,15 @@ export class TokenStore {
     return tokenList
   }
 
-  // async getExternalTokenList(chainId: number) {
-  //   const rpc = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[1]
-  //   if (!rpc) {
-  //     return []
-  //   }
-  //   const provider = new ethers.JsonRpcProvider(rpc)
-  //   const erc20 = new ethers.Contract(address, ERC20_ABI, provider)
-  // }
+  async addExternalTokenList(chainId: number, tokenList: any[]) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC20)
+    await db.put(IndexedDBKey.ERC20, tokenList, chainName)
+  }
 
   clear() {
     this.local.userAddedTokens.set([])
