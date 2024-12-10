@@ -127,7 +127,16 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
       </Box>
 
       {isImportTokenViewOpen && (
-        <Modal size="sm" onClose={() => setIsImportTokenViewOpen(false)}>
+        <Modal
+          size="lg"
+          onClose={() => setIsImportTokenViewOpen(false)}
+          contentProps={{
+            style: {
+              scrollbarColor: 'gray black',
+              scrollbarWidth: 'thin'
+            }
+          }}
+        >
           <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />
         </Modal>
       )}

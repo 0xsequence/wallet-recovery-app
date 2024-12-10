@@ -4,6 +4,7 @@ import {
   Card,
   Divider,
   Image,
+  SearchIcon,
   Select,
   Spinner,
   Text,
@@ -18,6 +19,8 @@ import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 
+import { FilledRoundCheckBox } from '~/components/helpers'
+
 export default function ImportToken({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
   const networks = networkStore.networks.get()
@@ -29,36 +32,30 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const toast = useToast()
 
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig | undefined>()
-  const [tokenAddress, setTokenAddress] = useState<string | undefined>()
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>()
+  const [tokenManualAddress, setTokenManualAddress] = useState<string>('')
 
-  const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo | undefined>()
+  const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo>()
 
   const [isAddingToken, setIsAddingToken] = useState(false)
-  const [tokenDirectory, setTokenDirectory] = useState<string | undefined>()
 
   const [isAddingTokenManually, setIsAddingTokenManually] = useState(false)
 
-  const [tokenList, setTokenList] = useState<any[] | undefined>(undefined)
+  const [tokenList, setTokenList] = useState<any[]>([])
+  const [tokenListFilter, setTokenListFilter] = useState<string>('')
+  const [filteredTokenList, setFilteredTokenList] = useState<any[]>([])
+
+  const [selectedTokens, setSelectedTokens] = useState<any[]>([])
 
   useEffect(() => {
-    const fetchTokenList = async () => {
-      if (selectedNetwork) {
-        setTokenDirectory(networks.find(n => n.chainId === selectedNetwork.chainId)?.blockExplorer?.rootUrl)
-        setTokenList(await tokenStore.getDefaultTokenList(selectedNetwork.chainId))
-      }
-    }
-
-    fetchTokenList()
-
-    if (selectedNetwork && tokenAddress) {
-      tokenStore.getTokenInfo(selectedNetwork.chainId, tokenAddress).then(tokenInfo => {
+    if (tokenManualAddress) {
+      const fetchTokenInfo = async () => {
+        const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork?.chainId ?? 1, tokenManualAddress)
         setTokenInfo(tokenInfo)
-      })
-    } else {
-      setTokenInfo(undefined)
+      }
+      fetchTokenInfo()
     }
-  }, [selectedNetwork, tokenAddress])
+  }, [selectedNetwork, tokenManualAddress])
 
   const selectOptions = mainnetNetworks
     .filter(network => !network.disabled)
@@ -72,181 +69,230 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       value: network.chainId.toString()
     }))
 
+  useEffect(() => {
+    const fetchTokenList = async () => {
+      if (selectedNetwork) {
+        setTokenList(await tokenStore.getDefaultTokenList(selectedNetwork.chainId))
+      }
+    }
+
+    fetchTokenList()
+  }, [selectedNetwork])
+
+  useEffect(() => {
+    if (!tokenListFilter) return setFilteredTokenList(tokenList?.slice(0, 8))
+    setFilteredTokenList(
+      tokenList
+        ?.filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
+        .slice(0, 8)
+    )
+  }, [tokenList, tokenListFilter])
+
+  useEffect(() => {
+    selectedTokens.map(async token => {
+      if (!token.info?.balance) {
+        const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork?.chainId ?? 1, token.address)
+        token.info = tokenInfo
+      }
+    })
+  }, [selectedTokens])
+
+  const toggleSelectToken = async (tokenAddress: string) => {
+    const isSelected = selectedTokens.some(token => token.address === tokenAddress)
+    if (isSelected) {
+      setSelectedTokens(selectedTokens.filter(token => token.address !== tokenAddress))
+    } else {
+      setSelectedTokens([...selectedTokens, { address: tokenAddress, info: undefined }])
+    }
+  }
+
   const handleAdd = async () => {
-    if (selectedNetwork && tokenAddress && tokenInfo) {
-      setIsAddingToken(true)
-      await tokenStore.addToken({
-        chainId: selectedNetwork.chainId,
-        address: tokenAddress,
-        contractType: ContractType.ERC20,
-        symbol: tokenInfo.symbol,
-        decimals: tokenInfo.decimals
-      })
-      setIsAddingToken(false)
+    try {
+      if (selectedNetwork && ((tokenManualAddress && tokenInfo) || selectedTokens.length)) {
+        setIsAddingToken(true)
+
+        if (tokenManualAddress && tokenInfo && tokenInfo.symbol && tokenInfo.decimals) {
+          await tokenStore.addToken({
+            chainId: selectedNetwork.chainId,
+            address: tokenManualAddress,
+            contractType: ContractType.ERC20,
+            symbol: tokenInfo.symbol,
+            decimals: tokenInfo.decimals
+          })
+        } else if (selectedTokens.length > 0) {
+          selectedTokens.map(async token => {
+            await tokenStore.addToken({
+              chainId: selectedNetwork.chainId,
+              address: token.address,
+              contractType: ContractType.ERC20,
+              symbol: token.info.symbol,
+              decimals: token.info.decimals
+            })
+          })
+        } else {
+          throw new Error('Invalid token data')
+        }
+
+        setIsAddingToken(false)
+        toast({
+          variant: 'success',
+          title: `ERC20 token${selectedTokens.length + (tokenManualAddress ? 1 : 0) > 1 ? 's' : ''} added sucessfully`,
+          description:
+            "You'll be able to see this token on your browser as long as you don't clear your cache."
+        })
+        onClose()
+      }
+    } catch (err) {
+      console.error(err)
       toast({
-        variant: 'success',
-        title: 'ERC20 token added sucessfully',
-        description: "You'll be able to see this token on your browser as long as you don't clear your cache."
+        variant: 'error',
+        title: `One or more ERC20 tokens failed to add`,
+        description: 'Please try again.'
       })
-      resetInputs()
       onClose()
     }
   }
 
-  const resetInputs = () => {
-    setTokenAddress(undefined)
-    setSelectedNetwork(undefined)
-  }
-
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" height="full">
       <Box flexDirection="column" padding="6" gap="6">
-        <Text variant="large" fontWeight="bold" color="text80">
-          Import Tokens
-        </Text>
-        <Box flexDirection="column">
-          <Box flexDirection="row" style={{ paddingBottom: '5px' }}>
-            <Box>
-              <Text variant="normal" fontWeight="medium" color="text80" paddingY="2" paddingX="4">
-                ERC20 Token
-              </Text>
+        <Box flexDirection="row" alignItems="center" gap="4">
+          <Text variant="large" fontWeight="bold" color="text80">
+            Import Tokens
+          </Text>
 
-              <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
-            </Box>
-          </Box>
-
-          <Divider marginY="0" />
+          <Select
+            name="tokenNetwork"
+            placeholder="Select Network"
+            options={selectOptions}
+            onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
+          />
         </Box>
-        <Box flexDirection="column" gap="3">
-          <Box flexDirection="column" gap="1">
-            <Text variant="normal" fontWeight="medium" color="text80">
-              Token Network
-            </Text>
 
-            <Select
-              name="tokenNetwork"
-              options={selectOptions}
-              onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
-            />
-          </Box>
+        <TextInput
+          leftIcon={SearchIcon}
+          value={tokenListFilter}
+          onChange={(ev: ChangeEvent<HTMLInputElement>) => setTokenListFilter(ev.target.value)}
+        />
 
-          <Box flexDirection="column" gap="0.5">
-            <Text variant="normal" fontWeight="medium" color="text80">
-              Token
-            </Text>
+        <Box flexDirection="column">
+          {filteredTokenList?.map((token, i) => {
+            return (
+              <Box
+                key={i}
+                flexDirection="row"
+                alignItems="center"
+                background={{ base: 'backgroundPrimary', hover: 'backgroundSecondary' }}
+                onClick={() => {
+                  toggleSelectToken(token.address)
+                }}
+                borderRadius="sm"
+                padding="3"
+                gap="4"
+              >
+                <Image src={token.logoURI} maxHeight="10" maxWidth="10" />
+                <Text variant="normal" fontWeight="semibold" color="text80">
+                  {token.symbol}
+                </Text>
+                <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
+                  {selectedTokens?.filter(t => t.address.includes(token.address)).length > 0 && (
+                    <>
+                      <Text variant="normal" fontWeight="bold" color="text80">
+                        Balance:
+                      </Text>
+                      <Text variant="normal" fontWeight="bold" color="text80">
+                        {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance}
+                      </Text>
+                    </>
+                  )}
+                  <FilledRoundCheckBox
+                    checked={(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0}
+                  />
+                </Box>
+              </Box>
+            )
+          })}
+        </Box>
+      </Box>
 
-            <Box
-              onClick={() => {}}
-              width="fit"
-              cursor="pointer"
-              paddingBottom="0.5"
-              opacity={{ base: '100', hover: '80' }}
-            >
-              <Text variant="normal" fontWeight="medium" color="text50">
-                Import external token list
-              </Text>
-            </Box>
-
-            <Select
-              name="tokenList"
-              options={
-                tokenList?.slice(0, 20).map(token => {
-                  return {
-                    label: (
-                      <Box flexDirection="row" alignItems="center" gap="2">
-                        <Image src={token.logoURI} maxHeight="8" maxWidth="8" />
-                        <Text>{token.symbol}</Text>
-                      </Box>
-                    ),
-                    value: token.address
-                  }
-                }) ?? []
-              }
-              onValueChange={value => setTokenAddress(value)}
-            />
-          </Box>
-
+      <Box marginTop="auto">
+        <Box paddingX="6">
           {isAddingTokenManually && (
-            <Box flexDirection="column" gap="0.5">
+            <Box flexDirection="column" marginBottom="6" gap="0.5">
               <Text variant="normal" fontWeight="medium" color="text80">
                 Token Address
               </Text>
 
-              <Box flexDirection="row" gap="1" paddingBottom="0.5">
-                <Text variant="normal" fontWeight="medium" color="text50">
-                  See addresses on network's
-                </Text>
-                <Text
-                  variant="normal"
-                  color="text50"
-                  underline={!!tokenDirectory}
-                  cursor={tokenDirectory ? 'pointer' : 'default'}
-                  onClick={() => {
-                    if (tokenDirectory) {
-                      window.open(tokenDirectory)
-                    }
-                  }}
-                >
-                  directory
-                </Text>
-              </Box>
-
               <TextInput
                 name="tokenAddress"
-                value={tokenAddress ?? ''}
+                value={tokenManualAddress ?? ''}
                 onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                  setTokenAddress(ev.target.value)
+                  setTokenManualAddress(ev.target.value)
                 }}
               />
             </Box>
           )}
+
+          {isFetchingTokenInfo ? (
+            <Box alignItems="center" marginBottom="6" justifyContent="center">
+              <Spinner size="lg" />
+            </Box>
+          ) : (
+            tokenInfo && (
+              <Card flexDirection="column" marginBottom="6" gap="2">
+                <Text variant="medium" fontWeight="bold" color="text80">
+                  {tokenInfo.symbol ?? ''}
+                </Text>
+                <Text variant="small" color="text80">
+                  Your Balance:
+                </Text>
+                <Text variant="medium" fontWeight="bold" color="text80">
+                  {tokenInfo.balance}
+                </Text>
+              </Card>
+            )
+          )}
         </Box>
 
-        {isFetchingTokenInfo && (
-          <Box alignItems="center" justifyContent="center">
-            <Spinner size="lg" />
+        <Divider marginY="0" />
+
+        <Box>
+          <Box flexDirection="row" padding="6" gap="2">
+            {isAddingTokenManually ? (
+              <Button
+                label="Hide"
+                shape="square"
+                disabled={!selectedNetwork}
+                onClick={() => {
+                  setIsAddingTokenManually(false)
+                  setTokenManualAddress('')
+                  setTokenInfo(undefined)
+                }}
+              />
+            ) : (
+              <Button
+                label="Manual Import"
+                shape="square"
+                disabled={!selectedNetwork}
+                onClick={() => {
+                  setIsAddingTokenManually(true)
+                }}
+              />
+            )}
+
+            <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
+
+            <Button
+              label="Add"
+              variant="primary"
+              shape="square"
+              disabled={(tokenInfo === undefined && !selectedTokens.length) || isAddingToken}
+              onClick={() => {
+                handleAdd()
+              }}
+            />
           </Box>
-        )}
-
-        {!isFetchingTokenInfo && tokenInfo && (
-          <Card flexDirection="column" gap="2">
-            <Text variant="medium" fontWeight="bold" color="text80">
-              {tokenInfo.symbol ?? ''}
-            </Text>
-            <Text variant="small" color="text80">
-              Your Balance:
-            </Text>
-            <Text variant="medium" fontWeight="bold" color="text80">
-              {tokenInfo.balance}
-            </Text>
-          </Card>
-        )}
-      </Box>
-
-      <Divider marginY="0" />
-
-      <Box flexDirection="row" padding="6" gap="2">
-        {!isAddingTokenManually && (
-          <Button
-            label="Manual Import"
-            shape="square"
-            onClick={() => {
-              setIsAddingTokenManually(true)
-            }}
-          />
-        )}
-
-        <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
-
-        <Button
-          label="Add Token"
-          variant="primary"
-          shape="square"
-          disabled={tokenInfo === undefined || isAddingToken}
-          onClick={() => {
-            handleAdd()
-          }}
-        />
+        </Box>
       </Box>
     </Box>
   )

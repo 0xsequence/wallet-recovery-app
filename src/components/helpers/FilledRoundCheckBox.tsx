@@ -1,11 +1,11 @@
-import { Box } from '@0xsequence/design-system'
+import { Box, BoxProps } from '@0xsequence/design-system'
 
 import CheckmarkBlack from '~/assets/icons/checkmark-black.svg'
 import EmptyRoundCheckBox from '~/assets/icons/round-checkbox.svg'
 
 export const ROUND_CHECKBOX_SIZE = 8
 
-export function FilledRoundCheckBox({ checked }: { checked: boolean }) {
+export function FilledRoundCheckBox({ checked, ...rest }: { checked: boolean } & BoxProps) {
   return (
     <Box
       width={`${ROUND_CHECKBOX_SIZE}`}
@@ -14,6 +14,7 @@ export function FilledRoundCheckBox({ checked }: { checked: boolean }) {
       alignItems="center"
       background={checked ? 'white' : 'transparent'}
       borderRadius="circle"
+      {...rest}
     >
       {checked ? (
         <img src={CheckmarkBlack} alt="Checkmark" style={{ width: '24px', height: '24px' }} />
