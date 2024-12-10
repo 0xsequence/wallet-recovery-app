@@ -18,12 +18,12 @@ import { TokenStore } from '~/stores/TokenStore'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 import { WalletStore } from '~/stores/WalletStore'
 
+import RecoveryHeader from '~/components/header/RecoveryHeader'
 import Networks from '~/components/network/Networks'
-import RecoveryHeader from '~/components/recovery/RecoveryHeader'
 import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
 import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
-import DappList from '~/components/wallet/DappList'
-import ExternalWallet from '~/components/wallet/ExternalWallet'
+import DappList from '~/components/wallet/dapps/DappList'
+import ExternalWallet from '~/components/wallet/externalprovider/ExternalWallet'
 import PendingIndicator from '~/components/wallet/PendingIndicator'
 import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
 import SendCollectible from '~/components/wallet/collectibles/SendCollectible'
@@ -307,7 +307,7 @@ function Wallet() {
     <Box>
       <RecoveryHeader />
 
-      <Box flexDirection="column" alignItems="center" >
+      <Box flexDirection="column" alignItems="center">
         <Box
           flexDirection="column"
           padding="5"

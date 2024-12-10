@@ -21,7 +21,7 @@ import { EIP1193Provider } from '~/hooks/useSyncProviders'
 
 import { observable, useStore } from '~/stores'
 
-import { ProviderDetail, ProviderInfo } from '~/components/SelectProvider'
+import { ProviderDetail, ProviderInfo } from '~/components/wallet/externalprovider/SelectProvider'
 
 import { Store } from '.'
 import { AuthStore } from './AuthStore'

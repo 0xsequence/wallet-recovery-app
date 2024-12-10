@@ -9,7 +9,7 @@ export const getIndexedDB = async (objectStoreKey: IndexedDBKey): Promise<idb.ID
   try {
     // Open the database without specifying a version to get the current version
     db = await idb.openDB(DB_NAME)
-    
+
     if (db.objectStoreNames.contains(objectStoreKey)) {
       // If the object store exists, return the db without closing it
       return db
@@ -25,7 +25,7 @@ export const getIndexedDB = async (objectStoreKey: IndexedDBKey): Promise<idb.ID
         if (!upgradeDb.objectStoreNames.contains(objectStoreKey)) {
           upgradeDb.createObjectStore(objectStoreKey)
         }
-      },
+      }
     })
 
     return db

@@ -200,9 +200,13 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                       <Text variant="normal" fontWeight="bold" color="text80">
                         Balance:
                       </Text>
-                      <Text variant="normal" fontWeight="bold" color="text80">
-                        {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance}
-                      </Text>
+                      {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance ? (
+                        <Text variant="normal" fontWeight="bold" color="text80">
+                          {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance}
+                        </Text>
+                      ) : (
+                        <Spinner size="md" marginRight="1" />
+                      )}
                     </>
                   )}
                   <FilledRoundCheckBox
@@ -233,7 +237,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             </Box>
           )}
 
-          {isFetchingTokenInfo ? (
+          {isFetchingTokenInfo && tokenManualAddress ? (
             <Box alignItems="center" marginBottom="6" justifyContent="center">
               <Spinner size="lg" />
             </Box>

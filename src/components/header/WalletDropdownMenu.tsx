@@ -18,7 +18,7 @@ import { truncateMiddle } from '~/utils/truncatemiddle'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
-import ConfirmSignOut from './ConfirmSignOut'
+import ConfirmSignOut from '~/components/wallet/ConfirmSignOut'
 
 export default function SettingsDropdownMenu() {
   const authStore = useStore(AuthStore)
