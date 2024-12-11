@@ -7,6 +7,6 @@ export const navDrawer = style([
     left: '0',
 
     width: 'vw',
-    height: 'vh',
-  }),
+    height: 'vh'
+  })
 ])

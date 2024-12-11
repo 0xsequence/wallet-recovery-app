@@ -1,9 +1,9 @@
-import { Box } from '@0xsequence/design-system'
+import { Box, BoxProps } from '@0xsequence/design-system'
 
 import Checkmark from '~/assets/icons/checkmark.svg'
 import EmptyCheckBox from '~/assets/icons/square-checkbox.svg'
 
-export default function FilledCheckBox({ checked, size = 'lg' }: { checked: boolean; size?: 'lg' | 'md' }) {
+export function FilledCheckBox({ checked, size = 'lg', ...rest }: { checked: boolean; size?: 'lg' | 'md' } & BoxProps) {
   return (
     <Box
       justifyContent="center"
@@ -14,6 +14,7 @@ export default function FilledCheckBox({ checked, size = 'lg' }: { checked: bool
         borderRadius: size === 'lg' ? '6px' : '3px',
         background: checked ? '#4F4F4F' : 'inherit'
       }}
+      {...rest}
     >
       {checked ? (
         <img

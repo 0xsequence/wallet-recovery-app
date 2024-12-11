@@ -1,6 +1,6 @@
 import { Box, Spinner, Text } from '@0xsequence/design-system'
 
-import NetworkTag from './network/NetworkTag'
+import NetworkTag from '~/components/network/NetworkTag'
 
 export default function PendingTxn({
   symbol,

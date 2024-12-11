@@ -4,8 +4,8 @@ import { SessionTypes } from '@walletconnect/types'
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
-import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
-import { ExternalIcon } from '~/components/helpers/ExternalIcon'
+import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
+import { ExternalIcon } from '~/components/misc/ExternalIcon'
 
 export default function ConnectionList({ sessionList }: { sessionList: SessionTypes.Struct[] }) {
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
