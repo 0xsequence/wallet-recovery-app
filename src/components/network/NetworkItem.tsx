@@ -13,7 +13,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore, createDebugLocalRelayer } from '~/stores/NetworkStore'
 
-import { FilledCheckBox } from '~/components/helpers'
+import { FilledCheckBox } from '~/components/misc'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)

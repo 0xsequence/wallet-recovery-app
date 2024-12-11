@@ -20,8 +20,8 @@ import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
 import SelectProvider from '~/components/wallet/externalprovider/SelectProvider'
-import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
-import { ExternalIcon } from '~/components/helpers/ExternalIcon'
+import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
+import { ExternalIcon } from '~/components/misc/ExternalIcon'
 
 export default function ExternalWallet() {
   const walletStore = useStore(WalletStore)

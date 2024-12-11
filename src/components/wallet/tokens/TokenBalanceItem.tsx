@@ -4,8 +4,8 @@ import { ethers } from 'ethers'
 
 import { truncateNumber } from '~/utils/bignumber'
 
-import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
-import { ExternalIcon } from '~/components/helpers/ExternalIcon'
+import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
+import { ExternalIcon } from '~/components/misc/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
 
 import SendIcon from '~/assets/icons/send.svg'

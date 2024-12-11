@@ -97,7 +97,7 @@ export default function CollectibleList({
       </Box>
 
       {isImportCollectibleViewOpen && (
-        <Modal size="sm" onClose={() => setIsImportCollectibleViewOpen(false)}>
+        <Modal onClose={() => setIsImportCollectibleViewOpen(false)}>
           <ImportCollectible onClose={() => setIsImportCollectibleViewOpen(false)} />
         </Modal>
       )}

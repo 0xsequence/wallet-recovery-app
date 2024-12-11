@@ -19,7 +19,7 @@ import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
 
-import { FilledRoundCheckBox } from '~/components/helpers'
+import { FilledRoundCheckBox } from '~/components/misc'
 
 export default function ImportToken({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
@@ -84,10 +84,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!tokenListFilter)
-      return setFilteredTokenList(
-        tokenList?.slice(0, 8)
-      )
+    if (!tokenListFilter) return setFilteredTokenList(tokenList?.slice(0, 8))
     setFilteredTokenList(
       tokenList
         ?.filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
@@ -167,8 +164,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
         const text = await file.text()
         const tokenList = JSON.parse(text)
 
-        console.log(tokenList)
-
         if (Array.isArray(tokenList)) {
           tokenList.map(token => {
             if (!token.address || !token.symbol) {
@@ -219,11 +214,26 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           />
         </Box>
 
-        <TextInput
-          leftIcon={SearchIcon}
-          value={tokenListFilter}
-          onChange={(ev: ChangeEvent<HTMLInputElement>) => setTokenListFilter(ev.target.value)}
-        />
+        <Box flexDirection="column" gap="2">
+          <TextInput
+            leftIcon={SearchIcon}
+            value={tokenListFilter}
+            placeholder="Search for a token"
+            onChange={(ev: ChangeEvent<HTMLInputElement>) => setTokenListFilter(ev.target.value)}
+          />
+
+          <Button
+            label={
+              selectedNetwork
+                ? `Import custom token list for ${' ' + selectedNetwork?.title}`
+                : 'Select Network to import custom token list'
+            }
+            variant="text"
+            shape="square"
+            marginTop="auto"
+            onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
+          />
+        </Box>
 
         <Box flexDirection="column">
           {filteredTokenList?.map((token, i) => {
@@ -267,15 +277,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             )
           })}
         </Box>
-
-        {selectedNetwork && (
-          <Button
-            label={`Import custom token list for ${' ' + selectedNetwork?.title}`}
-            shape="square"
-            marginTop="auto"
-            onClick={handleImportCustomTokenList}
-          />
-        )}
 
         <input
           type="file"

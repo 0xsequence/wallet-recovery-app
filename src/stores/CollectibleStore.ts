@@ -259,4 +259,24 @@ export class CollectibleStore {
 
     return tokenList
   }
+
+  async addExternalERC721List(chainId: number, collectibleList: any[]) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC721)
+    await db.put(IndexedDBKey.ERC721, collectibleList, chainName)
+  }
+
+  async addExternalERC1155List(chainId: number, collectibleList: any[]) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC1155)
+    await db.put(IndexedDBKey.ERC1155, collectibleList, chainName)
+  }
 }

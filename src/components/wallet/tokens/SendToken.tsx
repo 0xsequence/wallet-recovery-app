@@ -8,7 +8,7 @@ import { getNetworkTitle } from '~/utils/network'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import { FilledCheckBox } from '~/components/helpers'
+import { FilledCheckBox } from '~/components/misc'
 
 export default function SendToken({
   tokenBalance,

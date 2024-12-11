@@ -7,7 +7,7 @@ import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import { FilledCheckBox } from '~/components/helpers'
+import { FilledCheckBox } from '~/components/misc'
 
 import CoinIcon from '~/assets/icons/coin.svg'
 
@@ -128,7 +128,6 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
       {isImportTokenViewOpen && (
         <Modal
-          size="lg"
           onClose={() => setIsImportTokenViewOpen(false)}
           contentProps={{
             style: {
