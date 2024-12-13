@@ -97,7 +97,15 @@ export default function CollectibleList({
       </Box>
 
       {isImportCollectibleViewOpen && (
-        <Modal onClose={() => setIsImportCollectibleViewOpen(false)}>
+        <Modal
+          onClose={() => setIsImportCollectibleViewOpen(false)}
+          contentProps={{
+            style: {
+              scrollbarColor: 'gray black',
+              scrollbarWidth: 'thin'
+            }
+          }}
+        >
           <ImportCollectible onClose={() => setIsImportCollectibleViewOpen(false)} />
         </Modal>
       )}

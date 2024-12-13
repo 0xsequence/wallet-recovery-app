@@ -32,7 +32,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const toast = useToast()
 
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>()
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(mainnetNetworks[0])
   const [tokenManualAddress, setTokenManualAddress] = useState<string>('')
 
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo>()
@@ -123,7 +123,9 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             symbol: tokenInfo.symbol,
             decimals: tokenInfo.decimals
           })
-        } else if (selectedTokens.length > 0) {
+        }
+
+        if (selectedTokens.length > 0) {
           selectedTokens.map(async token => {
             await tokenStore.addToken({
               chainId: selectedNetwork.chainId,
@@ -133,8 +135,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               decimals: token.info.decimals
             })
           })
-        } else {
-          throw new Error('Invalid token data')
         }
 
         setIsAddingToken(false)
@@ -199,7 +199,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Box flexDirection="column" height="full">
+    <Box flexDirection="column" height="fit" minHeight="full">
       <Box flexDirection="column" height="full" padding="6" gap="6">
         <Box flexDirection="row" alignItems="center" gap="4">
           <Text variant="large" fontWeight="bold" color="text80">
@@ -210,7 +210,10 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             name="tokenNetwork"
             placeholder="Select Network"
             options={selectOptions}
-            onValueChange={value => setSelectedNetwork(networks.find(n => n.chainId === Number(value)))}
+            value={selectedNetwork?.chainId.toString()}
+            onValueChange={value =>
+              setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
+            }
           />
         </Box>
 
@@ -358,7 +361,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               label="Add"
               variant="primary"
               shape="square"
-              disabled={(tokenInfo === undefined && !selectedTokens.length) || isAddingToken}
+              disabled={(!tokenInfo && !selectedTokens.length) || isAddingToken}
               onClick={() => {
                 handleAdd()
               }}
