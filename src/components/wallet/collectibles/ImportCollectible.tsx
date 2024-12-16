@@ -38,7 +38,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   const toast = useToast()
 
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkConfig>(mainnetNetworks[0])
-  const [collectibleManualAddress, setCollectibleManualAddress] = useState<string | undefined>()
+  const [collectibleManualAddress, setCollectibleManualAddress] = useState<string>('')
   const [collectibleManualTokenId, setCollectibleManualTokenId] = useState<number | undefined>()
   const [contractType, setContractType] = useState<CollectibleContractType>(
     CollectibleContractTypeValues.ERC721
@@ -95,6 +95,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             contractType
           })
           .then(response => {
+            console.log('response', response)
             setManualCollectibleInfo(response)
           })
       }
@@ -103,11 +104,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     fetchCollectibleList()
     fetchCollectibleInfo()
   }, [selectedNetwork, contractType, collectibleManualAddress, collectibleManualTokenId])
-
-  useEffect(() => {
-    if (selectedNetwork && contractType && selectedCollection) {
-    }
-  }, [selectedNetwork, contractType, selectedCollection, selectedCollectibles])
 
   useEffect(() => {
     const fetchQueriedCollectibles = async () => {
@@ -125,6 +121,8 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             address: selectedCollection.address,
             tokenId: tokenId
           })
+
+          // TODO: potential improvement to show user that the collectible is not owned
 
           if (collectibleInfo.isOwner) {
             setQueriedCollectibles(prev => [
@@ -148,10 +146,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
     fetchQueriedCollectibles()
   }, [queryCollectibleTokenIdsMap])
-
-  useEffect(() => {
-    console.log(selectedCollectibles)
-  }, [selectedCollectibles])
 
   useEffect(() => {
     const fetchCollectionList = async () => {
@@ -220,7 +214,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         description:
           "You'll be able to see this collectible on your browser as long as you don't clear your cache."
       })
-      resetInputs()
       onClose()
     } catch (error) {
       console.error(error)
@@ -230,11 +223,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         description: 'Please try again.'
       })
     }
-  }
-
-  const resetInputs = () => {
-    setCollectibleManualAddress(undefined)
-    setCollectibleManualTokenId(undefined)
   }
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -506,29 +494,49 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
       <Box marginTop="auto">
         <Box paddingX="6">
           {isAddingCollectibleManually && (
-            <Box flexDirection="column" marginBottom="6" gap="0.5">
-              <Text variant="normal" fontWeight="medium" color="text80">
-                Collectible Address
-              </Text>
+            <Box flexDirection="column" gap="3">
+              <Box flexDirection="column" gap="0.5">
+                <Text variant="normal" fontWeight="medium" color="text80">
+                  Collectible Address
+                </Text>
 
-              <TextInput
-                name="collectibleAddress"
-                value={collectibleManualAddress ?? ''}
-                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                  setCollectibleManualAddress(ev.target.value)
-                }}
-              />
+                <TextInput
+                  name="collectibleAddress"
+                  value={collectibleManualAddress ?? ''}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                    setCollectibleManualAddress(ev.target.value)
+                  }}
+                />
+              </Box>
+              <Box flexDirection="column" marginBottom="6" gap="0.5">
+                <Text variant="normal" fontWeight="medium" color="text80">
+                  Token ID
+                </Text>
+
+                <TextInput
+                  name="collectibleTokenId"
+                  value={collectibleManualTokenId ?? ''}
+                  onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                    if (ev.target.value === '') {
+                      setCollectibleManualTokenId(undefined)
+                      return
+                    }
+
+                    setCollectibleManualTokenId(ev.target.value as unknown as number)
+                  }}
+                />
+              </Box>
             </Box>
           )}
 
-          {isFetchingCollectibleInfo && collectibleManualAddress && (
-            <Box alignItems="center" justifyContent="center">
+          {isFetchingCollectibleInfo && collectibleManualAddress && collectibleManualTokenId && (
+            <Box alignItems="center" justifyContent="center" marginBottom="6">
               <Spinner size="lg" />
             </Box>
           )}
 
           {manualCollectibleInfo && !manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
-            <Box alignItems="center" justifyContent="center">
+            <Box alignItems="center" justifyContent="center" marginBottom="6">
               <Text variant="medium" color="warning">
                 You do not own this collectible
               </Text>
@@ -547,12 +555,14 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   Your Balance:
                 </Text>
                 <Text variant="medium" fontWeight="bold" color="text80">
-                  {Number(
-                    ethers.formatUnits(
-                      manualCollectibleInfo.balance as BigNumberish,
-                      manualCollectibleInfo.decimals ?? 0
-                    )
-                  )}
+                  {manualCollectibleInfo.balance
+                    ? Number(
+                        ethers.formatUnits(
+                          manualCollectibleInfo.balance as BigNumberish,
+                          manualCollectibleInfo.decimals ?? 0
+                        )
+                      )
+                    : 1}
                 </Text>
               </Box>
             </Card>

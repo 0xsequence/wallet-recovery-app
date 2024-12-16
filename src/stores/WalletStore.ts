@@ -202,8 +202,13 @@ export class WalletStore {
       }
 
       return { hash }
-    } catch {
+    } catch (error) {
       this.isSendingTokenTransaction.set(undefined)
+      this.toast({
+        variant: 'error',
+        title: 'External wallet error',
+        description: (error as any).message
+      })
       throw new Error('Could not create transaction')
     }
   }
