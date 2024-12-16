@@ -42,6 +42,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [isAddingTokenManually, setIsAddingTokenManually] = useState(false)
 
   const [tokenList, setTokenList] = useState<any[]>([])
+  const [tokenListDate, setTokenListDate] = useState<Date | undefined>()
   const [tokenListFilter, setTokenListFilter] = useState<string>('')
   const [filteredTokenList, setFilteredTokenList] = useState<any[]>([])
 
@@ -76,7 +77,18 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const fetchTokenList = async () => {
       if (selectedNetwork) {
-        setTokenList(await tokenStore.getDefaultTokenList(selectedNetwork.chainId))
+        try {
+          const tokenData = await tokenStore.getTokenList(selectedNetwork.chainId)
+          console.log('tokenData', tokenData)
+
+          const tokenList = tokenData.tokens
+          const tokenListDate = new Date(tokenData.date)
+          setTokenList(tokenList)
+          setTokenListDate(tokenListDate)
+        } catch {
+          setTokenList([])
+          setTokenListDate(undefined)
+        }
       }
     }
 
@@ -84,10 +96,10 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!tokenListFilter) return setFilteredTokenList(tokenList?.slice(0, 8))
+    if (!tokenListFilter) return setFilteredTokenList(tokenList.slice(0, 8))
     setFilteredTokenList(
       tokenList
-        ?.filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
+        .filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
         .slice(0, 8)
     )
   }, [tokenList, tokenListFilter])
@@ -232,8 +244,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                 : 'Select Network to import custom token list'
             }
             variant="text"
-            shape="square"
-            marginTop="auto"
             onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
           />
         </Box>
@@ -288,6 +298,19 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           ref={fileInputRef}
           onChange={handleFileChange}
         />
+
+        {tokenListDate && (
+          <Button
+            label={`RESET LIST - last updated: ${tokenListDate?.toLocaleString()}`}
+            variant="text"
+            color="text50"
+            onClick={async () => {
+              const tokenData = await tokenStore.resetTokenList(selectedNetwork.chainId)
+              setTokenList(tokenData.tokens)
+              setTokenListDate(new Date(tokenData.date))
+            }}
+          />
+        )}
       </Box>
 
       <Box marginTop="auto">

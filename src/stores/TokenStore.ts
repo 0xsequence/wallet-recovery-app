@@ -267,7 +267,7 @@ export class TokenStore {
     }
   }
 
-  async getDefaultTokenList(chainId: number) {
+  async getTokenList(chainId: number) {
     const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
     if (!chainName) {
       return []
@@ -276,13 +276,16 @@ export class TokenStore {
     const db = await getIndexedDB(IndexedDBKey.ERC20)
 
     const tokenList = await db.get(IndexedDBKey.ERC20, chainName)
+
     if (!tokenList) {
       const fetchedTokenList = await fetch(
         `https://raw.githubusercontent.com/0xsequence/token-directory/master/index/${chainName}/erc20.json`
       ).then(res => res.json())
 
-      await db.put(IndexedDBKey.ERC20, fetchedTokenList.tokens, chainName)
-      return fetchedTokenList.tokens
+      const data = { tokens: fetchedTokenList.tokens, date: new Date().toISOString() }
+
+      await db.put(IndexedDBKey.ERC20, data, chainName)
+      return data
     }
 
     return tokenList
@@ -294,8 +297,22 @@ export class TokenStore {
       return []
     }
 
+    const data = { tokens: tokenList, date: new Date().toISOString() }
+
     const db = await getIndexedDB(IndexedDBKey.ERC20)
-    await db.put(IndexedDBKey.ERC20, tokenList, chainName)
+    await db.put(IndexedDBKey.ERC20, data, chainName)
+  }
+
+  async resetTokenList(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC20)
+    await db.delete(IndexedDBKey.ERC20, chainName)
+
+    return await this.getTokenList(chainId)
   }
 
   clear() {

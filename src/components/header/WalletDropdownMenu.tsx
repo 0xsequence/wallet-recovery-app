@@ -7,13 +7,12 @@ import {
   GradientAvatar,
   Modal,
   SignoutIcon,
-  Text
+  Text,
+  truncateAddress
 } from '@0xsequence/design-system'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-import { truncateMiddle } from '~/utils/truncatemiddle'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -52,7 +51,7 @@ export default function SettingsDropdownMenu() {
             <Box flexDirection="row" alignItems="center" gap="2">
               <GradientAvatar address={walletAddress} size="sm" />
               <Text variant="normal" fontWeight="bold" color="text100">
-                {truncateMiddle(walletAddress!, 4, 4)}
+                {truncateAddress(walletAddress!, 2, 4)}
               </Text>
             </Box>
           }

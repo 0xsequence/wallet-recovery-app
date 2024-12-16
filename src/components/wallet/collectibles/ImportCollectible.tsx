@@ -47,6 +47,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   const [isAddingCollection, setIsAddingCollection] = useState(false)
 
   const [collectionList, setCollectionList] = useState<any[]>([])
+  const [collectionListDate, setCollectionListDate] = useState<Date>()
   const [collectionListFilter, setCollectionListFilter] = useState<string>('')
   const [filteredCollectionList, setFilteredCollectionList] = useState<any[]>([])
 
@@ -78,9 +79,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     const fetchCollectibleList = async () => {
       if (selectedNetwork && contractType) {
         if (contractType === CollectibleContractTypeValues.ERC721) {
-          setCollectionList(await collectibleStore.getDefaultERC721List(selectedNetwork.chainId))
+          const data = await collectibleStore.getERC721List(selectedNetwork.chainId)
+          setCollectionList(data.tokens)
+          setCollectionListDate(new Date(data.date))
         } else if (contractType === CollectibleContractTypeValues.ERC1155) {
-          setCollectionList(await collectibleStore.getDefaultERC1155List(selectedNetwork.chainId))
+          const data = await collectibleStore.getERC1155List(selectedNetwork.chainId)
+          setCollectionList(data.tokens)
+          setCollectionListDate(new Date(data.date))
         }
       }
     }
@@ -151,9 +156,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     const fetchCollectionList = async () => {
       if (selectedNetwork) {
         if (contractType === CollectibleContractTypeValues.ERC721) {
-          setCollectionList(await collectibleStore.getDefaultERC721List(selectedNetwork.chainId))
+          const data = await collectibleStore.getERC721List(selectedNetwork.chainId)
+          setCollectionList(data.tokens)
+          setCollectionListDate(new Date(data.date))
         } else if (contractType === CollectibleContractTypeValues.ERC1155) {
-          setCollectionList(await collectibleStore.getDefaultERC1155List(selectedNetwork.chainId))
+          const data = await collectibleStore.getERC1155List(selectedNetwork.chainId)
+          setCollectionList(data.tokens)
+          setCollectionListDate(new Date(data.date))
         }
       }
     }
@@ -488,6 +497,25 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             ref={fileInputRef}
             onChange={handleFileChange}
           />
+
+          {selectedNetwork && (
+            <Button
+              label={`RESET LIST - last updated: ${collectionListDate?.toLocaleString()}`}
+              variant="text"
+              color="text50"
+              onClick={async () => {
+                if (contractType === CollectibleContractTypeValues.ERC721) {
+                  const collectionData = await collectibleStore.resetERC721List(selectedNetwork.chainId)
+                  setCollectionList(collectionData.tokens)
+                  setCollectionListDate(new Date(collectionData.date))
+                } else {
+                  const collectionData = await collectibleStore.resetERC1155List(selectedNetwork.chainId)
+                  setCollectionList(collectionData.tokens)
+                  setCollectionListDate(new Date(collectionData.date))
+                }
+              }}
+            />
+          )}
         </Box>
       )}
 

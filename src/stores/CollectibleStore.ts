@@ -218,7 +218,7 @@ export class CollectibleStore {
     this.userCollectibles.set(filteredBalances)
   }
 
-  async getDefaultERC721List(chainId: number) {
+  async getERC721List(chainId: number) {
     const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
     if (!chainName) {
       return []
@@ -232,14 +232,16 @@ export class CollectibleStore {
         `https://raw.githubusercontent.com/0xsequence/token-directory/master/index/${chainName}/erc721.json`
       ).then(res => res.json())
 
-      await db.put(IndexedDBKey.ERC721, fetchedTokenList.tokens, chainName)
-      return fetchedTokenList.tokens
+      const data = { tokens: fetchedTokenList.tokens, date: new Date().toISOString() }
+
+      await db.put(IndexedDBKey.ERC721, data, chainName)
+      return data
     }
 
     return tokenList
   }
 
-  async getDefaultERC1155List(chainId: number) {
+  async getERC1155List(chainId: number) {
     const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
     if (!chainName) {
       return []
@@ -248,13 +250,16 @@ export class CollectibleStore {
     const db = await getIndexedDB(IndexedDBKey.ERC1155)
 
     const tokenList = await db.get(IndexedDBKey.ERC1155, chainName)
+
     if (!tokenList) {
       const fetchedTokenList = await fetch(
         `https://raw.githubusercontent.com/0xsequence/token-directory/master/index/${chainName}/erc1155.json`
       ).then(res => res.json())
 
-      await db.put(IndexedDBKey.ERC1155, fetchedTokenList.tokens, chainName)
-      return fetchedTokenList.tokens
+      const data = { tokens: fetchedTokenList.tokens, date: new Date().toISOString() }
+
+      await db.put(IndexedDBKey.ERC1155, data, chainName)
+      return data
     }
 
     return tokenList
@@ -266,8 +271,10 @@ export class CollectibleStore {
       return []
     }
 
+    const data = { tokens: collectibleList, date: new Date().toISOString() }
+
     const db = await getIndexedDB(IndexedDBKey.ERC721)
-    await db.put(IndexedDBKey.ERC721, collectibleList, chainName)
+    await db.put(IndexedDBKey.ERC721, data, chainName)
   }
 
   async addExternalERC1155List(chainId: number, collectibleList: any[]) {
@@ -276,7 +283,33 @@ export class CollectibleStore {
       return []
     }
 
+    const data = { tokens: collectibleList, date: new Date().toISOString() }
+
     const db = await getIndexedDB(IndexedDBKey.ERC1155)
-    await db.put(IndexedDBKey.ERC1155, collectibleList, chainName)
+    await db.put(IndexedDBKey.ERC1155, data, chainName)
+  }
+
+  async resetERC721List(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC721)
+    await db.delete(IndexedDBKey.ERC721, chainName)
+
+    return await this.getERC721List(chainId)
+  }
+
+  async resetERC1155List(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC1155)
+    await db.delete(IndexedDBKey.ERC1155, chainName)
+
+    return await this.getERC1155List(chainId)
   }
 }
