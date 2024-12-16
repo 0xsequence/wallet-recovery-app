@@ -58,12 +58,7 @@ export const MobileDrawerContent = () => {
         style={{ width: '75%' }}
       >
         <Box
-          // flexDirection="row"
-          // alignItems="center"
-          // background="buttonGlass"
-          // borderRadius="sm"
           gap="2"
-          // style={{ cursor: 'pointer', padding: '8px 16px 8px 8px' }}
           onClick={() => window.open('https://docs.sequence.xyz/')}
         >
           <Image src={externalArrowIcon} height="5" />
@@ -73,12 +68,7 @@ export const MobileDrawerContent = () => {
         </Box>
 
         <Box
-          // flexDirection="row"
-          // alignItems="center"
-          // background="buttonGlass"
-          // borderRadius="sm"
           gap="2"
-          // style={{ cursor: 'pointer', padding: '8px 16px 8px 8px' }}
           onClick={() => {
             openNetworkModal()
             toggleNavDrawer(false)
