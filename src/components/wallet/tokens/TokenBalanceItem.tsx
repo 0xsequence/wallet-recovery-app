@@ -4,8 +4,8 @@ import { ethers } from 'ethers'
 
 import { truncateNumber } from '~/utils/bignumber'
 
-import { ButtonWithIcon } from '~/components/helpers/ButtonWithIcon'
-import { ExternalIcon } from '~/components/helpers/ExternalIcon'
+import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
+import { ExternalIcon } from '~/components/misc/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
 
 import SendIcon from '~/assets/icons/send.svg'
@@ -23,8 +23,6 @@ export default function TokenBalanceItem({
 }) {
   const formattedBalance = ethers.formatUnits(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
-
-  console.log(tokenBalance)
 
   return (
     <Card flexDirection="row" alignItems="center" gap="3">

@@ -7,7 +7,7 @@ import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import FilledCheckbox from '~/components/helpers/FilledCheckBox'
+import { FilledCheckBox } from '~/components/misc'
 
 import CoinIcon from '~/assets/icons/coin.svg'
 
@@ -77,7 +77,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
             gap="2"
             onClick={() => setFilterZeroBalances(!filterZeroBalances)}
           >
-            <FilledCheckbox checked={filterZeroBalances} size="md" />
+            <FilledCheckBox checked={filterZeroBalances} size="md" />
 
             <Text variant="small" color="text80">
               Filter zero balances
@@ -127,7 +127,15 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
       </Box>
 
       {isImportTokenViewOpen && (
-        <Modal size="sm" onClose={() => setIsImportTokenViewOpen(false)}>
+        <Modal
+          onClose={() => setIsImportTokenViewOpen(false)}
+          contentProps={{
+            style: {
+              scrollbarColor: 'gray black',
+              scrollbarWidth: 'thin'
+            }
+          }}
+        >
           <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />
         </Modal>
       )}

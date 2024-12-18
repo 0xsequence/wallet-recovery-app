@@ -5,7 +5,7 @@ import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import SettingsDropdownMenu from '~/components/wallet/WalletDropdownMenu'
+import SettingsDropdownMenu from '~/components/header/WalletDropdownMenu'
 
 import networkIcon from '~/assets/icons/chain.svg'
 import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'

@@ -1,4 +1,4 @@
-import { Box,  Image, Text } from '@0xsequence/design-system'
+import { Box, Image, Text } from '@0xsequence/design-system'
 import { motion } from 'framer-motion'
 
 import { useStore } from '~/stores'
@@ -57,38 +57,28 @@ export const MobileDrawerContent = () => {
         borderLeftColor="backgroundBackdrop"
         style={{ width: '75%' }}
       >
-          <Box
-            // flexDirection="row"
-            // alignItems="center"
-            // background="buttonGlass"
-            // borderRadius="sm"
-            gap="2"
-            // style={{ cursor: 'pointer', padding: '8px 16px 8px 8px' }}
-            onClick={() => window.open('https://docs.sequence.xyz/')}
-          >
-            <Image src={externalArrowIcon} height="5" />
-            <Text variant="normal" fontWeight="bold" color="text50">
-              Docs
-            </Text>
-          </Box>
+        <Box
+          gap="2"
+          onClick={() => window.open('https://docs.sequence.xyz/')}
+        >
+          <Image src={externalArrowIcon} height="5" />
+          <Text variant="normal" fontWeight="bold" color="text50">
+            Docs
+          </Text>
+        </Box>
 
-          <Box
-            // flexDirection="row"
-            // alignItems="center"
-            // background="buttonGlass"
-            // borderRadius="sm"
-            gap="2"
-            // style={{ cursor: 'pointer', padding: '8px 16px 8px 8px' }}
-            onClick={() => {
-              openNetworkModal()
-              toggleNavDrawer(false)
-            }}
-          >
-            <Image src={networkIcon} height="5" />
-            <Text variant="normal" fontWeight="bold" color="text50">
-              Networks
-            </Text>
-          </Box>
+        <Box
+          gap="2"
+          onClick={() => {
+            openNetworkModal()
+            toggleNavDrawer(false)
+          }}
+        >
+          <Image src={networkIcon} height="5" />
+          <Text variant="normal" fontWeight="bold" color="text50">
+            Networks
+          </Text>
+        </Box>
       </Box>
     </Box>
   )

@@ -2,10 +2,13 @@ import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
 import { ethers, isError } from 'ethers'
 
+import { getIndexedDB } from '~/utils/indexeddb'
 import { getNativeTokenInfo } from '~/utils/network'
 
 import { ERC20_ABI } from '~/constants/abi'
+import { DEFAULT_PUBLIC_RPC_LIST } from '~/constants/network'
 import { LocalStorageKey } from '~/constants/storage'
+import { IndexedDBKey } from '~/constants/storage'
 
 import { Store, observable } from '.'
 import { AuthStore } from './AuthStore'
@@ -262,6 +265,54 @@ export class TokenStore {
       console.error(err)
       throw new Error(`Error getting token info ${JSON.stringify(err)}`)
     }
+  }
+
+  async getTokenList(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC20)
+
+    const tokenList = await db.get(IndexedDBKey.ERC20, chainName)
+
+    if (!tokenList) {
+      const fetchedTokenList = await fetch(
+        `https://raw.githubusercontent.com/0xsequence/token-directory/master/index/${chainName}/erc20.json`
+      ).then(res => res.json())
+
+      const data = { tokens: fetchedTokenList.tokens, date: new Date().toISOString() }
+
+      await db.put(IndexedDBKey.ERC20, data, chainName)
+      return data
+    }
+
+    return tokenList
+  }
+
+  async addExternalTokenList(chainId: number, tokenList: any[]) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const data = { tokens: tokenList, date: new Date().toISOString() }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC20)
+    await db.put(IndexedDBKey.ERC20, data, chainName)
+  }
+
+  async resetTokenList(chainId: number) {
+    const chainName = DEFAULT_PUBLIC_RPC_LIST.get(chainId)?.[0]
+    if (!chainName) {
+      return []
+    }
+
+    const db = await getIndexedDB(IndexedDBKey.ERC20)
+    await db.delete(IndexedDBKey.ERC20, chainName)
+
+    return await this.getTokenList(chainId)
   }
 
   clear() {
