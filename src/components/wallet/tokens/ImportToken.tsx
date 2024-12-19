@@ -81,7 +81,6 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       if (selectedNetwork) {
         try {
           const tokenData = await tokenStore.getTokenList(selectedNetwork.chainId)
-          console.log('tokenData', tokenData)
 
           const tokenList = tokenData.tokens
           const tokenListDate = new Date(tokenData.date)
