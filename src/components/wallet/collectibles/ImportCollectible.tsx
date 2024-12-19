@@ -5,6 +5,7 @@ import {
   ChevronLeftIcon,
   Divider,
   Image,
+  Modal,
   SearchIcon,
   Select,
   Spinner,
@@ -45,6 +46,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   )
 
   const [isAddingCollection, setIsAddingCollection] = useState(false)
+  const [confirmRefreshList, setConfirmRefreshList] = useState(false)
 
   const [collectionList, setCollectionList] = useState<any[]>([])
   const [collectionListDate, setCollectionListDate] = useState<Date>()
@@ -334,6 +336,20 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     )
   }
 
+  const handleRefreshCollectibleList = async () => {
+    if (contractType === CollectibleContractTypeValues.ERC721) {
+      const collectionData = await collectibleStore.resetERC721List(selectedNetwork.chainId)
+      setCollectionList(collectionData.tokens)
+      setCollectionListDate(new Date(collectionData.date))
+    } else {
+      const collectionData = await collectibleStore.resetERC1155List(selectedNetwork.chainId)
+      setCollectionList(collectionData.tokens)
+      setCollectionListDate(new Date(collectionData.date))
+    }
+
+    setConfirmRefreshList(false)
+  }
+
   return (
     <Box flexDirection="column" height="fit" minHeight="full">
       {selectedCollection ? (
@@ -445,7 +461,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             <Divider marginY="0" />
           </Box>
 
-          <Box flexDirection="column" gap="2">
+          <Box flexDirection="column" gap="3">
             <TextInput
               leftIcon={SearchIcon}
               value={collectionListFilter}
@@ -498,22 +514,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             onChange={handleFileChange}
           />
 
-          {selectedNetwork && (
+          {collectionListDate && (
             <Button
-              label={`RESET LIST - last updated: ${collectionListDate?.toLocaleString()}`}
-              variant="text"
-              color="text50"
-              onClick={async () => {
-                if (contractType === CollectibleContractTypeValues.ERC721) {
-                  const collectionData = await collectibleStore.resetERC721List(selectedNetwork.chainId)
-                  setCollectionList(collectionData.tokens)
-                  setCollectionListDate(new Date(collectionData.date))
-                } else {
-                  const collectionData = await collectibleStore.resetERC1155List(selectedNetwork.chainId)
-                  setCollectionList(collectionData.tokens)
-                  setCollectionListDate(new Date(collectionData.date))
-                }
-              }}
+              label={`Refresh list - last updated: ${collectionListDate?.toLocaleString()}`}
+              shape="square"
+              size="xs"
+              color="text80"
+              onClick={() => setConfirmRefreshList(true)}
             />
           )}
         </Box>
@@ -637,6 +644,21 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           </Box>
         </Box>
       </Box>
+
+      {confirmRefreshList && (
+        <Modal size="sm">
+          <Box flexDirection="column" padding="6" gap="6">
+            <Text variant="normal" fontWeight="medium" color="text80">
+              {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
+            </Text>
+
+            <Box alignSelf="flex-end" flexDirection="row" gap="3">
+              <Button label="Cancel" size="md" shape="square" onClick={() => setConfirmRefreshList(false)} />
+              <Button label="Confirm" variant="danger" size="md" shape="square" onClick={handleRefreshCollectibleList} />
+            </Box>
+          </Box>
+        </Modal>
+      )}
     </Box>
   )
 }

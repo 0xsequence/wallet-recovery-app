@@ -4,6 +4,7 @@ import {
   Card,
   Divider,
   Image,
+  Modal,
   SearchIcon,
   Select,
   Spinner,
@@ -38,6 +39,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo>()
 
   const [isAddingToken, setIsAddingToken] = useState(false)
+  const [confirmRefreshList, setConfirmRefreshList] = useState(false)
 
   const [isAddingTokenManually, setIsAddingTokenManually] = useState(false)
 
@@ -210,6 +212,16 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     fileInputRef.current?.click()
   }
 
+  const handleRefreshTokenList = async () => {
+    if (selectedNetwork) {
+      const tokenData = await tokenStore.resetTokenList(selectedNetwork.chainId)
+      setTokenList(tokenData.tokens)
+      setTokenListDate(new Date(tokenData.date))
+    }
+
+    setConfirmRefreshList(false)
+  }
+
   return (
     <Box flexDirection="column" height="fit" minHeight="full">
       <Box flexDirection="column" height="full" padding="6" gap="6">
@@ -229,7 +241,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           />
         </Box>
 
-        <Box flexDirection="column" gap="2">
+        <Box flexDirection="column" gap="3">
           <TextInput
             leftIcon={SearchIcon}
             value={tokenListFilter}
@@ -301,14 +313,11 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
         {tokenListDate && (
           <Button
-            label={`RESET LIST - last updated: ${tokenListDate?.toLocaleString()}`}
-            variant="text"
-            color="text50"
-            onClick={async () => {
-              const tokenData = await tokenStore.resetTokenList(selectedNetwork.chainId)
-              setTokenList(tokenData.tokens)
-              setTokenListDate(new Date(tokenData.date))
-            }}
+            label={`Refresh list - last updated: ${tokenListDate?.toLocaleString()}`}
+            shape="square"
+            size="xs"
+            color="text80"
+            onClick={() => setConfirmRefreshList(true)}
           />
         )}
       </Box>
@@ -392,6 +401,27 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           </Box>
         </Box>
       </Box>
+
+      {confirmRefreshList && (
+        <Modal size="sm">
+          <Box flexDirection="column" padding="6" gap="6">
+            <Text variant="normal" fontWeight="medium" color="text80">
+              {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
+            </Text>
+
+            <Box alignSelf="flex-end" flexDirection="row" gap="3">
+              <Button label="Cancel" size="md" shape="square" onClick={() => setConfirmRefreshList(false)} />
+              <Button
+                label="Confirm"
+                variant="danger"
+                size="md"
+                shape="square"
+                onClick={handleRefreshTokenList}
+              />
+            </Box>
+          </Box>
+        </Modal>
+      )}
     </Box>
   )
 }
