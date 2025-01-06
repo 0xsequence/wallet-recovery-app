@@ -22,11 +22,11 @@ import RecoveryHeader from '~/components/header/RecoveryHeader'
 import Networks from '~/components/network/Networks'
 import SignClientTransactionConfirm from '~/components/signing/SignClientTransactionConfirm'
 import SignClientTransactionRelay from '~/components/signing/SignClientTransactionRelay'
-import DappList from '~/components/wallet/dapps/DappList'
-import ExternalWallet from '~/components/wallet/externalprovider/ExternalWallet'
 import PendingIndicator from '~/components/wallet/PendingIndicator'
 import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
 import SendCollectible from '~/components/wallet/collectibles/SendCollectible'
+import DappList from '~/components/wallet/dapps/DappList'
+import ExternalWallet from '~/components/wallet/externalprovider/ExternalWallet'
 import SendToken from '~/components/wallet/tokens/SendToken'
 import TokenList from '~/components/wallet/tokens/TokenList'
 
@@ -362,9 +362,9 @@ function Wallet() {
       {isSigningTxn && (
         <Modal
           isDismissible={false}
-          size="md"
+          size="sm"
           contentProps={{
-            style: { width: !isMobile ? '800px' : '100%', maxHeight: '100%', overflowY: 'auto' }
+            style: { width: !isMobile ? '800px' : '100%' }
           }}
         >
           <SignClientTransactionRelay
@@ -379,9 +379,9 @@ function Wallet() {
       {isSigningMsg && (
         <Modal
           isDismissible={false}
-          size="md"
+          size="sm"
           contentProps={{
-            style: { width: !isMobile ? '800px' : '100%', maxHeight: '90%', overflowY: 'auto' }
+            style: { width: !isMobile ? '800px' : '100%' }
           }}
         >
           <SignClientTransactionConfirm
@@ -398,7 +398,7 @@ function Wallet() {
       )}
 
       {isSendTokenModalOpen && (
-        <Modal size="md" onClose={() => setIsSendTokenModalOpen(false)}>
+        <Modal size="sm" onClose={() => setIsSendTokenModalOpen(false)}>
           <SendToken
             tokenBalance={pendingSendToken}
             onClose={(to, amount) => {
@@ -413,7 +413,7 @@ function Wallet() {
       )}
 
       {isSendCollectibleModalOpen && (
-        <Modal size="md" onClose={() => setIsSendCollectibleModalOpen(false)}>
+        <Modal size="sm" onClose={() => setIsSendCollectibleModalOpen(false)}>
           <SendCollectible
             collectibleInfo={pendingSendCollectible}
             onClose={(to, amount) => {

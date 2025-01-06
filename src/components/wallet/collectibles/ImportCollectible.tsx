@@ -80,14 +80,19 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   useEffect(() => {
     const fetchCollectibleList = async () => {
       if (selectedNetwork && contractType) {
-        if (contractType === CollectibleContractTypeValues.ERC721) {
-          const data = await collectibleStore.getERC721List(selectedNetwork.chainId)
-          setCollectionList(data.tokens)
-          setCollectionListDate(new Date(data.date))
-        } else if (contractType === CollectibleContractTypeValues.ERC1155) {
-          const data = await collectibleStore.getERC1155List(selectedNetwork.chainId)
-          setCollectionList(data.tokens)
-          setCollectionListDate(new Date(data.date))
+        try {
+          if (contractType === CollectibleContractTypeValues.ERC721) {
+            const data = await collectibleStore.getERC721List(selectedNetwork.chainId)
+            setCollectionList(data.tokens)
+            setCollectionListDate(new Date(data.date))
+          } else if (contractType === CollectibleContractTypeValues.ERC1155) {
+            const data = await collectibleStore.getERC1155List(selectedNetwork.chainId)
+            setCollectionList(data.tokens)
+            setCollectionListDate(new Date(data.date))
+          }
+        } catch {
+          setCollectionList([])
+          setCollectionListDate(undefined)
         }
       }
     }
@@ -424,6 +429,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   fontWeight="semibold"
                   color={contractType === CollectibleContractTypeValues.ERC721 ? 'text100' : 'text50'}
                   paddingX="4"
+                  cursor="pointer"
                 >
                   ERC721
                 </Text>
@@ -444,6 +450,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   fontWeight="semibold"
                   color={contractType === CollectibleContractTypeValues.ERC1155 ? 'text100' : 'text50'}
                   paddingX="4"
+                  cursor="pointer"
                 >
                   ERC1155
                 </Text>
@@ -654,7 +661,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
             <Box alignSelf="flex-end" flexDirection="row" gap="3">
               <Button label="Cancel" size="md" shape="square" onClick={() => setConfirmRefreshList(false)} />
-              <Button label="Confirm" variant="danger" size="md" shape="square" onClick={handleRefreshCollectibleList} />
+              <Button
+                label="Confirm"
+                variant="danger"
+                size="md"
+                shape="square"
+                onClick={handleRefreshCollectibleList}
+              />
             </Box>
           </Box>
         </Modal>

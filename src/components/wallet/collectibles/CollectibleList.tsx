@@ -1,4 +1,15 @@
-import { AddIcon, Box, Button, Card, Divider, Image, Modal, Spinner, Text } from '@0xsequence/design-system'
+import {
+  AddIcon,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Image,
+  Modal,
+  Spinner,
+  Text,
+  useMediaQuery
+} from '@0xsequence/design-system'
 import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -16,6 +27,8 @@ export default function CollectibleList({
 }: {
   onSendClick: (collectibleInfo: CollectibleInfo) => void
 }) {
+  const isMobile = useMediaQuery('isMobile')
+
   const collectibleStore = useStore(CollectibleStore)
   const networkStore = useStore(NetworkStore)
 
@@ -98,11 +111,16 @@ export default function CollectibleList({
 
       {isImportCollectibleViewOpen && (
         <Modal
+          size="lg"
           onClose={() => setIsImportCollectibleViewOpen(false)}
           contentProps={{
             style: {
               scrollbarColor: 'gray black',
-              scrollbarWidth: 'thin'
+              scrollbarWidth: 'thin',
+              width: !isMobile ? '800px' : '100%',
+              minHeight: 'auto',
+              maxHeight: '80%',
+              overflow: 'hidden'
             }
           }}
         >
