@@ -1,4 +1,4 @@
-import { AddIcon, Box, Button, Card, Divider, Image, Modal, Spinner, Text } from '@0xsequence/design-system'
+import { AddIcon, Box, Button, Card, Divider, Image, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
@@ -15,6 +15,8 @@ import ImportToken from './ImportToken'
 import TokenBalanceItem from './TokenBalanceItem'
 
 export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance: TokenBalance) => void }) {
+  const isMobile = useMediaQuery('isMobile')
+
   const walletStore = useStore(WalletStore)
   const tokenStore = useStore(TokenStore)
   const networkStore = useStore(NetworkStore)
@@ -128,11 +130,16 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
       {isImportTokenViewOpen && (
         <Modal
+          size="lg"
           onClose={() => setIsImportTokenViewOpen(false)}
           contentProps={{
             style: {
               scrollbarColor: 'gray black',
-              scrollbarWidth: 'thin'
+              scrollbarWidth: 'thin',
+              width: !isMobile ? '800px' : '100%',
+              minHeight: 'auto',
+              maxHeight: '80%',
+              overflow: 'hidden'
             }
           }}
         >

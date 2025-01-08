@@ -35,7 +35,7 @@ export default function RecoveryHeader() {
 
   return (
     <Box flexDirection="column" style={{ paddingBottom: `${RECOVERY_HEADER_HEIGHT}px` }}>
-      <Box background="backgroundPrimary" position="fixed" width="full">
+      <Box background="backgroundPrimary" position="fixed" width="full" zIndex="50">
         <Box
           flexDirection="row"
           justifyContent="space-between"
