@@ -24,7 +24,7 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, [string | undefined, string]> 
   [3776, ['astar-zkevm', 'https://rpc.startale.com/astar-zkevm']],
   [6038361, ['astar-zkyoto', 'https://rpc.startale.com/zkyoto']],
   [2730, ['xr-sepolia-testnet', 'https://xr-sepolia-testnet.rpc.caldera.xyz/http']], // not on sequence directory repo
-  [40, ['telos', 'https://mainnet-asia.telos.net/evm']], // not on sequence directory repo
+  [40, ['telos', 'https://mainnet.telos.net/evm']], // not on sequence directory repo
   [1946, ['minato', 'https://rpc.minato.soneium.org']], // not on sequence directory repo
   [7668, ['rootnet', 'https://root.rootnet.live/archive']], // not on sequence directory repo
   [8333, ['b3', 'https://mainnet-rpc.b3.fun']], // not on sequence directory repo
