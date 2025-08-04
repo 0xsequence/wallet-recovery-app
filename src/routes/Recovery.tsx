@@ -80,7 +80,7 @@ function Recovery() {
   }
 
   const validMnemonic = (testMnemonic: string = mnemonic) => {
-    return testMnemonic.replace(/\s+/g, ' ').trim().split(' ').length == 12
+    return testMnemonic.trim().split(/\s+/g).length == 12
   }
 
   const validPassword = () => {
@@ -104,7 +104,7 @@ function Recovery() {
     setIsLoadingWallets(true)
 
     try {
-      const signer = ethers.Wallet.fromPhrase(mnemonic)
+      const signer = ethers.Wallet.fromPhrase(mnemonic.trim())
 
       const wallets = [
         ...(await TRACKER.walletsOfSigner({ signer: signer.address })).map(({ wallet }) => wallet),
@@ -132,7 +132,7 @@ function Recovery() {
 
   const validateAddress = async (wallet: string) => {
     try {
-      const recoverySigner = ethers.Wallet.fromPhrase(mnemonic)
+      const recoverySigner = ethers.Wallet.fromPhrase(mnemonic.trim())
       const orchestrator = new Orchestrator([recoverySigner])
       const accountToCheck = new Account({
         address: wallet,
@@ -288,7 +288,7 @@ function Recovery() {
           </Box>
         )}
 
-        {isCheckingWallet && (
+        {isCheckingWallet && !isLoadingWallets && (
           <Box alignSelf="center" alignItems="center" gap="1">
             <Spinner size="md" />
             <Text variant="small" color="text80">
@@ -301,7 +301,8 @@ function Recovery() {
           <>
             {warningVisible ? (
               <Text variant="small" color="negative">
-                No wallet match found. Try again in 10 min or enter a wallet address manually.
+                No wallet match found. Please double-check your recovery phrase and wallet address, or try
+                again in 10 minutes.
               </Text>
             ) : (
               <Text variant="small" color="negative">
