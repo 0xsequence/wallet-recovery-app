@@ -71,6 +71,10 @@ function Recovery() {
   }, [wallet])
 
   useEffect(() => {
+    setWarningVisible(false)
+  }, [mnemonic])
+
+  useEffect(() => {
     setIsNetworkModalOpen(isNetworkModalOpenObservable)
   }, [isNetworkModalOpenObservable])
 
@@ -80,7 +84,7 @@ function Recovery() {
   }
 
   const validMnemonic = (testMnemonic: string = mnemonic) => {
-    return testMnemonic.trim().split(/\s+/g).length == 12
+    return testMnemonic.trim().split(/\s+/g).length == 12 || testMnemonic.trim().split(/\s+/g).length == 24
   }
 
   const validPassword = () => {
@@ -110,6 +114,11 @@ function Recovery() {
         ...(await TRACKER.walletsOfSigner({ signer: signer.address })).map(({ wallet }) => wallet),
         ...(WALLETS[signer.address] ?? []).map(({ wallet }) => wallet)
       ]
+
+      if (wallets.length === 0) {
+        setWarningVisible(true)
+        throw new Error('No wallets found, try again in 10 minutes.')
+      }
 
       setPossibleWallets(wallets)
 
@@ -187,7 +196,7 @@ function Recovery() {
           </Text>
 
           <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
-            Paste your 12-word mnemonic, with each word separated by a space.
+            Paste your 12 or 24-word mnemonic, with each word separated by a space.
           </Text>
 
           <TextInput
@@ -199,7 +208,7 @@ function Recovery() {
 
           {mnemonic && !validMnemonic() && (
             <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-              Mnemonic must be 12 words
+              Mnemonic must be 12 or 24 words
             </Text>
           )}
         </Box>
