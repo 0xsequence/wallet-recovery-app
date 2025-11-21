@@ -173,7 +173,7 @@ function Recovery() {
         width="full"
         style={{ maxWidth: WALLET_WIDTH }}
       >
-        <Button leftIcon={ChevronLeftIcon} label="Back" size="sm" as={Link} to="/" />
+        <Button leftIcon={ChevronLeftIcon} label="Back" size="sm" as={Link} to="/recovery-select" />
 
         <Box flexDirection="column">
           <Text variant="xlarge" color="text80">
