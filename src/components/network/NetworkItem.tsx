@@ -11,7 +11,7 @@ import { NetworkConfig } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
-import { NetworkStore, createDebugLocalRelayer } from '~/stores/NetworkStore'
+import { NetworkStore } from '~/stores/NetworkStore'
 
 import { FilledCheckBox } from '~/components/misc'
 
@@ -49,7 +49,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
       const updated = { ...network }
       updated.rpcUrl = rpcUrl
       updated.blockExplorer = { rootUrl: blockExplorerUrl }
-      updated.relayer = createDebugLocalRelayer(rpcUrl)
+      // updated.relayer = createDebugLocalRelayer(rpcUrl)
       updated.disabled = disabled
       networkStore.addUnsavedNetworkEdit(updated)
     }
