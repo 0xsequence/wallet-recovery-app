@@ -1,6 +1,7 @@
-import { ChainId, NetworkMetadata, networks as sequenceNetworkDefs } from '@0xsequence/network'
-import { Relayer } from '@0xsequence/relayer'
-import { Bundler, State } from '@0xsequence/wallet-core'
+// import { ChainId, NetworkMetadata, networks as sequenceNetworkDefs } from '@0xsequence/network'
+// import { Relayer } from '@0xsequence/relayer'
+// import { Bundler, State } from '@0xsequence/wallet-core'
+import { State } from '@0xsequence/wallet-core'
 import { Network } from '@0xsequence/wallet-primitives'
 import { Sequence } from '@0xsequence/wallet-wdk'
 import {
@@ -49,7 +50,7 @@ import {
 
 let stateProvider: State.Provider | undefined
 
-const localStateProvider = new State.Local.Provider(new State.Local.IndexedDbStore('sequence-cache'))
+// const localStateProvider = new State.Local.Provider(new State.Local.IndexedDbStore('sequence-cache'))
 
 // if (!env.KEYMACHINE_URL) {
 //   console.error(

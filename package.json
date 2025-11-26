@@ -19,7 +19,7 @@
     "@0xsequence/core": "2.1.0",
     "@0xsequence/design-system": "1.8.0",
     "@0xsequence/indexer": "2.1.0",
-    "@0xsequence/network": "2.3.33",
+    "@0xsequence/network": "2.1.0",
     "@0xsequence/provider": "2.1.0",
     "@0xsequence/relayer-legacy": "npm:@0xsequence/relayer@2.1.0",
     "@0xsequence/sessions": "2.1.0",
