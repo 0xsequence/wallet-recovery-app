@@ -221,30 +221,6 @@ const tHomeVerseOAS: NativeTokenInfo = {
   name: 'Testnet OAS'
 }
 
-const tXR: NativeTokenInfo = {
-  chainId: ChainId.XR_SEPOLIA,
-  address: ZERO_ADDRESS,
-  symbol: 'tXR',
-  name: 'Sepolia XR',
-  type: 'NATIVE',
-  decimals: 18,
-  logoURI: '', //networkImageUrl(ChainId.XR_SEPOLIA),
-  deployed: true,
-  bytecodeHash: '',
-  extensions: {
-    link: 'https://xr-one.gitbook.io/xr',
-    description: 'tXR is the native asset on the XR sepolia chain',
-    ogImage: '',
-    originChainId: 0,
-    originAddress: '',
-    blacklist: false,
-    verified: true,
-    verifiedBy: 'Sequence',
-    featured: false
-  },
-  updatedAt: '2024-04-09T11:46:00.000000000Z'
-}
-
 // List of native currencies for each networks
 const nativeTokenInfo = {
   [ChainId.MAINNET]: ETH, // Mainnet
@@ -267,7 +243,6 @@ const nativeTokenInfo = {
   [ChainId.XAI_SEPOLIA]: tXAI,
   [ChainId.HOMEVERSE]: HomeverseOAS,
   [ChainId.HOMEVERSE_TESTNET]: tHomeVerseOAS,
-  [ChainId.XR_SEPOLIA]: tXR
 }
 
 export const getNativeTokenInfo = (chainId: keyof typeof nativeTokenInfo) => {
