@@ -1,5 +1,5 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
-import { LocalRelayer } from '@0xsequence/relayer'
+import { LocalRelayer } from '@0xsequence/relayer-legacy'
 import { ethers, isError } from 'ethers'
 import { WritableObservable } from 'micro-observables'
 
