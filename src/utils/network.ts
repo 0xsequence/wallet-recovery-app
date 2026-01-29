@@ -1,4 +1,4 @@
-import { ContractInfo } from '@0xsequence/indexer'
+import { ContractInfo, ResourceStatus } from '@0xsequence/indexer'
 import { ChainId, networks } from '@0xsequence/network'
 import { ethers } from 'ethers'
 
@@ -19,11 +19,16 @@ const ETH: NativeTokenInfo = {
   symbol: 'ETH',
   name: 'Ethereum',
   decimals: 18,
+  source: 'MAINNET',
+  status: ResourceStatus.AVAILABLE,
   logoURI: '', //nativeTokenImageUrl(ChainId.MAINNET),
   type: 'NATIVE',
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     description:
       'Ethereum is a global, open-source platform for decentralized applications. In other words, the vision is to create a world computer that anyone can build applications in a decentralized manner; while all states and data are distributed and publicly accessible. Ethereum supports smart contracts in which developers can write code in order to program digital value. Examples of decentralized apps (dapps) that are built on Ethereum includes token, non-fungible tokens, decentralized finance apps, lending protocol, decentralized exchanges, and much more.',
     link: 'https://ethereum.org/',
@@ -50,12 +55,17 @@ const POL: NativeTokenInfo = {
   address: ZERO_ADDRESS,
   symbol: 'POL',
   name: 'Polygon',
+  source: 'POLYGON',
+  status: ResourceStatus.AVAILABLE,
   decimals: 18,
   type: 'NATIVE',
   logoURI: '', //nativeTokenImageUrl(ChainId.POLYGON),
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     description: 'Polygon provides scalable, secure and instant Ethereum transactions.',
     link: 'https://polygon.technology/',
     ogImage: '',
@@ -74,12 +84,17 @@ const AVAX: NativeTokenInfo = {
   address: ZERO_ADDRESS,
   symbol: 'AVAX',
   name: 'AVAX',
+  source: 'AVALANCHE',
+  status: ResourceStatus.AVAILABLE,
   decimals: 18,
   type: 'NATIVE',
   logoURI: '', //nativeTokenImageUrl(ChainId.AVALANCHE),
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     description:
       'Avalanche is a high throughput smart contract blockchain platform. Validators secure the network through a proof-of-stake consensus protocol. It is said to be fast, low cost, and environmental friendly.',
     link: 'https://avax.network',
@@ -99,12 +114,17 @@ const XDAI: NativeTokenInfo = {
   address: ZERO_ADDRESS,
   symbol: 'XDAI',
   name: 'XDAI',
+  source: 'GNOSIS',
+  status: ResourceStatus.AVAILABLE,
   decimals: 18,
   type: 'NATIVE',
   logoURI: '', //nativeTokenImageUrl(ChainId.GNOSIS),
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     description:
       'xDai is the native stable token of the Gnosis chain blockchain. Each xDai token is worth ~ 1 US dollar.',
     link: 'https://gnosischain.com',
@@ -130,6 +150,8 @@ const BNB: NativeTokenInfo = {
   chainId: ChainId.BSC,
   address: ZERO_ADDRESS,
   name: 'BNB',
+  source: 'BSC',
+  status: ResourceStatus.AVAILABLE,
   type: 'NATIVE',
   symbol: 'BNB',
   decimals: 18,
@@ -137,6 +159,9 @@ const BNB: NativeTokenInfo = {
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     link: 'https://www.binance.com/',
     description:
       'BNB is the native asset on Binance Chain, a blockchain software system developed by Binance and the community. BNB has multiple forms of utility and powers the Binance Ecosystem as its underlying gas.',
@@ -163,12 +188,17 @@ const XAI: NativeTokenInfo = {
   address: ZERO_ADDRESS,
   symbol: 'XAI',
   name: 'XAI',
+  source: 'XAI',
+  status: ResourceStatus.AVAILABLE,
   type: 'NATIVE',
   decimals: 18,
   logoURI: '', //networkImageUrl(ChainId.XAI),
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     link: 'https://xai.games/',
     description: 'XAI is the native asset on the XAI chain',
     ogImage: '',
@@ -197,10 +227,15 @@ const HomeverseOAS: NativeTokenInfo = {
   name: 'OAS',
   type: 'NATIVE',
   decimals: 18,
+  source: 'HOMEVERSE',
+  status: ResourceStatus.AVAILABLE,
   logoURI: '', //nativeTokenImageUrl(ChainId.HOMEVERSE),
   deployed: true,
   bytecodeHash: '',
   extensions: {
+    categories: [],
+    ogName: '',
+    featureIndex: 0,
     link: 'https://www.oasys.games/',
     description:
       'OAS is the native asset on the OASYS chain, its also the native asset on the HomeVerse chain',
@@ -219,30 +254,6 @@ const tHomeVerseOAS: NativeTokenInfo = {
   ...HomeverseOAS,
   chainId: ChainId.HOMEVERSE_TESTNET,
   name: 'Testnet OAS'
-}
-
-const tXR: NativeTokenInfo = {
-  chainId: ChainId.XR_SEPOLIA,
-  address: ZERO_ADDRESS,
-  symbol: 'tXR',
-  name: 'Sepolia XR',
-  type: 'NATIVE',
-  decimals: 18,
-  logoURI: '', //networkImageUrl(ChainId.XR_SEPOLIA),
-  deployed: true,
-  bytecodeHash: '',
-  extensions: {
-    link: 'https://xr-one.gitbook.io/xr',
-    description: 'tXR is the native asset on the XR sepolia chain',
-    ogImage: '',
-    originChainId: 0,
-    originAddress: '',
-    blacklist: false,
-    verified: true,
-    verifiedBy: 'Sequence',
-    featured: false
-  },
-  updatedAt: '2024-04-09T11:46:00.000000000Z'
 }
 
 // List of native currencies for each networks
@@ -267,7 +278,6 @@ const nativeTokenInfo = {
   [ChainId.XAI_SEPOLIA]: tXAI,
   [ChainId.HOMEVERSE]: HomeverseOAS,
   [ChainId.HOMEVERSE_TESTNET]: tHomeVerseOAS,
-  [ChainId.XR_SEPOLIA]: tXR
 }
 
 export const getNativeTokenInfo = (chainId: keyof typeof nativeTokenInfo) => {
