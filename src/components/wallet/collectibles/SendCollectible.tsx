@@ -107,6 +107,8 @@ export default function SendCollectible({
     const transaction = txHashes.get(recoveryPayloadId)
     const status = transaction?.status
 
+    // Only update waiting state if we have a definitive status
+    // Ignore 'preparing' status to avoid race conditions
     if (status === 'pending' || status === 'success') {
       setIsWaitingForSignature(false)
     } else if (status === 'cancelled' || status === 'error') {
@@ -354,6 +356,8 @@ export default function SendCollectible({
               }
               onClick={async () => {
                 if (address && amount) {
+                  // Clear previous recovery payload ID to avoid stale state
+                  setRecoveryPayloadId(undefined)
                   setIsWaitingForSignature(true)
                   try {
                     const payloadId = await onRecover(amount)
