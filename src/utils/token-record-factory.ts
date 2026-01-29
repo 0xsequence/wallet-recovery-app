@@ -4,6 +4,8 @@ import { Address } from "viem"
 import { Network } from "@0xsequence/wallet-primitives"
 import { formatPrettyBalance } from "./format-pretty-balance"
 import { imgproxy } from "./image-proxy"
+import { CollectibleInfo } from "~/stores/CollectibleStore"
+import { ResourceStatus } from "@0xsequence/indexer"
 
 const CONTRACT_TYPES = {
   NATIVE: 'NATIVE',
@@ -235,4 +237,104 @@ function getExplorerUrl(
   return tokenId
     ? `${blockExplorer.url}token/${contractAddress}?a=${tokenId}`
     : `${blockExplorer.url}address/${contractAddress}`
+}
+
+/**
+ * Creates a token record from collectible info.
+ *
+ * @param collectible - The collectible info to create a record from.
+ * @param accountAddress - The account address that owns this collectible.
+ * @returns A token record.
+ */
+export function createTokenRecordFromCollectible(
+  collectible: CollectibleInfo,
+  accountAddress: Address
+): TokenRecord {
+  const { collectibleInfoParams, collectibleInfoResponse } = collectible
+  const { chainId, address: contractAddress, tokenId, contractType } = collectibleInfoParams
+  const { balance, decimals, image, name } = collectibleInfoResponse
+
+  const network = Network.getNetworkFromChainId(chainId)
+  const testnet = network?.type === Network.NetworkType.TESTNET
+
+  const balanceString = balance?.toString() ?? '1'
+  const decimalsValue = decimals ?? 0
+  const imageSrc = imgproxy(image) || image
+
+  const tokenMetadata: TokenMetadata = {
+    tokenId: tokenId.toString(),
+    contractAddress,
+    name: name ?? 'Unknown',
+    description: '',
+    image: image ?? '',
+    decimals: decimalsValue,
+    properties: {},
+    source: '',
+    attributes: [],
+    status: ResourceStatus.AVAILABLE
+  }
+
+  const contractInfo: TokenBalance['contractInfo'] = {
+    chainId,
+    address: contractAddress,
+    name: name ?? 'Unknown',
+    type: contractType as any,
+    symbol: name ?? '',
+    decimals: decimalsValue,
+    logoURI: image ?? '',
+    source: '',
+    deployed: true,
+    bytecodeHash: '',
+    updatedAt: new Date().toISOString(),
+    status: ResourceStatus.AVAILABLE,
+    extensions: {
+      link: '',
+      description: '',
+      ogImage: '',
+      originChainId: 0,
+      originAddress: '',
+      blacklist: false,
+      verified: false,
+      verifiedBy: '',
+      categories: [],
+      ogName: '',
+      featured: false,
+      featureIndex: 0
+    }
+  }
+
+  const tokenIdString = tokenId.toString()
+  const uuid = `${accountAddress}::${chainId}::${contractAddress.toLowerCase()}::${tokenIdString}`
+  const path = `/tokens/${accountAddress.slice(-4)}/${chainId}/${contractAddress.toLowerCase()}/${tokenIdString}`
+
+  return {
+    type: TOKEN_TYPES.COLLECTIBLE,
+    contractAddress: contractAddress as Address,
+    accountAddress,
+    contractType: contractType as any,
+    contractInfo,
+    chainId,
+    network,
+    testnet,
+    balance: balanceString,
+    holdings: getHoldings(balanceString, decimalsValue),
+    uuid,
+    path,
+    name: name ?? 'Unknown',
+    symbol: name ?? '???',
+    decimals: decimalsValue,
+    tokenId: tokenIdString,
+    tokenMetadata,
+    image: imageSrc,
+    asset: getCollectibleAsset(tokenMetadata, imageSrc),
+    description: '',
+    isEmpty: balanceString === '0',
+    isUnknown: !name,
+    isVerified: false,
+    isGroup: false,
+    isSwappable: false,
+    fiat: false,
+    keys: [],
+    explorerUrl: getExplorerUrl(chainId, contractAddress as Address, tokenIdString)
+  }
 }

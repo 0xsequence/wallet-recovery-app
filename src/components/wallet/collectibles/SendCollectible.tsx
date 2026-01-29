@@ -75,11 +75,14 @@ export default function SendCollectible({
         setAmount('1')
       } else {
         // Set amount to maximum balance for ERC1155
-        const maxBalance = ethers.formatUnits(
-          collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
-          collectibleInfo.collectibleInfoResponse.decimals ?? 0
-        )
-        setAmount(maxBalance)
+        const balance = collectibleInfo.collectibleInfoResponse.balance
+        if (balance !== null && balance !== undefined) {
+          const maxBalance = ethers.formatUnits(
+            balance as BigNumberish,
+            collectibleInfo.collectibleInfoResponse.decimals ?? 0
+          )
+          setAmount(maxBalance)
+        }
       }
 
       // Set address to external wallet address if available
@@ -193,10 +196,12 @@ export default function SendCollectible({
 
               <Text variant="normal" fontWeight="medium" color="text80">
                 Current Balance:{' '}
-                {ethers.formatUnits(
-                  collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                  collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
-                )}
+                {collectibleInfo?.collectibleInfoResponse?.balance !== null && collectibleInfo?.collectibleInfoResponse?.balance !== undefined
+                  ? ethers.formatUnits(
+                    collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                    collectibleInfo.collectibleInfoResponse.decimals ?? 0
+                  )
+                  : '0'}
               </Text>
             </Box>
 
@@ -214,12 +219,15 @@ export default function SendCollectible({
                     size="xs"
                     shape="square"
                     onClick={() => {
-                      setAmount(
-                        ethers.formatUnits(
-                          collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                          collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
+                      const balance = collectibleInfo?.collectibleInfoResponse?.balance
+                      if (balance !== null && balance !== undefined) {
+                        setAmount(
+                          ethers.formatUnits(
+                            balance as BigNumberish,
+                            collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
+                          )
                         )
-                      )
+                      }
                     }}
                   />
                 ) : undefined
@@ -231,10 +239,12 @@ export default function SendCollectible({
                 <WarningIcon color="warning" size="xs" />
                 <Text variant="small" color="warning">
                   Insufficient balance. Your current balance is{' '}
-                  {ethers.formatUnits(
-                    collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                    collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
-                  )}
+                  {collectibleInfo?.collectibleInfoResponse?.balance !== null && collectibleInfo?.collectibleInfoResponse?.balance !== undefined
+                    ? ethers.formatUnits(
+                      collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                      collectibleInfo.collectibleInfoResponse.decimals ?? 0
+                    )
+                    : '0'}
                 </Text>
               </Box>
             )}
