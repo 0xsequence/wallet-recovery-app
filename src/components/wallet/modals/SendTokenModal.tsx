@@ -7,7 +7,7 @@ interface SendTokenModalProps {
   isDismissible: boolean
   tokenBalance?: TokenBalance
   onClose: () => void
-  onRecover: (to?: string, amount?: string) => Promise<string | undefined | void>
+  onRecover: (amount?: string) => Promise<string | undefined | void>
   onDismissibleChange: (isDismissible: boolean) => void
 }
 

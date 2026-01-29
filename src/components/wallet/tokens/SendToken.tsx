@@ -21,7 +21,7 @@ export default function SendToken({
 }: {
   tokenBalance?: TokenBalance
   onClose: () => void
-  onRecover: (to?: string, amount?: string) => Promise<string | undefined | void>
+  onRecover: (amount?: string) => Promise<string | undefined | void>
   onDismissibleChange?: (isDismissible: boolean) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
@@ -327,7 +327,7 @@ export default function SendToken({
                 if (address && amount) {
                   setIsWaitingForSignature(true)
                   try {
-                    const payloadId = await onRecover(address, amount)
+                    const payloadId = await onRecover(amount)
                     if (payloadId) {
                       setRecoveryPayloadId(payloadId)
                     } else {
