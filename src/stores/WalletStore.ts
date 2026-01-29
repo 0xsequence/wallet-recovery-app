@@ -56,11 +56,11 @@ export class WalletStore {
   >(undefined)
   isSendingSignedTokenTransaction = observable<
     | {
-        txn: ethers.Transaction[] | ethers.TransactionRequest[]
-        chainId?: number
-        origin?: string
-        projectAccessKey?: string
-      }
+      txn: ethers.Transaction[] | ethers.TransactionRequest[]
+      chainId?: number
+      origin?: string
+      projectAccessKey?: string
+    }
     | undefined
   >(undefined)
 
@@ -74,11 +74,11 @@ export class WalletStore {
 
   toSignTxnDetails = observable<
     | {
-        txn: ethers.Transaction[] | ethers.TransactionRequest[]
-        chainId: number
-        origin?: string
-        projectAccessKey?: string
-      }
+      txn: ethers.Transaction[] | ethers.TransactionRequest[]
+      chainId: number
+      origin?: string
+      projectAccessKey?: string
+    }
     | undefined
   >(undefined)
   toSignMsgDetails = observable<{ message: MessageToSign; chainId: number; origin?: string } | undefined>(
@@ -188,14 +188,22 @@ export class WalletStore {
       let hash: string | undefined
 
       try {
-        const response = await this.sendTransaction(
-          account,
-          externalProvider,
-          externalProviderAddress,
-          txn,
-          chainId
-        )
-        hash = response.hash
+        await this.switchToChain(externalProvider, chainId)
+
+        const tx = txn as ethers.TransactionRequest
+
+        const txRequest = {
+          from: externalProviderAddress,
+          to: tx.to,
+          data: tx.data,
+          value: tx.value ? ethers.toQuantity(tx.value) : undefined
+        }
+
+        const result = await externalProvider.request({
+          method: 'eth_sendTransaction',
+          params: [txRequest]
+        })
+        hash = result as string
       } catch (error) {
         this.isSendingTokenTransaction.set(undefined)
         throw error
@@ -295,14 +303,24 @@ export class WalletStore {
       let hash: string | undefined
 
       try {
-        const response = await this.sendTransaction(
-          account,
-          externalProvider,
-          externalProviderAddress,
-          txn,
-          chainId
-        )
-        hash = response.hash
+        await this.switchToChain(externalProvider, chainId)
+
+        const tx = txn as ethers.TransactionRequest
+
+        const txRequest = {
+          from: externalProviderAddress,
+          to: tx.to,
+          data: tx.data,
+          value: tx.value ? ethers.toQuantity(tx.value) : undefined
+        }
+
+        console.log('Sending collectible transaction directly through external wallet:', txRequest)
+
+        const result = await externalProvider.request({
+          method: 'eth_sendTransaction',
+          params: [txRequest]
+        })
+        hash = result as string
       } catch (error) {
         this.isSendingCollectibleTransaction.set(undefined)
         throw error
@@ -450,7 +468,7 @@ export class WalletStore {
 
 // dependency injected into walletRequestHandler, do not directly access
 class Prompter implements WalletUserPrompter {
-  constructor(private store: Store) {}
+  constructor(private store: Store) { }
 
   getDefaultChainId(): number {
     return this.store.get(WalletStore).defaultNetwork.get() ?? 1

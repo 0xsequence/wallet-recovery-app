@@ -1,4 +1,4 @@
-import { ContractType, TokenBalance } from '@0xsequence/indexer'
+import { ContractType, ResourceStatus, TokenBalance } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
 import { ethers, isError } from 'ethers'
 
@@ -15,7 +15,7 @@ import { AuthStore } from './AuthStore'
 import { LocalStore } from './LocalStore'
 import { NetworkStore } from './NetworkStore'
 
-export type UserAddedToken = {
+type UserAddedToken = {
   chainId: number
   address: string
   contractType: ContractType
@@ -123,11 +123,16 @@ export class TokenStore {
           decimals: token.decimals,
           name: token.symbol,
           symbol: token.symbol,
+          source: 'USER_ADDED',
+          status: ResourceStatus.AVAILABLE,
           type: 'ERC20',
           logoURI: '',
           deployed: true,
           bytecodeHash: '',
           extensions: {
+            categories: [],
+            ogName: '',
+            featureIndex: 0,
             link: '',
             description: '',
             ogImage: '',

@@ -1,5 +1,4 @@
 import { NetworkConfig, networks } from '@0xsequence/network'
-import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers, isError } from 'ethers'
 import { WritableObservable } from 'micro-observables'
 
@@ -15,16 +14,16 @@ import { LocalStore } from './LocalStore'
 //
 // Public account address: 0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
 // Etherscan link: https://rinkeby.etherscan.io/address/0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
-const THROWAWAY_RELAYER_PK = '0xa9e1f06cb24d160e02bd6ea84d6ffd0b3457b53d1177382eee85f4d8013419b8'
+// const THROWAWAY_RELAYER_PK = '0xa9e1f06cb24d160e02bd6ea84d6ffd0b3457b53d1177382eee85f4d8013419b8'
 
-export const createDebugLocalRelayer = (provider: string | ethers.JsonRpcProvider) => {
-  const signer = new ethers.Wallet(THROWAWAY_RELAYER_PK)
-  if (typeof provider === 'string') {
-    return new LocalRelayer(signer.connect(new ethers.JsonRpcProvider(provider)))
-  } else {
-    return new LocalRelayer(signer.connect(provider))
-  }
-}
+// export const createDebugLocalRelayer = (provider: string | ethers.JsonRpcProvider) => {
+//   const signer = new ethers.Wallet(THROWAWAY_RELAYER_PK)
+//   if (typeof provider === 'string') {
+//     return new LocalRelayer(signer.connect(new ethers.JsonRpcProvider(provider)))
+//   } else {
+//     return new LocalRelayer(signer.connect(provider))
+//   }
+// }
 
 export class NetworkStore {
   networks = observable<NetworkConfig[]>([])
@@ -106,7 +105,7 @@ export class NetworkStore {
           userEdit.blockExplorer?.rootUrl !== updatedNetworkConfig.blockExplorer?.rootUrl ||
           userEdit.disabled !== false
         ) {
-          userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
+          // userEdit.relayer = createDebugLocalRelayer(userEdit.rpcUrl)
           updatedNetworkConfigs.push(userEdit)
           continue
         } else {
@@ -117,7 +116,7 @@ export class NetworkStore {
 
       if (rpcForCurrent) {
         updatedNetworkConfig.rpcUrl = rpcForCurrent
-        updatedNetworkConfig.relayer = createDebugLocalRelayer(rpcForCurrent)
+        // updatedNetworkConfig.relayer = createDebugLocalRelayer(rpcForCurrent)
 
         updatedNetworkConfig.disabled = false
 
@@ -130,7 +129,7 @@ export class NetworkStore {
     }
 
     this.local.networksUserAdditions.get()?.forEach(network => {
-      network.relayer = createDebugLocalRelayer(network.rpcUrl)
+      // network.relayer = createDebugLocalRelayer(network.rpcUrl)
       updatedNetworkConfigs.push(network)
     })
 

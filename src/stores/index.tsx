@@ -1,20 +1,6 @@
 import { ReactNode, createContext, useContext } from 'react'
 
 type StoreConstructor<T> = new (store: Store) => T
-
-/*
-  Allow for dynamically importing stores
-
-  Usage:
-
-    type WalletStore = ImportStore<typeof import('./WalletStore'), 'WalletStore'>
-    ..
-    const walletStore = await this.store.getAsync<WalletStore>(import('./WalletStore'), 'WalletStore')
-*/
-
-export type ImportStore<T, K extends keyof T> =
-  T extends Record<K, infer S> ? (S extends new (...args: any[]) => infer R ? R : never) : never
-
 export class Store {
   stores: { [key: string]: any } = {}
 
@@ -65,16 +51,6 @@ export function useStore<T>(klass: StoreConstructor<T>) {
   }
 
   return store.get(klass)
-}
-
-export function useRootStore() {
-  const store = useContext(StoreContext)
-
-  if (!store) {
-    throw new Error('store cannot be null! check your <StoreProvider ...>')
-  }
-
-  return store
 }
 
 export {

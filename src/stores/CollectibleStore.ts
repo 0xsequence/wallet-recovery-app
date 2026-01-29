@@ -21,7 +21,7 @@ export const CollectibleContractTypeValues = {
 
 export type CollectibleContractType = keyof typeof CollectibleContractTypeValues
 
-export type CollectibleInfoParams = {
+type CollectibleInfoParams = {
   chainId: number
   address: string
   tokenId: number
