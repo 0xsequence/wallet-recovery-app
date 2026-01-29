@@ -274,7 +274,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                 padding="3"
                 gap="4"
               >
-                <Image src={token.logoURI} maxHeight="10" maxWidth="10" />
+                <Image src={token.logoURI} maxHeight="10" maxWidth="10" borderRadius="circle" />
                 <Text variant="normal" fontWeight="semibold" color="text80">
                   {token.symbol}
                 </Text>

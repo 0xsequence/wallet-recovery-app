@@ -1,7 +1,9 @@
-import { Box, Button, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import { Box, Button, CheckmarkIcon, Divider, NetworkImage, Spinner, Text, TextInput, useMediaQuery, WarningIcon } from '@0xsequence/design-system'
 import { ethers } from 'ethers'
 import { BigNumberish } from 'ethers'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import { useObservable } from 'micro-observables'
+import { Network } from '@0xsequence/wallet-primitives'
 
 import { getNetworkTitle } from '~/utils/network'
 
@@ -10,21 +12,83 @@ import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 import { FilledCheckBox } from '~/components/misc'
+import { useTxHashesStore } from '~/hooks/use-tx-hash-store'
 
 export default function SendCollectible({
   collectibleInfo,
-  onClose
+  onClose,
+  onRecover,
+  onDismissibleChange
 }: {
   collectibleInfo?: CollectibleInfo
-  onClose: (to?: string, amount?: string) => void
+  onClose: () => void
+  onRecover: (to?: string, amount?: string) => Promise<string | undefined | void>
+  onDismissibleChange?: (isDismissible: boolean) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
 
   const walletStore = useStore(WalletStore)
+  const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
+  const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
+  const txHashes = useTxHashesStore()
 
   const [amount, setAmount] = useState<string | undefined>(undefined)
   const [address, setAddress] = useState<string | undefined>(undefined)
-  const [sendToExternalWallet, setSendToExternalWallet] = useState(false)
+  const [sendToExternalWallet, setSendToExternalWallet] = useState(true)
+  const [recoveryPayloadId, setRecoveryPayloadId] = useState<string | undefined>(undefined)
+  const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
+
+  // Check if the address matches the external wallet address (case-insensitive)
+  const isSendingToExternalWallet =
+    address &&
+    selectedExternalWalletAddress &&
+    address.toLowerCase() === selectedExternalWalletAddress.toLowerCase()
+
+  // Check if user has sufficient balance (for ERC1155)
+  const insufficientBalance = useMemo(() => {
+    if (!amount || !collectibleInfo) {
+      return false
+    }
+
+    // ERC721 always has balance of 1
+    if (collectibleInfo.collectibleInfoParams.contractType === 'ERC721') {
+      return false
+    }
+
+    try {
+      const amountBigInt = ethers.parseUnits(amount, collectibleInfo.collectibleInfoResponse.decimals ?? 0)
+      const balance = collectibleInfo.collectibleInfoResponse.balance ?? 0n
+      return amountBigInt > BigInt(balance)
+    } catch (e) {
+      // Invalid amount format
+      return false
+    }
+  }, [amount, collectibleInfo])
+
+
+  // Set default values: maximum balance/1 for ERC721 and external wallet address
+  useEffect(() => {
+    if (collectibleInfo) {
+      const isERC721 = collectibleInfo.collectibleInfoParams.contractType === 'ERC721'
+
+      if (isERC721) {
+        setAmount('1')
+      } else {
+        // Set amount to maximum balance for ERC1155
+        const maxBalance = ethers.formatUnits(
+          collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+          collectibleInfo.collectibleInfoResponse.decimals ?? 0
+        )
+        setAmount(maxBalance)
+      }
+
+      // Set address to external wallet address if available
+      const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
+      if (externalWalletAddress) {
+        setAddress(externalWalletAddress)
+      }
+    }
+  }, [collectibleInfo])
 
   useEffect(() => {
     const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
@@ -34,18 +98,87 @@ export default function SendCollectible({
     }
   }, [sendToExternalWallet])
 
+  // Monitor transaction status
+  useEffect(() => {
+    if (!recoveryPayloadId) {
+      return
+    }
+
+    const transaction = txHashes.get(recoveryPayloadId)
+    const status = transaction?.status
+
+    if (status === 'pending' || status === 'success') {
+      setIsWaitingForSignature(false)
+    } else if (status === 'cancelled' || status === 'error') {
+      setIsWaitingForSignature(false)
+    }
+  }, [recoveryPayloadId, txHashes.values])
+
+  // Update modal dismissibility based on waiting state
+  useEffect(() => {
+    if (onDismissibleChange) {
+      const transaction = recoveryPayloadId ? txHashes.get(recoveryPayloadId) : undefined
+      const txStatus = transaction?.status
+      const hasFinalStatus = txStatus === 'pending' || txStatus === 'success' || txStatus === 'cancelled' || txStatus === 'error'
+
+      // Modal should be non-dismissible when waiting for signature or when we have a recoveryPayloadId without final status
+      const shouldBeDismissible = !isWaitingForSignature && (!recoveryPayloadId || hasFinalStatus)
+      onDismissibleChange(shouldBeDismissible)
+    }
+  }, [isWaitingForSignature, recoveryPayloadId, onDismissibleChange, txHashes.values])
+
+  // Poll for transaction status updates
+  useEffect(() => {
+    if (!recoveryPayloadId || !isWaitingForSignature) {
+      return
+    }
+
+    const interval = setInterval(() => {
+      const transaction = txHashes.get(recoveryPayloadId)
+      const status = transaction?.status
+
+      if (status === 'pending' || status === 'success') {
+        setIsWaitingForSignature(false)
+        clearInterval(interval)
+      } else if (status === 'cancelled' || status === 'error') {
+        setIsWaitingForSignature(false)
+        clearInterval(interval)
+      }
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [recoveryPayloadId, isWaitingForSignature, txHashes])
+
   if (!collectibleInfo) {
     return null
   }
 
   const isERC721 = collectibleInfo.collectibleInfoParams.contractType === 'ERC721'
-
   const networkTitle = getNetworkTitle(collectibleInfo.collectibleInfoParams.chainId)
+  const transaction = recoveryPayloadId ? txHashes.get(recoveryPayloadId) : undefined
+  const txStatus = transaction?.status
+  const isSigned = txStatus === 'pending' || txStatus === 'success'
+  const isRejected = txStatus === 'cancelled' || txStatus === 'error'
+  const connectedWalletName = selectedExternalProvider?.info.name || 'wallet'
+
+  // Get explorer URL for transaction hash
+  const getTransactionExplorerUrl = (hash: string, chainId: number): string | undefined => {
+    const network = Network.getNetworkFromChainId(chainId)
+    const blockExplorer = network?.blockExplorer
+    if (!blockExplorer) {
+      return undefined
+    }
+    return `${blockExplorer.url}tx/${hash}`
+  }
+
+  const explorerUrl = transaction?.hash && collectibleInfo?.collectibleInfoParams.chainId
+    ? getTransactionExplorerUrl(transaction.hash, collectibleInfo.collectibleInfoParams.chainId)
+    : undefined
 
   return (
     <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
       <Box flexDirection="column" gap="6" padding="6">
-        <Text variant="large" fontWeight="bold" color="text80">
+        <Text variant="large" fontWeight="bold" color="text100">
           Sending {collectibleInfo?.collectibleInfoResponse?.name} on {networkTitle}
         </Text>
 
@@ -56,11 +189,11 @@ export default function SendCollectible({
                 Amount
               </Text>
 
-              <Text variant="normal" fontWeight="medium" color="text50">
+              <Text variant="normal" fontWeight="medium" color="text80">
                 Current Balance:{' '}
                 {ethers.formatUnits(
                   collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                  collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+                  collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
                 )}
               </Text>
             </Box>
@@ -73,21 +206,36 @@ export default function SendCollectible({
                 setAmount(ev.target.value)
               }}
               controls={
-                <Button
-                  label="Max"
-                  size="xs"
-                  shape="square"
-                  onClick={() => {
-                    setAmount(
-                      ethers.formatUnits(
-                        collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
-                        collectibleInfo?.collectibleInfoResponse?.decimals ?? 18
+                !isERC721 ? (
+                  <Button
+                    label="Max"
+                    size="xs"
+                    shape="square"
+                    onClick={() => {
+                      setAmount(
+                        ethers.formatUnits(
+                          collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
+                          collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
+                        )
                       )
-                    )
-                  }}
-                />
+                    }}
+                  />
+                ) : undefined
               }
             />
+
+            {insufficientBalance && (
+              <Box flexDirection="row" alignItems="center" gap="1" paddingTop="1">
+                <WarningIcon color="warning" size="xs" />
+                <Text variant="small" color="warning">
+                  Insufficient balance. Your current balance is{' '}
+                  {ethers.formatUnits(
+                    collectibleInfo?.collectibleInfoResponse?.balance as BigNumberish,
+                    collectibleInfo?.collectibleInfoResponse?.decimals ?? 0
+                  )}
+                </Text>
+              </Box>
+            )}
           </Box>
 
           <Box flexDirection="column" gap="1">
@@ -104,6 +252,11 @@ export default function SendCollectible({
                 setAddress(ev.target.value)
               }}
             />
+            {isSendingToExternalWallet && selectedExternalProvider && (
+              <Text variant="small" color="text50">
+                You're sending to your {selectedExternalProvider.info.name} wallet
+              </Text>
+            )}
           </Box>
         </Box>
 
@@ -123,29 +276,113 @@ export default function SendCollectible({
 
       <Divider marginY="0" />
 
-      <Box alignItems="center" justifyContent="flex-end" padding="6" gap="2">
-        <Button
-          label="Cancel"
-          size="md"
-          shape="square"
-          onClick={() => {
-            onClose()
-          }}
-        />
+      {isSigned ? (
+        <Box flexDirection="column" padding="6" gap="4">
+          <Box flexDirection="column" gap="2">
+            <Box alignItems="center" justifyContent="center" gap="1">
+              <Box width="5" height="5" justifyContent="center" alignItems="center" borderRadius="circle" background="backgroundRaised">
+                <CheckmarkIcon color="positive" />
+              </Box>
+              <Text variant="normal" fontWeight="bold" color="text100" textAlign="center">
+                Recovery transaction enqueued
+              </Text>
+            </Box>
+            <Text variant="small" color="text50" textAlign="center">
+              Enqueued recovery transaction of {collectibleInfo?.collectibleInfoResponse?.name}. You will be able to execute and transfer your collectible after 30 days.
+            </Text>
+            {transaction?.hash && (
+              <Box flexDirection="column" gap="1" alignItems="center">
+                {explorerUrl ? (
+                  <Box display={"flex"} alignItems={"center"} gap={"1"}>
+                    <NetworkImage style={{ width: 14, height: 14 }} chainId={collectibleInfo.collectibleInfoParams.chainId} />
+                    <Text
+                      variant="small"
+                      color="text80"
+                      style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                      onClick={() => window.open(explorerUrl, '_blank')}
+                    >
+                      View on {networkTitle} explorer
+                    </Text>
+                  </Box>
+                ) : (
+                  <Text variant="small" color="text50">
+                    txn hash: {transaction.hash}
+                  </Text>
+                )}
+              </Box>
+            )}
+          </Box>
+          <Box justifyContent="center">
+            <Button
+              label="Close"
+              variant="primary"
+              size="md"
+              shape="square"
+              onClick={() => {
+                setRecoveryPayloadId(undefined)
+                setIsWaitingForSignature(false)
+                onClose()
+              }}
+            />
+          </Box>
+        </Box>
+      ) : (
+        <Box flexDirection="column" padding="6" gap="2">
+          <Box alignItems="center" justifyContent="flex-end" gap="2">
+            <Button
+              label="Cancel"
+              size="md"
+              shape="square"
+              disabled={isWaitingForSignature}
+              onClick={() => {
+                setRecoveryPayloadId(undefined)
+                setIsWaitingForSignature(false)
+                onClose()
+              }}
+            />
 
-        <Button
-          label="Send"
-          variant="primary"
-          size="md"
-          shape="square"
-          disabled={isERC721 ? !address : !address || !amount}
-          onClick={() => {
-            if (address && amount) {
-              onClose(address, amount)
-            }
-          }}
-        />
-      </Box>
+            <Button
+              label={isWaitingForSignature ? <Box flexDirection="row" alignItems="center" gap="2"><Spinner width="4" height="4" /> <Text>Continue with {connectedWalletName}</Text></Box> : 'Recover'}
+              variant="primary"
+              size="md"
+              shape="square"
+              disabled={
+                isWaitingForSignature ||
+                !address ||
+                !amount ||
+                insufficientBalance
+              }
+              onClick={async () => {
+                if (address && amount) {
+                  setIsWaitingForSignature(true)
+                  try {
+                    const payloadId = await onRecover(address, amount)
+                    if (payloadId) {
+                      setRecoveryPayloadId(payloadId)
+                    } else {
+                      setIsWaitingForSignature(false)
+                    }
+                  } catch (error) {
+                    setIsWaitingForSignature(false)
+                  }
+                }
+              }}
+            />
+          </Box>
+
+          {isRejected && (
+            <Text variant="small" color="negative" textAlign="center" paddingTop="2">
+              You need to sign the transaction to proceed
+            </Text>
+          )}
+
+          {insufficientBalance && (
+            <Text variant="small" color="warning" textAlign="center" paddingTop="2">
+              Insufficient balance for this transaction
+            </Text>
+          )}
+        </Box>
+      )}
     </Box>
   )
 }

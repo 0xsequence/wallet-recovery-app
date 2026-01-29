@@ -107,7 +107,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             contractType
           })
           .then(response => {
-            console.log('response', response)
             setManualCollectibleInfo(response)
           })
       }
@@ -504,7 +503,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   padding="3"
                   gap="4"
                 >
-                  <Image src={collection.logoURI} maxHeight="10" maxWidth="10" />
+                  <Image src={collection.logoURI} maxHeight="10" maxWidth="10" borderRadius="circle" />
                   <Text variant="normal" fontWeight="semibold" color="text80">
                     {collection.name}
                   </Text>
