@@ -103,10 +103,6 @@ export function createTokenRecord(token: TokenBalance): TokenRecord {
       const image =
         imgproxy(token.tokenMetadata?.image) || token.tokenMetadata?.image_data
 
-      // if (token.contractType === 'ERC1155' || token.contractType === 'ERC721') {
-      //   console.log(index, token.contractAddress, token.tokenMetadata)
-      // }
-
       return {
         ...common,
         type: TOKEN_TYPES.COLLECTIBLE,
