@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  Image,
-  Modal,
-  Text,
-  TextInput,
-  useMediaQuery
-} from '@0xsequence/design-system'
+import { Box, Button, Card, Image, Modal, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -16,8 +7,8 @@ import { AuthStore } from '~/stores/AuthStore'
 
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
-import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
 import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
+import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
 import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
 
 const desktopBg = {
@@ -76,7 +67,12 @@ export default function Landing() {
         gap="10"
         zIndex="20"
       >
-        <Box flexDirection="column" justifyContent="center" alignItems={isMobile ? 'center' : 'flex-start'} gap={isMobile ? undefined : "6"}>
+        <Box
+          flexDirection="column"
+          justifyContent="center"
+          alignItems={isMobile ? 'center' : 'flex-start'}
+          gap={isMobile ? undefined : '6'}
+        >
           <Image src={SequenceRecoveryLogo} height="8" />
 
           {isMobile && <Image src={bgImageMobile} style={{ maxWidth: 'calc(100% + 32px)' }} />}

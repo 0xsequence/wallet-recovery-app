@@ -1,0 +1,172 @@
+import { Box } from '@0xsequence/design-system'
+import { TokenBalance } from '@0xsequence/indexer'
+import { useState } from 'react'
+
+import { useObservable, useStore } from '~/stores'
+import { CollectibleInfo } from '~/stores/CollectibleStore'
+import { WalletStore } from '~/stores/WalletStore'
+import { NetworkStore } from '~/stores/NetworkStore'
+
+import RecoveryHeader from '~/components/header/RecoveryHeader'
+import PendingIndicator from '~/components/wallet/PendingIndicator'
+import { useQueuedPayloads } from '~/hooks/use-queued-payloads'
+import { useExternalProviderSync } from '~/hooks/use-external-provider-sync'
+import { useTransactionSigning } from '~/hooks/use-transaction-signing'
+import { useTokenRecovery } from '~/hooks/use-token-recovery'
+import { useWalletInitialization } from '~/hooks/use-wallet-initialization'
+
+// Modal components
+import { NetworkModal } from '~/components/wallet/modals/NetworkModal'
+import { SignTransactionModal } from '~/components/wallet/modals/SignTransactionModal'
+import { SignMessageModal } from '~/components/wallet/modals/SignMessageModal'
+import { SendTokenModal } from '~/components/wallet/modals/SendTokenModal'
+import { SendCollectibleModal } from '~/components/wallet/modals/SendCollectibleModal'
+
+// Section components
+import { WalletConnectionsSection } from '~/components/wallet/sections/WalletConnectionsSection'
+import { WalletAssetsSection } from '~/components/wallet/sections/WalletAssetsSection'
+import { WalletRecoverySection } from '~/components/wallet/sections/WalletRecoverySection'
+
+export const WALLET_WIDTH = 800
+
+function WalletV3Recovery() {
+  const walletStore = useStore(WalletStore)
+  const networkStore = useStore(NetworkStore)
+
+  const isSigningTxn = useObservable(walletStore.isSigningTxn)
+  const isSigningMsg = useObservable(walletStore.isSigningMsg)
+  const isNetworkModalOpen = useObservable(walletStore.isNetworkModalOpen)
+
+  useExternalProviderSync()
+  const { isV2Wallet } = useWalletInitialization()
+  const { handleSignTxn, handleSignMsg, cancelRequest } = useTransactionSigning()
+  const { handleEnqueueTokenPayload, handleEnqueueCollectiblePayload } = useTokenRecovery()
+  const { payloads: queuedPayloads, isLoading, refetch } = useQueuedPayloads()
+
+  // Modal states
+  const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
+  const [pendingSendCollectible, setPendingSendCollectible] = useState<CollectibleInfo | undefined>(undefined)
+  const [isSendTokenModalOpen, setIsSendTokenModalOpen] = useState(false)
+  const [isSendCollectibleModalOpen, setIsSendCollectibleModalOpen] = useState(false)
+  const [isSendTokenModalDismissible, setIsSendTokenModalDismissible] = useState(true)
+  const [isSendCollectibleModalDismissible, setIsSendCollectibleModalDismissible] = useState(true)
+
+  // Handlers for opening modals
+  const handleTokenOnSendClick = (tokenBalance: TokenBalance) => {
+    setPendingSendCollectible(undefined)
+    walletStore.isSendingCollectibleTransaction.set(undefined)
+    setPendingSendToken(tokenBalance)
+    setIsSendTokenModalOpen(true)
+  }
+
+  const handleCollectibleOnSendClick = (collectibleInfo: CollectibleInfo) => {
+    setPendingSendToken(undefined)
+    walletStore.isSendingTokenTransaction.set(undefined)
+    setPendingSendCollectible(collectibleInfo)
+    setIsSendCollectibleModalOpen(true)
+  }
+
+  // Handlers for closing modals
+  const handleCloseSendToken = () => {
+    setPendingSendToken(undefined)
+    setIsSendTokenModalOpen(false)
+  }
+
+  const handleCloseSendCollectible = () => {
+    setPendingSendCollectible(undefined)
+    setIsSendCollectibleModalOpen(false)
+  }
+
+  const handleSignMsgWithClose = (details?: any) => {
+    walletStore.isSigningMsg.set(false)
+    if (!details) {
+      cancelRequest()
+    } else {
+      handleSignMsg(details)
+    }
+  }
+
+  return (
+    <Box>
+      <RecoveryHeader />
+
+      <Box flexDirection="column" alignItems="center">
+        <Box
+          flexDirection="column"
+          padding="5"
+          width="full"
+          style={{ maxWidth: WALLET_WIDTH }}
+          paddingBottom="20"
+        >
+          <Box flexDirection="column">
+            <WalletConnectionsSection />
+
+            <PendingIndicator paddingY="5" />
+
+            <WalletAssetsSection
+              onTokenSendClick={handleTokenOnSendClick}
+              onCollectibleSendClick={handleCollectibleOnSendClick}
+            />
+          </Box>
+
+          <WalletRecoverySection
+            isV2Wallet={isV2Wallet}
+            queuedPayloads={queuedPayloads}
+            isLoading={isLoading}
+            refetch={refetch}
+          />
+        </Box>
+      </Box>
+
+      {/* Modals */}
+      <NetworkModal
+        isOpen={isNetworkModalOpen}
+        onClose={() => walletStore.isNetworkModalOpen.set(false)}
+        networkStore={networkStore}
+        walletStore={walletStore}
+      />
+
+      <SignTransactionModal
+        isOpen={isSigningTxn}
+        onCancel={cancelRequest}
+        onSign={handleSignTxn}
+      />
+
+      <SignMessageModal
+        isOpen={isSigningMsg}
+        onClose={handleSignMsgWithClose}
+      />
+
+      <SendTokenModal
+        isOpen={isSendTokenModalOpen}
+        isDismissible={isSendTokenModalDismissible}
+        tokenBalance={pendingSendToken}
+        onClose={handleCloseSendToken}
+        onRecover={async (amount) => {
+          if (amount && pendingSendToken) {
+            return await handleEnqueueTokenPayload(pendingSendToken, amount)
+          }
+          return undefined
+        }}
+        onDismissibleChange={setIsSendTokenModalDismissible}
+      />
+
+      <SendCollectibleModal
+        isOpen={isSendCollectibleModalOpen}
+        isDismissible={isSendCollectibleModalDismissible}
+        collectibleInfo={pendingSendCollectible}
+        onClose={handleCloseSendCollectible}
+        onRecover={async (amount) => {
+          if (amount && pendingSendCollectible) {
+            return await handleEnqueueCollectiblePayload(pendingSendCollectible, amount)
+          }
+          return undefined
+        }}
+        onDismissibleChange={setIsSendCollectibleModalDismissible}
+      />
+    </Box>
+  )
+}
+
+
+export default WalletV3Recovery
