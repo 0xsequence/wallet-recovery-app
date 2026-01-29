@@ -41,7 +41,7 @@ export class TokenStore {
     userAddedTokens: new LocalStore<UserAddedToken[]>(LocalStorageKey.TOKENS_USER_ADDITIONS)
   }
 
-  constructor(private store: Store) {}
+  constructor(private store: Store) { }
 
   async loadBalances(account: string, networks: NetworkConfig[]) {
     const mainnets = networks.filter(network => network.type === NetworkType.MAINNET)
@@ -199,6 +199,110 @@ export class TokenStore {
     }
 
     this.isFetchingBalances.set(false)
+  }
+
+  async fetchTokenBalanceIfMissing(chainId: number, contractAddress: string): Promise<void> {
+    const accountAddress = this.store.get(AuthStore).accountAddress.get()
+
+    if (!accountAddress) {
+      console.warn(`No account found`)
+      return
+    }
+
+    const currentBalances = this.balances.get()
+    const existingBalance = currentBalances.find(
+      b => b.contractAddress.toLowerCase() === contractAddress.toLowerCase() && b.chainId === chainId
+    )
+
+    // If balance already exists, no need to fetch
+    if (existingBalance) {
+      return
+    }
+
+    const provider = this.store.get(NetworkStore).providerForChainId(chainId)
+
+    try {
+      let balance: bigint
+      let tokenBalance: TokenBalance
+
+      // Check if it's a native token (zero address)
+      if (contractAddress === ethers.ZeroAddress || contractAddress.toLowerCase() === '0x0000000000000000000000000000000000000000') {
+        balance = await provider.getBalance(accountAddress)
+        tokenBalance = {
+          contractType: ContractType.NATIVE,
+          contractAddress: ethers.ZeroAddress,
+          tokenID: '',
+          accountAddress: accountAddress,
+          balance: balance.toString(),
+          chainId: chainId,
+          blockHash: ethers.ZeroHash,
+          blockNumber: 0,
+          contractInfo: getNativeTokenInfo(getChainId(chainId)),
+          uniqueCollectibles: '0',
+          isSummary: true
+        }
+      } else {
+        // It's an ERC20 token
+        const erc20 = new ethers.Contract(contractAddress, ERC20_ABI, provider)
+        balance = await erc20.balanceOf(accountAddress)
+
+        // Try to get token metadata
+        let decimals = 18
+        let symbol = 'UNKNOWN'
+        try {
+          decimals = await erc20.decimals()
+          symbol = await erc20.symbol()
+        } catch (e) {
+          console.warn(`Could not fetch token metadata for ${contractAddress}`)
+        }
+
+        tokenBalance = {
+          contractType: ContractType.ERC20,
+          contractAddress: contractAddress,
+          tokenID: '',
+          accountAddress: accountAddress,
+          balance: balance.toString(),
+          chainId: chainId,
+          blockHash: ethers.ZeroHash,
+          blockNumber: 0,
+          contractInfo: {
+            address: contractAddress,
+            chainId: chainId,
+            decimals: decimals,
+            name: symbol,
+            symbol: symbol,
+            source: 'AUTO_FETCHED',
+            status: ResourceStatus.AVAILABLE,
+            type: 'ERC20',
+            logoURI: '',
+            deployed: true,
+            bytecodeHash: '',
+            extensions: {
+              categories: [],
+              ogName: '',
+              featureIndex: 0,
+              link: '',
+              description: '',
+              ogImage: '',
+              originAddress: '',
+              originChainId: 0,
+              blacklist: false,
+              verified: false,
+              verifiedBy: '',
+              featured: false
+            },
+            updatedAt: '0'
+          },
+          uniqueCollectibles: '0',
+          isSummary: true
+        }
+      }
+
+      // Add the balance to the store
+      this.balances.set([...currentBalances, tokenBalance])
+    } catch (err) {
+      console.error(`Error fetching token balance for ${contractAddress} on chain ${chainId}:`, err)
+    }
   }
 
   async addToken(token: UserAddedToken) {

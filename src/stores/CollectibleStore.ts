@@ -179,6 +179,35 @@ export class CollectibleStore {
     return { isOwner: true, uri, image, name, balance, decimals }
   }
 
+  async fetchCollectibleInfoIfMissing(params: CollectibleInfoParams): Promise<void> {
+    const currentCollectibles = this.userCollectibles.get()
+    const existingCollectible = currentCollectibles.find(
+      c => c.collectibleInfoParams.address.toLowerCase() === params.address.toLowerCase() &&
+        c.collectibleInfoParams.tokenId === params.tokenId &&
+        c.collectibleInfoParams.chainId === params.chainId
+    )
+
+    // If collectible already exists, no need to fetch
+    if (existingCollectible) {
+      return
+    }
+
+    try {
+      const response = await this.getCollectibleInfo(params)
+
+      // Only add to store if user owns it
+      if (response.isOwner) {
+        const collectibleInfo: CollectibleInfo = {
+          collectibleInfoParams: params,
+          collectibleInfoResponse: response
+        }
+        this.userCollectibles.set([...currentCollectibles, collectibleInfo])
+      }
+    } catch (err) {
+      console.error(`Error fetching collectible info for ${params.address} tokenId ${params.tokenId} on chain ${params.chainId}:`, err)
+    }
+  }
+
   async addCollectible(collectibleInfo: CollectibleInfo) {
     if (collectibleInfo.collectibleInfoResponse.isOwner) {
       const current = this.local.userCollectibles.get() ?? []
