@@ -15,5 +15,6 @@ export enum IndexedDBKey {
   SECURITY = 'security',
   ERC20 = 'erc20',
   ERC721 = 'erc721',
-  ERC1155 = 'erc1155'
+  ERC1155 = 'erc1155',
+  TOKEN_METADATA = 'token-metadata'
 }

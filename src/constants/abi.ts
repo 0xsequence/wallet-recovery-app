@@ -694,24 +694,3 @@ export const ERC1155_ABI = `[
       "type": "function"
     }
   ]`
-
-export const ERC165_ABI = `[
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "interfaceId",
-        "type": "bytes4"
-      }
-    ],
-    "name": "supportsInterface",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-]`
