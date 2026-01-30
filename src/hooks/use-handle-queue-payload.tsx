@@ -3,7 +3,7 @@ import { Address, Hex } from 'ox'
 
 import { RecoveryContextProps } from './wallet-recovery-context'
 import { manager } from '~/manager'
-import { useStore } from '~/stores'
+import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { useFindWalletViaSigner } from './use-find-wallet-via-signer'
 import { getMnemonic } from '~/utils/getMnemonic'
@@ -15,12 +15,12 @@ export function useHandleQueuePayload({
   awaitedMnemonic: RecoveryContextProps['handle']['awaitedMnemonic']
   sendRecoveryPayload: RecoveryContextProps['handle']['sendRecoveryPayload']
 }) {
-  const authStore = useStore(AuthStore)
-  const walletAddress = authStore.account?.address
+  const authStore = useStore(AuthStore);
+  const walletAddress = useObservable(authStore.accountAddress)
   const findWallets = useFindWalletViaSigner();
 
   return async function queuePayload(calls: any, chainId: number) {
-    const mnemonic = await getMnemonic({authStore})
+    const mnemonic = await getMnemonic({ authStore })
     const walletInfo = await findWallets(mnemonic)
 
     if (!walletInfo || !walletInfo.recoverySignerAddress) {
@@ -33,7 +33,7 @@ export function useHandleQueuePayload({
       nonce: 0n,
       calls,
     }
-    
+
     const recoveryPayloadId = await manager.recovery.queuePayload(
       walletAddress as Address.Address,
       chainId,
