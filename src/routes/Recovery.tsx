@@ -288,7 +288,7 @@ function Recovery() {
                     label="Back"
                     size="sm"
                     as={Link}
-                    to="/recovery-select"
+                    to="/"
                 />
 
                 <Box flexDirection="column">
