@@ -3,6 +3,8 @@ import { Address } from 'ox'
 import { useCallback, useState, useSyncExternalStore } from 'react'
 
 import { useTxHashesStore } from './use-tx-hash-store'
+import { useStore } from '~/stores'
+import { WalletStore } from '~/stores/WalletStore'
 
 export function useExternalWallet() {
   const [recoveryPayload, setRecoveryPayload] = useState<{
@@ -11,6 +13,7 @@ export function useExternalWallet() {
   }>()
 
   const txHashes = useTxHashesStore()
+  const walletStore = useStore(WalletStore)
 
   const store = createStore()
   const providers = useSyncExternalStore(store.subscribe, store.getProviders)
@@ -42,26 +45,26 @@ export function useExternalWallet() {
       chainId: number,
       recoveryPayloadId?: string
     ) => {
-      const providerr = providers.find(p => p.info.name === 'MetaMask')
-      if (!providerr) return
+      const selectedProvider = walletStore.selectedExternalProvider.get()
+      if (!selectedProvider) return
 
       if (recoveryPayloadId) {
         txHashes.add(recoveryPayloadId, chainId)
       }
 
       try {
-        const accounts = await providerr.provider.request({
+        const accounts = await selectedProvider.provider.request({
           method: 'eth_requestAccounts',
-        })
+        }) as string[]
 
         const sender = accounts?.[0]
 
-        await providerr.provider.request({
+        await selectedProvider.provider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: '0x' + chainId.toString(16) }],
         })
 
-        const hash = await providerr.provider.request({
+        const hash = await selectedProvider.provider.request({
           method: 'eth_sendTransaction',
           params: [
             {
@@ -71,7 +74,7 @@ export function useExternalWallet() {
               data,
             },
           ],
-        })
+        }) as `0x${string}`
         if (hash && recoveryPayloadId) {
           txHashes.update(recoveryPayloadId, { hash, status: 'pending' })
         }
@@ -91,7 +94,7 @@ export function useExternalWallet() {
         }
       }
     },
-    [providers]
+    [walletStore]
   )
 
   return {
