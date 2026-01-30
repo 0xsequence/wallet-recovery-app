@@ -21,6 +21,7 @@
     "@0xsequence/indexer": "3.0.0-beta.9",
     "@0xsequence/network": "2.3.35",
     "@0xsequence/provider": "2.3.35",
+    "@0xsequence/relayer": "^2.3.39",
     "@0xsequence/sessions": "2.3.35",
     "@0xsequence/signhub": "2.3.35",
     "@0xsequence/wallet-core": "3.0.0-beta.9",

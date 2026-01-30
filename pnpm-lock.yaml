@@ -26,6 +26,9 @@ importers:
       '@0xsequence/provider':
         specifier: 2.3.35
         version: 2.3.35(ethers@6.13.4)
+      '@0xsequence/relayer':
+        specifier: ^2.3.39
+        version: 2.3.39(ethers@6.13.4)
       '@0xsequence/sessions':
         specifier: 2.3.35
         version: 2.3.35(ethers@6.13.4)
@@ -141,6 +144,9 @@ packages:
   '@0xsequence/abi@2.3.35':
     resolution: {integrity: sha512-HsnFWr/SHfqn3Zkx+ohFPVx3tDwpxBAAdHOVU/wbd8iQ7IRW8w3YZc80ceWOoPOJ/GiOky3B1li+/2/CuDoSJw==}
 
+  '@0xsequence/abi@2.3.39':
+    resolution: {integrity: sha512-MQxVIwwq84IYK2lRHO/lXJQRp21oP982oGyKl5mlkp1jzUE4+GGEMYuo4B3pnokdEeVmSkOJL7j/xJGVYxzlKw==}
+
   '@0xsequence/account@2.3.35':
     resolution: {integrity: sha512-aQnRtJELIsqDhQZw2JpdgYqsWhkXtB/k2ROIGraJLfpur1Cd05bb8yV8vyM6/Vi64qCOHKtLvuzw7FWPLNNnJg==}
     peerDependencies:
@@ -156,6 +162,11 @@ packages:
 
   '@0xsequence/core@2.3.35':
     resolution: {integrity: sha512-+y9Rs3nCOi6CELttMGHU98XsBEaehUOKrdkPDttMCPtMJiAQo0dObz5D4thGxIGNyKyNotJ4y7ILgtv5Tk34gg==}
+    peerDependencies:
+      ethers: '>=6'
+
+  '@0xsequence/core@2.3.39':
+    resolution: {integrity: sha512-4noc1KW1b5g8telV1qac6yZbdkMD5x8gqRa5QnIvMmAVHsXC8qCYlFpy76csYKlWgFKGqxN8RWOwihnZbuyuRg==}
     peerDependencies:
       ethers: '>=6'
 
@@ -206,6 +217,11 @@ packages:
     peerDependencies:
       ethers: '>=6'
 
+  '@0xsequence/relayer@2.3.39':
+    resolution: {integrity: sha512-loVjpXqFLR9/Lu8mbTaTF1nf3YSQBvw4E+u+btrGz80aiTPKH8Q+BIWDLGtrXF1ian+yoAn4qdpgR3lZD3oYbg==}
+    peerDependencies:
+      ethers: '>=6'
+
   '@0xsequence/relayer@3.0.0-beta.10':
     resolution: {integrity: sha512-d4lw9o6rgVNHTpHPqv7u8/JBJ0MfmoOUbJE9cMRDqNKGv63/DMl3UNX9hZiqKvR32xhYpoO6d0DBzp26TUHwZg==}
 
@@ -229,6 +245,11 @@ packages:
 
   '@0xsequence/utils@2.3.35':
     resolution: {integrity: sha512-e9DwgLnPcA+gY8pmgQ5GoS0ssY0myi76hyUhk4DGxytSWa2u+NeMEWTjFWwh9nYxTf4zhhWTQhF3cn8F1bkcJQ==}
+    peerDependencies:
+      ethers: '>=6'
+
+  '@0xsequence/utils@2.3.39':
+    resolution: {integrity: sha512-0pePuw890L7LjCJvC2OM0Z5NprY/gwq8y7voHPe6hvFA6AnNKeRZPSyk1ysOhM6Ty9nciRjUt9xHG+fkDkdAug==}
     peerDependencies:
       ethers: '>=6'
 
@@ -897,42 +918,36 @@ packages:
     engines: {node: '>= 10.0.0'}
     cpu: [arm]
     os: [linux]
-    libc: [glibc]
 
   '@parcel/watcher-linux-arm-musl@2.5.0':
     resolution: {integrity: sha512-6uHywSIzz8+vi2lAzFeltnYbdHsDm3iIB57d4g5oaB9vKwjb6N6dRIgZMujw4nm5r6v9/BQH0noq6DzHrqr2pA==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm]
     os: [linux]
-    libc: [musl]
 
   '@parcel/watcher-linux-arm64-glibc@2.5.0':
     resolution: {integrity: sha512-BfNjXwZKxBy4WibDb/LDCriWSKLz+jJRL3cM/DllnHH5QUyoiUNEp3GmL80ZqxeumoADfCCP19+qiYiC8gUBjA==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@parcel/watcher-linux-arm64-musl@2.5.0':
     resolution: {integrity: sha512-S1qARKOphxfiBEkwLUbHjCY9BWPdWnW9j7f7Hb2jPplu8UZ3nes7zpPOW9bkLbHRvWM0WDTsjdOTUgW0xLBN1Q==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@parcel/watcher-linux-x64-glibc@2.5.0':
     resolution: {integrity: sha512-d9AOkusyXARkFD66S6zlGXyzx5RvY+chTP9Jp0ypSTC9d4lzyRs9ovGf/80VCxjKddcUvnsGwCHWuF2EoPgWjw==}
     engines: {node: '>= 10.0.0'}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@parcel/watcher-linux-x64-musl@2.5.0':
     resolution: {integrity: sha512-iqOC+GoTDoFyk/VYSFHwjHhYrk8bljW6zOhPuhi5t9ulqiYq1togGJB5e3PwYVFFfeVgc6pbz3JdQyDoBszVaA==}
     engines: {node: '>= 10.0.0'}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@parcel/watcher-wasm@2.5.0':
     resolution: {integrity: sha512-Z4ouuR8Pfggk1EYYbTaIoxc+Yv4o7cGQnH0Xy8+pQ+HbiW+ZnwhcD2LPf/prfq1nIWpAxjOkQ8uSMFWMtBLiVQ==}
@@ -1447,55 +1462,46 @@ packages:
     resolution: {integrity: sha512-9OwUnK/xKw6DyRlgx8UizeqRFOfi9mf5TYCw1uolDaJSbUmBxP85DE6T4ouCMoN6pXw8ZoTeZCSEfSaYo+/s1w==}
     cpu: [arm]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.27.4':
     resolution: {integrity: sha512-Vgdo4fpuphS9V24WOV+KwkCVJ72u7idTgQaBoLRD0UxBAWTF9GWurJO9YD9yh00BzbkhpeXtm6na+MvJU7Z73A==}
     cpu: [arm]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.27.4':
     resolution: {integrity: sha512-pleyNgyd1kkBkw2kOqlBx+0atfIIkkExOTiifoODo6qKDSpnc6WzUY5RhHdmTdIJXBdSnh6JknnYTtmQyobrVg==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.27.4':
     resolution: {integrity: sha512-caluiUXvUuVyCHr5DxL8ohaaFFzPGmgmMvwmqAITMpV/Q+tPoaHZ/PWa3t8B2WyoRcIIuu1hkaW5KkeTDNSnMA==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.27.4':
     resolution: {integrity: sha512-FScrpHrO60hARyHh7s1zHE97u0KlT/RECzCKAdmI+LEoC1eDh/RDji9JgFqyO+wPDb86Oa/sXkily1+oi4FzJQ==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.27.4':
     resolution: {integrity: sha512-qyyprhyGb7+RBfMPeww9FlHwKkCXdKHeGgSqmIXw9VSUtvyFZ6WZRtnxgbuz76FK7LyoN8t/eINRbPUcvXB5fw==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-s390x-gnu@4.27.4':
     resolution: {integrity: sha512-PFz+y2kb6tbh7m3A7nA9++eInGcDVZUACulf/KzDtovvdTizHpZaJty7Gp0lFwSQcrnebHOqxF1MaKZd7psVRg==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.27.4':
     resolution: {integrity: sha512-Ni8mMtfo+o/G7DVtweXXV/Ol2TFf63KYjTtoZ5f078AUgJTmaIJnj4JFU7TK/9SVWTaSJGxPi5zMDgK4w+Ez7Q==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.27.4':
     resolution: {integrity: sha512-5AeeAF1PB9TUzD+3cROzFTnAJAcVUGLuR8ng0E0WXGkYhp6RD6L+6szYVX+64Rs0r72019KHZS1ka1q+zU/wUw==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-win32-arm64-msvc@4.27.4':
     resolution: {integrity: sha512-yOpVsA4K5qVwu2CaS3hHxluWIK5HQTjNV4tWjQXluMiiiu4pJj4BN98CvxohNCpcjMeTXk/ZMJBRbgRg8HBB6A==}
@@ -3348,6 +3354,8 @@ snapshots:
 
   '@0xsequence/abi@2.3.35': {}
 
+  '@0xsequence/abi@2.3.39': {}
+
   '@0xsequence/account@2.3.35(ethers@6.13.4)':
     dependencies:
       '@0xsequence/abi': 2.3.35
@@ -3383,6 +3391,12 @@ snapshots:
     dependencies:
       '@0xsequence/abi': 2.3.35
       '@0xsequence/utils': 2.3.35(ethers@6.13.4)
+      ethers: 6.13.4
+
+  '@0xsequence/core@2.3.39(ethers@6.13.4)':
+    dependencies:
+      '@0xsequence/abi': 2.3.39
+      '@0xsequence/utils': 2.3.39(ethers@6.13.4)
       ethers: 6.13.4
 
   '@0xsequence/design-system@1.8.0(@types/react-dom@18.3.1)(@types/react@18.3.12)(framer-motion@11.11.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
@@ -3473,6 +3487,13 @@ snapshots:
       '@0xsequence/utils': 2.3.35(ethers@6.13.4)
       ethers: 6.13.4
 
+  '@0xsequence/relayer@2.3.39(ethers@6.13.4)':
+    dependencies:
+      '@0xsequence/abi': 2.3.39
+      '@0xsequence/core': 2.3.39(ethers@6.13.4)
+      '@0xsequence/utils': 2.3.39(ethers@6.13.4)
+      ethers: 6.13.4
+
   '@0xsequence/relayer@3.0.0-beta.10(typescript@5.7.2)':
     dependencies:
       '@0xsequence/wallet-primitives': 3.0.0-beta.10(typescript@5.7.2)
@@ -3511,6 +3532,11 @@ snapshots:
       pkijs: 3.3.3
 
   '@0xsequence/utils@2.3.35(ethers@6.13.4)':
+    dependencies:
+      ethers: 6.13.4
+      js-base64: 3.7.7
+
+  '@0xsequence/utils@2.3.39(ethers@6.13.4)':
     dependencies:
       ethers: 6.13.4
       js-base64: 3.7.7
