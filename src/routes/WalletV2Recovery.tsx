@@ -1,6 +1,8 @@
 import { Box } from '@0xsequence/design-system'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { useObservable, useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
 import { useWalletV2State } from '~/hooks/use-wallet-v2-state'
 import { useTransactionHandlers } from '~/hooks/use-transaction-handlers'
 import { useSigningHandlers } from '~/hooks/use-signing-handlers'
@@ -15,10 +17,21 @@ import { SendCollectibleModal } from '~/components/wallet/modals/SendCollectible
 import { SignTransactionModal } from '~/components/wallet/modals/SignTransactionModal'
 import { SignMessageModal } from '~/components/wallet/modals/SignMessageModal'
 import { useExternalProviderSync } from '~/hooks/use-external-provider-sync'
+import { PasswordUnlock } from '~/components/auth/PasswordUnlock'
 
 export const WALLET_WIDTH = 800
 
 function WalletV2Recovery() {
+    const authStore = useStore(AuthStore)
+    const isLoadingAccountObservable = useObservable(authStore.isLoadingAccount)
+    const hasAccount = useObservable(authStore.accountAddress)
+
+    const [isLoadingAccount, setIsLoadingAccount] = useState(false)
+
+    useEffect(() => {
+        setIsLoadingAccount(isLoadingAccountObservable)
+    }, [isLoadingAccountObservable])
+
     // Consolidate all store subscriptions and state
     const { stores, state } = useWalletV2State()
     const { walletStore, networkStore, tokenStore } = stores
@@ -70,6 +83,37 @@ function WalletV2Recovery() {
         } else {
             handleSignMessage(details)
         }
+    }
+
+    // Show password unlock if account is loading but not yet unlocked
+    if (isLoadingAccount && !hasAccount) {
+        return (
+            <Box>
+                <RecoveryHeader />
+                <Box
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    padding="5"
+                    gap="10"
+                    style={{ minHeight: '60vh' }}
+                >
+                    <Box
+                        flexDirection="column"
+                        gap="10"
+                        width="full"
+                        style={{ maxWidth: '500px' }}
+                    >
+                        <PasswordUnlock redirectOnSuccess={false} />
+                    </Box>
+                </Box>
+            </Box>
+        )
+    }
+
+    // If no account and not loading, redirect would happen via route guard
+    if (!hasAccount && !isLoadingAccount) {
+        return null
     }
 
     return (

@@ -1,11 +1,12 @@
 import { Box } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { WalletStore } from '~/stores/WalletStore'
 import { NetworkStore } from '~/stores/NetworkStore'
+import { AuthStore } from '~/stores/AuthStore'
 
 import RecoveryHeader from '~/components/header/RecoveryHeader'
 import { useQueuedPayloads } from '~/hooks/use-queued-payloads'
@@ -25,16 +26,26 @@ import { SendCollectibleModal } from '~/components/wallet/modals/SendCollectible
 import { WalletConnectionsSection } from '~/components/wallet/sections/WalletConnectionsSection'
 import { WalletAssetsSection } from '~/components/wallet/sections/WalletAssetsSection'
 import { WalletRecoverySection } from '~/components/wallet/sections/WalletRecoverySection'
+import { PasswordUnlock } from '~/components/auth/PasswordUnlock'
 
 export const WALLET_WIDTH = 800
 
 function WalletV3Recovery() {
   const walletStore = useStore(WalletStore)
   const networkStore = useStore(NetworkStore)
+  const authStore = useStore(AuthStore)
 
   const isSigningTxn = useObservable(walletStore.isSigningTxn)
   const isSigningMsg = useObservable(walletStore.isSigningMsg)
   const isNetworkModalOpen = useObservable(walletStore.isNetworkModalOpen)
+  const isLoadingAccountObservable = useObservable(authStore.isLoadingAccount)
+  const hasAccount = useObservable(authStore.accountAddress)
+
+  const [isLoadingAccount, setIsLoadingAccount] = useState(false)
+
+  useEffect(() => {
+    setIsLoadingAccount(isLoadingAccountObservable)
+  }, [isLoadingAccountObservable])
 
   useExternalProviderSync()
   const { isV2Wallet } = useWalletInitialization()
@@ -83,6 +94,38 @@ function WalletV3Recovery() {
     } else {
       handleSignMsg(details)
     }
+  }
+
+  // Show password unlock if account is loading but not yet unlocked
+  // Only show after initial mount to avoid flashing
+  if (isLoadingAccount && !hasAccount) {
+    return (
+      <Box>
+        <RecoveryHeader />
+        <Box
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          padding="5"
+          gap="10"
+          style={{ minHeight: '60vh' }}
+        >
+          <Box
+            flexDirection="column"
+            gap="10"
+            width="full"
+            style={{ maxWidth: '500px' }}
+          >
+            <PasswordUnlock redirectOnSuccess={false} />
+          </Box>
+        </Box>
+      </Box>
+    )
+  }
+
+  // If no account and not loading, redirect would happen via route guard
+  if (!hasAccount && !isLoadingAccount) {
+    return null
   }
 
   return (
