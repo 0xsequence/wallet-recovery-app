@@ -7,7 +7,7 @@ interface SendCollectibleModalProps {
   isDismissible: boolean
   collectibleInfo?: CollectibleInfo
   onClose: () => void
-  onRecover: (amount?: string) => Promise<string | undefined | void>
+  onRecover: (props: { amount?: string; to?: string }) => Promise<string | undefined | void>
   onDismissibleChange: (isDismissible: boolean) => void
 }
 
@@ -19,7 +19,7 @@ export function SendCollectibleModal({
   onRecover,
   onDismissibleChange
 }: SendCollectibleModalProps) {
-  if (!isOpen) {return null}
+  if (!isOpen) { return null }
 
   return (
     <Modal

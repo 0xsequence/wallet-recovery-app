@@ -13,6 +13,7 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import { FilledCheckBox } from '~/components/misc'
 import { useTxHashesStore } from '~/hooks/use-tx-hash-store'
+import { isAddress } from 'viem'
 
 export default function SendCollectible({
   collectibleInfo,
@@ -22,7 +23,7 @@ export default function SendCollectible({
 }: {
   collectibleInfo?: CollectibleInfo
   onClose: () => void
-  onRecover: (amount?: string) => Promise<string | undefined | void>
+  onRecover: (props: { amount?: string; to?: string }) => Promise<string | undefined | void>
   onDismissibleChange?: (isDismissible: boolean) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
@@ -33,16 +34,16 @@ export default function SendCollectible({
   const txHashes = useTxHashesStore()
 
   const [amount, setAmount] = useState<string | undefined>(undefined)
-  const [address, setAddress] = useState<string | undefined>(undefined)
+  const [toAddress, setToAddress] = useState<string | undefined>(undefined)
   const [sendToExternalWallet, setSendToExternalWallet] = useState(true)
   const [recoveryPayloadId, setRecoveryPayloadId] = useState<string | undefined>(undefined)
   const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
 
   // Check if the address matches the external wallet address (case-insensitive)
   const isSendingToExternalWallet =
-    address &&
+    toAddress &&
     selectedExternalWalletAddress &&
-    address.toLowerCase() === selectedExternalWalletAddress.toLowerCase()
+    toAddress.toLowerCase() === selectedExternalWalletAddress.toLowerCase()
 
   // Check if user has sufficient balance (for ERC1155)
   const insufficientBalance = useMemo(() => {
@@ -88,7 +89,7 @@ export default function SendCollectible({
       // Set address to external wallet address if available
       const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
       if (externalWalletAddress) {
-        setAddress(externalWalletAddress)
+        setToAddress(externalWalletAddress)
       }
     }
   }, [collectibleInfo])
@@ -97,7 +98,7 @@ export default function SendCollectible({
     const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
 
     if (sendToExternalWallet && externalWalletAddress) {
-      setAddress(walletStore.selectedExternalWalletAddress.get())
+      setToAddress(walletStore.selectedExternalWalletAddress.get())
     }
   }, [sendToExternalWallet])
 
@@ -257,11 +258,11 @@ export default function SendCollectible({
 
             <TextInput
               name="to"
-              value={address ?? ''}
+              value={toAddress ?? ''}
               placeholder="0x..."
               disabled={sendToExternalWallet}
               onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                setAddress(ev.target.value)
+                setToAddress(ev.target.value)
               }}
             />
             {isSendingToExternalWallet && selectedExternalProvider && (
@@ -360,17 +361,18 @@ export default function SendCollectible({
               shape="square"
               disabled={
                 isWaitingForSignature ||
-                !address ||
+                !toAddress ||
                 !amount ||
-                insufficientBalance
+                insufficientBalance ||
+                !isAddress(toAddress)
               }
               onClick={async () => {
-                if (address && amount) {
+                if (toAddress && amount) {
                   // Clear previous recovery payload ID to avoid stale state
                   setRecoveryPayloadId(undefined)
                   setIsWaitingForSignature(true)
                   try {
-                    const payloadId = await onRecover(amount)
+                    const payloadId = await onRecover({ amount, to: toAddress })
                     if (payloadId) {
                       setRecoveryPayloadId(payloadId)
                     } else {

@@ -8,7 +8,6 @@ import { WalletStore } from '~/stores/WalletStore'
 import { NetworkStore } from '~/stores/NetworkStore'
 
 import RecoveryHeader from '~/components/header/RecoveryHeader'
-import PendingIndicator from '~/components/wallet/PendingIndicator'
 import { useQueuedPayloads } from '~/hooks/use-queued-payloads'
 import { useExternalProviderSync } from '~/hooks/use-external-provider-sync'
 import { useTransactionSigning } from '~/hooks/use-transaction-signing'
@@ -101,8 +100,6 @@ function WalletV3Recovery() {
           <Box flexDirection="column">
             <WalletConnectionsSection />
 
-            <PendingIndicator paddingY="5" />
-
             <WalletAssetsSection
               onTokenSendClick={handleTokenOnSendClick}
               onCollectibleSendClick={handleCollectibleOnSendClick}
@@ -142,7 +139,7 @@ function WalletV3Recovery() {
         isDismissible={isSendTokenModalDismissible}
         tokenBalance={pendingSendToken}
         onClose={handleCloseSendToken}
-        onRecover={async ({amount}) => {
+        onRecover={async ({ amount }) => {
           if (amount && pendingSendToken) {
             return await handleEnqueueTokenPayload(pendingSendToken, amount)
           }
@@ -156,7 +153,7 @@ function WalletV3Recovery() {
         isDismissible={isSendCollectibleModalDismissible}
         collectibleInfo={pendingSendCollectible}
         onClose={handleCloseSendCollectible}
-        onRecover={async (amount) => {
+        onRecover={async ({ amount }) => {
           if (amount && pendingSendCollectible) {
             return await handleEnqueueCollectiblePayload(pendingSendCollectible, amount)
           }

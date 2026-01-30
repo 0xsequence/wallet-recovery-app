@@ -7,7 +7,6 @@ import { useSigningHandlers } from '~/hooks/use-signing-handlers'
 import { useModalManagement } from '~/hooks/use-modal-management'
 
 import RecoveryHeader from '~/components/header/RecoveryHeader'
-import PendingIndicator from '~/components/wallet/PendingIndicator'
 import { WalletConnectionsSection } from '~/components/wallet/sections/WalletConnectionsSection'
 import { WalletAssetsSection } from '~/components/wallet/sections/WalletAssetsSection'
 import { NetworkModal } from '~/components/wallet/modals/NetworkModal'
@@ -57,9 +56,9 @@ function WalletV2Recovery() {
         }
     }
 
-    const handleSendCollectibleWrapper = async (to?: string, amount?: string) => {
-        if (to && amount && modals.sendCollectibleModal.pendingCollectible) {
-            await handleSendCollectible(modals.sendCollectibleModal.pendingCollectible, to, amount)
+    const handleSendCollectibleWrapper = async (props: { to?: string, amount?: string }) => {
+        if (props.to && props.amount && modals.sendCollectibleModal.pendingCollectible) {
+            await handleSendCollectible(modals.sendCollectibleModal.pendingCollectible, props.to, props.amount)
             modals.sendCollectibleModal.close()
         }
     }
@@ -87,8 +86,6 @@ function WalletV2Recovery() {
                 >
                     <Box flexDirection="column">
                         <WalletConnectionsSection />
-
-                        <PendingIndicator paddingY="5" />
 
                         <WalletAssetsSection
                             onTokenSendClick={modals.sendTokenModal.open}
