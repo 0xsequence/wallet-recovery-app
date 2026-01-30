@@ -142,7 +142,7 @@ function WalletV3Recovery() {
         isDismissible={isSendTokenModalDismissible}
         tokenBalance={pendingSendToken}
         onClose={handleCloseSendToken}
-        onRecover={async (amount) => {
+        onRecover={async ({amount}) => {
           if (amount && pendingSendToken) {
             return await handleEnqueueTokenPayload(pendingSendToken, amount)
           }

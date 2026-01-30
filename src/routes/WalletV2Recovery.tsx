@@ -50,9 +50,9 @@ function WalletV2Recovery() {
     const [isSendCollectibleDismissible, setIsSendCollectibleDismissible] = useState(true)
 
     // Wrapper handlers for send modals
-    const handleSendTokenWrapper = async (to?: string, amount?: string) => {
-        if (to && amount && modals.sendTokenModal.pendingToken) {
-            await handleSendToken(modals.sendTokenModal.pendingToken, to, amount)
+    const handleSendTokenWrapper = async (props: { to?: string, amount?: string }) => {
+        if (props.to && props.amount && modals.sendTokenModal.pendingToken) {
+            await handleSendToken(modals.sendTokenModal.pendingToken, props.to, props.amount)
             modals.sendTokenModal.close()
         }
     }
