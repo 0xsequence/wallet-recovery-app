@@ -29,7 +29,7 @@ export const AppRouter = () => {
     <WalletRecoveryProvider value={value}>
       <Router basename={'/'}>
         <Routes>
-          <Route path="/" element={!hasAccount ? <Landing /> : <Navigate replace to="/wallet" />} />
+          <Route path="/" element={<Landing />} />
           <Route
             path="recovery"
             element={<Recovery />}
