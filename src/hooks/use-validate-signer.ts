@@ -1,10 +1,10 @@
 import { Address } from 'viem'
 
-import { compareAddress } from '@0xsequence/design-system'
 
 import { manager } from '~/manager'
 
 import { useWalletRecovery } from './wallet-recovery-context'
+import compareAddress from '~/utils/compareAddress'
 
 export function useValidateSigner() {
   const { set } = useWalletRecovery()

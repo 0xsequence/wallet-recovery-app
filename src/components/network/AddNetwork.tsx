@@ -1,4 +1,4 @@
-import { Box, Button, ChevronLeftIcon, Divider, Text, TextInput, useToast } from '@0xsequence/design-system'
+import { Button, ChevronLeftIcon, IconButton, Text, TextInput, useToast } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useState } from 'react'
 
@@ -47,17 +47,17 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Box flexDirection="column" width="full">
-      <Box flexDirection="row" alignItems="center" padding="6" gap="4">
-        <Button leftIcon={ChevronLeftIcon} onClick={onClose} size="sm" />
+    <div className='flex flex-col w-full'>
+      <div className='flex flex-row items-center p-6 gap-4'>
+        <IconButton icon={ChevronLeftIcon} onClick={onClose} size="sm" />
 
         <Text variant="large" fontWeight="bold" color="text100">
           Add Network
         </Text>
-      </Box>
+      </div>
 
-      <Box flexDirection="column" paddingX="6" gap="6">
-        <Box flexDirection="column" gap="2">
+      <div className='flex flex-col p-6 gap-6'>
+        <div className='flex flex-col gap-2'>
           <Text variant="normal" fontWeight="medium" color="text100">
             Chain ID *
           </Text>
@@ -70,9 +70,9 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
               setChainId(ev.target.value)
             }}
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="2">
+        <div className='flex flex-col gap-2'>
           <Text variant="normal" fontWeight="medium" color="text100">
             Network Name *
           </Text>
@@ -85,9 +85,9 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
               setNetworkName(ev.target.value)
             }}
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="2">
+        <div className='flex flex-col gap-2'>
           <Text variant="normal" fontWeight="medium" color="text100">
             RPC URL *
           </Text>
@@ -100,9 +100,9 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
               setRpcUrl(ev.target.value)
             }}
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="2">
+        <div className='flex flex-col gap-2'>
           <Text variant="normal" fontWeight="medium" color="text100">
             Block Explorer URL (Optional)
           </Text>
@@ -115,9 +115,9 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
               setBlockExplorerUrl(ev.target.value)
             }}
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="2">
+        <div className='flex flex-col gap-2'>
           <Text variant="normal" fontWeight="medium" color="text100">
             Native Token Name (default: ETH)
           </Text>
@@ -130,9 +130,9 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
               setTokenName(ev.target.value)
             }}
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="2">
+        <div className='flex flex-col gap-2'>
           <Text variant="normal" fontWeight="medium" color="text100">
             Native Token Symbol (default: ETH)
           </Text>
@@ -145,22 +145,22 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
               setTokenSymbol(ev.target.value)
             }}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box position="absolute" bottom="0" right="0" width="full">
-        <Divider marginY="0" />
-        <Box flexDirection="row" justifyContent="flex-end" gap="2" padding="6">
+      <div className='absolute bottom-0 right-0 w-full'>
+        <div className='h-0.5 bg-backgroundBackdrop' />
+        <div className='flex flex-row justify-end items-center gap-2 p-6'>
           <Button
-            label="Cancel"
             shape="square"
             onClick={() => {
               resetInputs()
               onClose()
             }}
-          />
+          >
+            <Text variant="normal" fontWeight="medium" color="text100">Cancel</Text>
+          </Button>
           <Button
-            label="Add Network"
             variant="primary"
             shape="square"
             onClick={async () => {
@@ -178,9 +178,11 @@ export default function AddNetwork({ onClose }: { onClose: () => void }) {
                 console.error(err)
               }
             }}
-          />
-        </Box>
-      </Box>
-    </Box>
+          >
+            <Text variant="normal" fontWeight="medium" color="text100">Confirm</Text>
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }

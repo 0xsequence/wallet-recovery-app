@@ -1,8 +1,8 @@
 import { ThemeProvider, ToastProvider } from '@0xsequence/design-system'
-import '@0xsequence/design-system/styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
+import '~/css/globals.css'
 import { StoreProvider, createStore } from '~/stores/index.tsx'
 
 import { AppRouter } from '~/routes/index.tsx'

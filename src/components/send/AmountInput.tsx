@@ -1,4 +1,4 @@
-import { Box, Button, Text, TextInput, WarningIcon } from '@0xsequence/design-system'
+import { Button, Text, TextInput, WarningIcon } from '@0xsequence/design-system'
 import { ChangeEvent } from 'react'
 
 export type AmountInputProps = {
@@ -25,8 +25,8 @@ export function AmountInput({
   onMaxClick
 }: AmountInputProps) {
   return (
-    <Box flexDirection="column" gap="1">
-      <Box flexDirection="column" gap="0.5">
+    <div className='flex flex-col gap-1'>
+      <div className='flex flex-col gap-0.5'>
         <Text variant="normal" fontWeight="medium" color="text80">
           {label}
         </Text>
@@ -34,7 +34,7 @@ export function AmountInput({
         <Text variant="normal" fontWeight="medium" color="text80">
           Current Balance: {currentBalance} {symbol}
         </Text>
-      </Box>
+      </div>
 
       <TextInput
         name="amount"
@@ -46,23 +46,24 @@ export function AmountInput({
         controls={
           showMaxButton && onMaxClick ? (
             <Button
-              label="Max"
               size="xs"
               shape="square"
               onClick={onMaxClick}
-            />
+            >
+              Max
+            </Button>
           ) : undefined
         }
       />
 
       {insufficientBalance && (
-        <Box flexDirection="row" alignItems="center" gap="1" paddingTop="1">
+        <div className='flex flex-row items-center gap-1 pt-1'>
           <WarningIcon color="warning" size="xs" />
           <Text variant="small" color="warning">
             Insufficient balance. Your current balance is {currentBalance} {symbol}
           </Text>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

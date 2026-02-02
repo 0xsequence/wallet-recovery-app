@@ -1,10 +1,7 @@
 import {
   AddIcon,
-  Box,
   Button,
   Card,
-  Divider,
-  Image,
   Modal,
   Text,
   useMediaQuery
@@ -20,8 +17,8 @@ import ConnectDapp from '~/components/signing/ConnectDapp'
 import ConnectionList from '~/components/signing/ConnectionList'
 import WalletScan from '~/components/signing/WalletScan'
 
-import LinkConnectionIcon from '~/assets/icons/link-connection.svg'
-import WarningIcon from '~/assets/icons/warning.svg'
+import LinkConnectionIcon from '../../../assets/icons/link-connection.svg'
+import WarningIcon from '../../../assets/icons/warning.svg'
 
 export default function DappList() {
   const walletStore = useStore(WalletStore)
@@ -41,42 +38,43 @@ export default function DappList() {
   }
 
   return (
-    <Box flexDirection="column">
-      <Box justifyContent="space-between" alignItems="center" gap="2">
-        <Box alignItems="center" gap="2">
-          <Image src={LinkConnectionIcon} width="5" height="5" />
+    <div className='flex flex-col'>
+      <div className='flex flex-row justify-between items-center gap-2'>
+        <div className='flex flex-row items-center gap-2'>
+          <img src={LinkConnectionIcon} alt="Link Connection" />
 
           <Text variant="normal" fontWeight="bold" color="text100">
             Connected Dapps
           </Text>
-        </Box>
+        </div>
 
         <Button
           size="sm"
-          leftIcon={AddIcon}
-          label="Connect"
           shape="square"
           disabled={provider?.info.name === 'WalletConnect'}
           onClick={() => setIsScanningQrWalletConnect(true)}
-        />
-      </Box>
+        >
+          <AddIcon />
+          Connect
+        </Button>
+      </div>
 
-      <Divider marginY="2" />
+      <div className='h-0 my-2' />
 
       {sessionList.length > 0 ? (
         <ConnectionList sessionList={sessionList}></ConnectionList>
       ) : (
-        <Card flexDirection="column">
+        <Card className='flex flex-col'>
           {provider?.info.name === 'WalletConnect' ? (
-            <Box flexDirection="column" alignItems="center" gap="4">
-              <Image src={WarningIcon} color="text50" width="8" height="8" />
-              <Text textAlign="center" variant="normal" color="text50" padding="4">
+            <div className='flex flex-col items-center gap-4'>
+              <img src={WarningIcon} alt="Warning" />
+              <Text variant="normal" color="text50" className='p-4'>
                 To connect to Dapps, switch from WalletConnect to a different wallet as your External Wallet
                 connection method.
               </Text>
-            </Box>
+            </div>
           ) : (
-            <Text textAlign="center" variant="normal" color="text50" padding="4">
+            <Text variant="normal" color="text50" className='p-4'>
               Connect a Dapp with WalletConnect to sign actions
             </Text>
           )}
@@ -85,9 +83,8 @@ export default function DappList() {
 
       {isScanningQrWalletConnect && (
         <Modal
-          size="md"
           contentProps={{
-            style: { width: !isMobile ? '500px' : '100%' }
+            style: { width: !isMobile ? '500px' : '100%', height:"572px" }
           }}
           onClose={() => setIsScanningQrWalletConnect(false)}
         >
@@ -103,10 +100,10 @@ export default function DappList() {
       )}
 
       {isConnectingDapp && (
-        <Modal size="md" onClose={() => setIsConnectingDapp(false)}>
+        <Modal size="sm" onClose={() => setIsConnectingDapp(false)}>
           <ConnectDapp onClose={() => setIsConnectingDapp(false)} />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

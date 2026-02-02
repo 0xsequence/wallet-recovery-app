@@ -1,4 +1,4 @@
-import { Box, Text } from "@0xsequence/design-system"
+import { Text } from "@0xsequence/design-system"
 import { ParsedCall } from "~/utils/transaction-parser"
 import { formatPrettyBalance } from "~/utils/format-pretty-balance"
 
@@ -44,10 +44,10 @@ export function InsufficientBalanceMessage({
   }
 
   return (
-    <Box flexDirection="column" gap="1">
+    <div className='flex flex-col gap-1'>
       <Text variant="small" fontWeight="medium" color="negative">
         {getMessage()}
       </Text>
-    </Box>
+    </div>
   )
 }

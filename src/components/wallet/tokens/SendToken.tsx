@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Text, useMediaQuery } from '@0xsequence/design-system'
+import { Button, Text, useMediaQuery } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { useObservable } from 'micro-observables'
 import { useEffect, useMemo, useState } from 'react'
@@ -120,13 +120,13 @@ export default function SendToken({
   }
 
   return (
-    <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
-      <Box flexDirection="column" gap="6" padding="6">
+    <div className='min-w-[500px]' style={{ minWidth: isMobile ? '100vw' : '500px' }}>
+      <div className='flex flex-col gap-6 p-6'>
         <Text variant="large" fontWeight="bold" color="text100">
           Sending {tokenBalance?.contractInfo?.symbol} on {networkTitle}
         </Text>
 
-        <Box flexDirection="column" gap="3">
+        <div className='flex flex-col gap-3'>
           <AmountInput
             label="Amount"
             value={amount ?? ''}
@@ -148,23 +148,22 @@ export default function SendToken({
             }
             onChange={setToAddress}
           />
-        </Box>
+        </div>
 
         <Button
           variant="text"
-          label={
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <FilledCheckBox checked={sendToExternalWallet} size="md" />
-              <Text variant="small" color="text80">
-                Send to connected external wallet address
-              </Text>
-            </Box>
-          }
           onClick={() => setSendToExternalWallet(!sendToExternalWallet)}
-        />
-      </Box>
+        >
+          <div className='flex flex-row items-center gap-2'>
+            <FilledCheckBox checked={sendToExternalWallet} size="md" />
+            <Text variant="small" color="text80">
+              Send to connected external wallet address
+            </Text>
+          </div>
+        </Button>
+      </div>
 
-      <Divider marginY="0" />
+      <div className='my-0' />
 
       {isSigned ? (
         <TransactionSuccess
@@ -192,6 +191,6 @@ export default function SendToken({
           onRecover={handleRecover}
         />
       )}
-    </Box>
+    </div>
   )
 }

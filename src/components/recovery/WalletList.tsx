@@ -1,63 +1,38 @@
-import { Box, Text, truncateAddress } from '@0xsequence/design-system'
-import { useState } from 'react'
-
-import { FilledRoundCheckBox, ROUND_CHECKBOX_SIZE } from '~/components/misc'
+import { CheckmarkIcon, Text } from '@0xsequence/design-system'
+import { truncateAddress } from '~/utils/truncateAddress'
+import { Address } from 'viem'
 
 export default function WalletList({
   possibleWallets,
-  handleSelectWallet
 }: {
   possibleWallets: string[]
-  handleSelectWallet: (wallet: string) => void
 }) {
-  const [selectedWallet, setSelectedWallet] = useState<string>(possibleWallets[0])
-
-  const gapWidth = 2
-
   return (
-    <Box flexDirection="column" gap={`${gapWidth}`}>
+    <div className='flex flex-col gap-2'>
       <Text variant="normal" fontWeight="medium" color="text80">
-        Wallets found
+        Wallet found
       </Text>
+
       {possibleWallets.map(wallet => {
         return (
-          <Box key={wallet}>
-            <Box
-              flexDirection="row"
-              alignItems="center"
-              gap={`${gapWidth}`}
-              style={{ height: '52px' }}
-              cursor="pointer"
-              onClick={() => {
-                setSelectedWallet(wallet)
-                handleSelectWallet(wallet)
-              }}
-            >
-              <Box style={{ minWidth: `${ROUND_CHECKBOX_SIZE * 4}px` }}>
-                <FilledRoundCheckBox checked={selectedWallet === wallet} />
-              </Box>
+          <div key={wallet}>
+            <div className='flex flex-row items-center gap-2' style={{ height: '52px' }}>
+              <div className='bg-background-raised rounded-md flex items-center h-full p-4 w-full gap-2'>
+                <CheckmarkIcon className={"w-4 h-4 text-lime-500"} />
 
-              <Box
-                background="buttonGlass"
-                borderRadius="md"
-                alignItems="center"
-                height="full"
-                paddingX="4"
-                width="full"
-              >
                 <Text
                   variant="normal"
                   fontWeight="medium"
-                  color="text100"
+                  className='text-primary/80'
                   style={{ fontFamily: 'monospace' }}
                 >
-                  {truncateAddress(wallet, 20, 6)}
+                  {truncateAddress(wallet as Address, 20, 6)}
                 </Text>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         )
       })}
-    </Box>
+    </div>
   )
 }

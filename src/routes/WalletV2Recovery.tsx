@@ -1,4 +1,3 @@
-import { Box } from '@0xsequence/design-system'
 import { useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -88,26 +87,14 @@ function WalletV2Recovery() {
     // Show password unlock if account is loading but not yet unlocked
     if (isLoadingAccount && !hasAccount) {
         return (
-            <Box>
+            <div>
                 <RecoveryHeader />
-                <Box
-                    flexDirection="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    padding="5"
-                    gap="10"
-                    style={{ minHeight: '60vh' }}
-                >
-                    <Box
-                        flexDirection="column"
-                        gap="10"
-                        width="full"
-                        style={{ maxWidth: '500px' }}
-                    >
+                <div className='flex flex-col items-center justify-center p-5 gap-10' style={{ minHeight: '60vh' }}>
+                    <div className='flex flex-col gap-10 w-full' style={{ maxWidth: '500px' }}>
                         <PasswordUnlock redirectOnSuccess={false} />
-                    </Box>
-                </Box>
-            </Box>
+                    </div>
+                </div>
+            </div>
         )
     }
 
@@ -117,27 +104,21 @@ function WalletV2Recovery() {
     }
 
     return (
-        <Box>
+        <div>
             <RecoveryHeader />
 
-            <Box flexDirection="column" alignItems="center">
-                <Box
-                    flexDirection="column"
-                    padding="5"
-                    width="full"
-                    style={{ maxWidth: WALLET_WIDTH }}
-                    paddingBottom="20"
-                >
-                    <Box flexDirection="column">
+            <div className='flex flex-col items-center'>
+                <div className='flex flex-col p-5 w-full pb-20' style={{ maxWidth: WALLET_WIDTH }} >
+                    <div className='flex flex-col'>
                         <WalletConnectionsSection />
 
                         <WalletAssetsSection
                             onTokenSendClick={modals.sendTokenModal.open}
                             onCollectibleSendClick={modals.sendCollectibleModal.open}
                         />
-                    </Box>
-                </Box>
-            </Box>
+                    </div>
+                </div>
+            </div>
 
             <NetworkModal
                 isOpen={modals.networkModal.isOpen}
@@ -174,7 +155,7 @@ function WalletV2Recovery() {
                 onRecover={handleSendCollectibleWrapper}
                 onDismissibleChange={setIsSendCollectibleDismissible}
             />
-        </Box>
+        </div>
     )
 }
 

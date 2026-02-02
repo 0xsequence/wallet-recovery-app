@@ -1,4 +1,4 @@
-import { Box, Text, TextInput } from '@0xsequence/design-system'
+import { Text, TextInput } from '@0xsequence/design-system'
 import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -25,8 +25,8 @@ export default function Arweave() {
   }, [gatewayUrl, graphQLUrl])
 
   return (
-    <Box flexDirection="column" gap="2" paddingTop="6">
-      <Box flexDirection="column" gap="1">
+    <div className='flex flex-col gap-2 p-6'>
+      <div className='flex flex-col gap-1'>
         <Text variant="normal" fontWeight="medium" color="text100">
           Gateway URL
         </Text>
@@ -38,8 +38,8 @@ export default function Arweave() {
             setGatewayUrl(ev.target.value)
           }}
         />
-      </Box>
-      <Box flexDirection="column" gap="1">
+      </div>
+      <div className='flex flex-col gap-1'>
         <Text variant="normal" fontWeight="medium" color="text100">
           GraphQL URL
         </Text>
@@ -51,7 +51,7 @@ export default function Arweave() {
             setGraphQLUrl(ev.target.value)
           }}
         />
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

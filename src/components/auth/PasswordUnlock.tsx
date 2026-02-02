@@ -1,4 +1,4 @@
-import { Box, Button, Modal, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import { Button, cn, Modal, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
 import { ChangeEvent, KeyboardEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -72,15 +72,14 @@ export function PasswordUnlock({ onUnlockSuccess, redirectOnSuccess = true }: Pa
                      <Text
                             variant="normal"
                             fontWeight="medium"
-                            textAlign="center"
+                            className={cn("text-center", isMobile ? 'px-8' : undefined)}
                             color="text80"
-                            paddingX={isMobile ? '8' : undefined}
                             style={{ marginBottom: '-16px' }}
                      >
                             Enter your password to continue and unlock your wallet
                      </Text>
-                     <Box flexDirection="column" gap="4" width="full">
-                            <Box flexDirection="column" gap="1">
+                     <div className="flex flex-col gap-4 w-full">
+                            <div className='flex flex-col gap-1'>
                                    <Text variant="normal" fontWeight="medium" color="text80">
                                           Password
                                    </Text>
@@ -100,44 +99,50 @@ export function PasswordUnlock({ onUnlockSuccess, redirectOnSuccess = true }: Pa
                                           }}
                                    />
                                    {wrongPassword && (
-                                          <Text variant="small" color="negative" marginLeft="2" marginTop="1">
+                                          <Text variant="small" color="negative" className='ml-2 mt-1'>
                                                  Incorrect password
                                           </Text>
                                    )}
-                            </Box>
-                            <Box flexDirection="row" justifyContent="flex-end" gap="4">
+                            </div>
+                            <div className="flex flex-row justify-end gap-4">
                                    <Button
-                                          label="Forgot password?"
                                           variant="text"
                                           shape="square"
                                           disabled={isUnlocking}
                                           onClick={() => handleResetConfirmation()}
-                                   />
+                                   >
+                                          Forgot password?
+                                   </Button>
                                    <Button
-                                          label="Continue"
                                           variant="primary"
                                           shape="square"
                                           disabled={isUnlocking}
                                           onClick={() => handleUnlock()}
-                                   />
-                            </Box>
-                     </Box>
+                                   >
+                                          Continue
+                                   </Button>
+                            </div>
+                     </div>
 
                      {isReseting && (
-                            <Modal size="md" onClose={() => setIsReseting(false)}>
-                                   <Box flexDirection="column" padding="6" gap="6">
-                                          <Text variant="large" color="text100" marginRight="8">
+                            <Modal size="sm" onClose={() => setIsReseting(false)}>
+                                   <div className='flex flex-col gap-6 p-6'>
+                                          <Text variant="large" color="text100" className='mr-8'>
                                                  Are you sure you want to sign out?
                                           </Text>
                                           <Text variant="normal" fontWeight="medium" color="text50">
                                                  If you do not remember your password, you can reset and start over.
                                                  <br /> This will require you to re-enter your mnemonic.
                                           </Text>
-                                          <Box flexDirection="row" justifyContent="flex-end" gap="2">
-                                                 <Button label="Yes, reset" shape="square" variant="primary" onClick={() => handleReset()} />
-                                                 <Button label="Cancel" shape="square" onClick={() => setIsReseting(false)} />
-                                          </Box>
-                                   </Box>
+                                          <div className='flex flex-row justify-end gap-2'>
+                                                 <Button shape="square" variant="primary" onClick={() => handleReset()}>
+                                                        Yes, reset
+                                                 </Button>
+                                                 <Button shape="square" onClick={() => setIsReseting(false)}>
+                                                        Cancel
+                                                 </Button>
+                                          </div>
+                                   </div>
                             </Modal>
                      )}
               </>

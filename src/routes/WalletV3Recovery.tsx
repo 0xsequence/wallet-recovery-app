@@ -1,4 +1,4 @@
-import { Box } from '@0xsequence/design-system'
+
 import { TokenBalance } from '@0xsequence/indexer'
 import { useEffect, useState } from 'react'
 
@@ -100,26 +100,14 @@ function WalletV3Recovery() {
   // Only show after initial mount to avoid flashing
   if (isLoadingAccount && !hasAccount) {
     return (
-      <Box>
+      <div>
         <RecoveryHeader />
-        <Box
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          padding="5"
-          gap="10"
-          style={{ minHeight: '60vh' }}
-        >
-          <Box
-            flexDirection="column"
-            gap="10"
-            width="full"
-            style={{ maxWidth: '500px' }}
-          >
+        <div className='flex flex-col items-center justify-center p-5 gap-10' style={{ minHeight: '60vh' }}>
+          <div className='flex flex-col gap-10 w-full' style={{ maxWidth: '500px' }}>
             <PasswordUnlock redirectOnSuccess={false} />
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -129,25 +117,19 @@ function WalletV3Recovery() {
   }
 
   return (
-    <Box>
+    <div>
       <RecoveryHeader />
 
-      <Box flexDirection="column" alignItems="center">
-        <Box
-          flexDirection="column"
-          padding="5"
-          width="full"
-          style={{ maxWidth: WALLET_WIDTH }}
-          paddingBottom="20"
-        >
-          <Box flexDirection="column">
+      <div className='flex flex-col items-center'>
+        <div className='flex flex-col p-5 w-full pb-20' style={{ maxWidth: WALLET_WIDTH }} >
+          <div className='flex flex-col'>
             <WalletConnectionsSection />
 
             <WalletAssetsSection
               onTokenSendClick={handleTokenOnSendClick}
               onCollectibleSendClick={handleCollectibleOnSendClick}
             />
-          </Box>
+          </div>
 
           <WalletRecoverySection
             isV2Wallet={isV2Wallet}
@@ -155,8 +137,8 @@ function WalletV3Recovery() {
             isLoading={isLoading}
             refetch={refetch}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Modals */}
       <NetworkModal
@@ -204,7 +186,7 @@ function WalletV3Recovery() {
         }}
         onDismissibleChange={setIsSendCollectibleModalDismissible}
       />
-    </Box>
+    </div>
   )
 }
 

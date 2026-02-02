@@ -1,4 +1,4 @@
-import { AddIcon, Box, Button, Card, Divider, Image, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
+import { AddIcon, Button, Card, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
 import { ContractType, TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
@@ -51,58 +51,53 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
     balance.contractType === ContractType.NATIVE
       ? undefined
       : () => {
-          tokenStore.removeToken({
-            chainId: balance.chainId,
-            address: balance.contractAddress,
-            contractType: balance.contractType,
-            decimals: balance.contractInfo?.decimals!,
-            symbol: balance.contractInfo?.symbol!
-          })
-        }
+        tokenStore.removeToken({
+          chainId: balance.chainId,
+          address: balance.contractAddress,
+          contractType: balance.contractType,
+          decimals: balance.contractInfo?.decimals ?? 18,
+          symbol: balance.contractInfo?.symbol ?? 'Native'
+        })
+      }
 
   return (
-    <Box>
-      <Box alignItems="center">
-        <Box alignItems="center" gap="2">
-          <Image src={CoinIcon} width="5" height="5" />
+    <div className='flex flex-col'>
+      <div className='flex flex-row items-center'>
+        <div className='flex flex-row items-center gap-2'>
+          <img src={CoinIcon} alt="Coins" className='w-4 h-4' />
 
           <Text variant="normal" fontWeight="bold" color="text100">
             Coins
           </Text>
-        </Box>
+        </div>
 
-        <Box gap="4" marginLeft="auto">
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            cursor="pointer"
-            gap="2"
-            onClick={() => setFilterZeroBalances(!filterZeroBalances)}
-          >
+        <div className='flex flex-row gap-4 ml-auto'>
+          <div className='flex flex-row items-center cursor-pointer gap-2' onClick={() => setFilterZeroBalances(!filterZeroBalances)}>
             <FilledCheckBox checked={filterZeroBalances} size="md" />
 
             <Text variant="small" color="text80">
               Filter zero balances
             </Text>
-          </Box>
+          </div>
 
           <Button
             size="sm"
-            leftIcon={AddIcon}
-            label="Import"
             shape="square"
             onClick={() => setIsImportTokenViewOpen(true)}
-          />
-        </Box>
-      </Box>
+          >
+            <AddIcon />
+            Import
+          </Button>
+        </div>
+      </div>
 
-      <Divider marginY="2" />
+      <div className='my-2' />
 
-      <Box width="full" flexDirection="column" gap="2">
+      <div className='flex flex-col gap-2'>
         {isFetchingBalances ? (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
+          <div className='flex flex-row items-center justify-center mt-4'>
             <Spinner size="lg" />
-          </Box>
+          </div>
         ) : (
           <>
             {filteredBalance.length > 0 ? (
@@ -118,15 +113,15 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
                 ))}
               </>
             ) : (
-              <Card flexDirection="column">
-                <Text textAlign="center" variant="normal" color="text50" padding="4">
+              <Card className='flex flex-col'>
+                <Text variant="normal" color="text50" className='text-center p-4'>
                   Import ERC 20 token address
                 </Text>
               </Card>
             )}
           </>
         )}
-      </Box>
+      </div>
 
       {isImportTokenViewOpen && (
         <Modal
@@ -146,6 +141,6 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
           <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

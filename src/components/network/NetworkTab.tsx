@@ -1,4 +1,4 @@
-import { Divider, Text } from '@0xsequence/design-system'
+import { Text } from '@0xsequence/design-system'
 import { TabsPrimitive } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
 
@@ -25,12 +25,12 @@ export default function NetworkTab({
         variant="normal"
         fontWeight="semibold"
         color={selectedNetworkType === value ? 'text100' : 'text50'}
-        paddingX="4"
+        className='px-4'
       >
         {networkTypeString}
       </Text>
       {selectedNetworkType === value && (
-        <Divider color="white" height="0.5" position="relative" marginY="0" style={{ top: '6px' }} />
+        <div className='h-0.5 bg-backgroundBackdrop relative top-1.5' />
       )}
     </TabsPrimitive.TabsTrigger>
   )

@@ -1,5 +1,5 @@
 import { Sequence } from "@0xsequence/wallet-wdk"
-import { Box, Card } from "@0xsequence/design-system"
+import { Card } from "@0xsequence/design-system"
 import { useObservable, useStore } from "~/stores"
 import { WalletStore } from "~/stores/WalletStore"
 import PayloadDetailsCollapsible from "./PayloadDetailsCollapsible"
@@ -58,17 +58,10 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	}
 
 	return (
-		<Box flexDirection="column" gap="2" background="backgroundMuted" borderRadius="md" padding="2">
+		<div className='flex flex-col gap-2 bg-backgroundMuted rounded-md p-2'>
 			<Card
-				flexDirection="row"
-				gap="3"
-				padding="4"
-				background="backgroundSecondary"
-				borderRadius="md"
-				style={{
-					opacity: isExecuted ? 0.5 : 1,
-					pointerEvents: isExecuted ? 'none' : 'auto'
-				}}
+				className='flex flex-row gap-3 p-4 bg-backgroundSecondary rounded-md'
+				style={{ opacity: isExecuted ? 0.5 : 1, pointerEvents: isExecuted ? 'none' : 'auto' }}
 			>
 				<PayloadStatusBadge
 					payloadId={payload.id}
@@ -80,7 +73,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 					readyToExecute={readyToExecute}
 				/>
 
-				<Box marginLeft="auto">
+				<div className='ml-auto'>
 					<PayloadActionButton
 						isPending={isPending}
 						hash={hash}
@@ -94,7 +87,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 						chainId={payload.chainId}
 						onExecute={handleExecuteRecovery}
 					/>
-				</Box>
+				</div>
 			</Card>
 
 			{!hasEnoughBalance && !isExecuted && (
@@ -118,6 +111,6 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 				<ExecutionDetails parsedCalls={parsedCalls} tokenMetadata={tokenMetadata} />
 			)}
 
-		</Box>
+		</div>
 	)
 }

@@ -1,4 +1,4 @@
-import { Box, Card, CloseIcon, Image, Text } from '@0xsequence/design-system'
+import { Card, CloseIcon, Text } from '@0xsequence/design-system'
 import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
@@ -19,15 +19,15 @@ export default function CollectibleBalanceItem({
   onRemoveClick?: () => void
 }) {
   return (
-    <Card flexDirection="row" alignItems="center" gap="3">
+    <Card className='flex flex-row items-center gap-3'>
       {collectibleInfo.collectibleInfoResponse.image && (
-        <Box>
-          <ExternalIcon background="buttonGlass" src={collectibleInfo.collectibleInfoResponse.image} />
-        </Box>
+        <div>
+          <ExternalIcon src={collectibleInfo.collectibleInfoResponse.image} />
+        </div>
       )}
 
-      <Box flexDirection="column" justifyContent="center">
-        <Box gap="2" alignItems="center">
+      <div className='flex flex-col justify-center'>
+        <div className='flex flex-row items-center gap-2'>
           <Text variant="normal" fontWeight="bold" color="text80">
             {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
           </Text>
@@ -35,9 +35,9 @@ export default function CollectibleBalanceItem({
             #{collectibleInfo.collectibleInfoParams.tokenId}
           </Text>
           <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
-        </Box>
+        </div>
 
-        <Box>
+        <div>
           <Text variant="normal" fontWeight="medium" color="text50">
             {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
               ? Number(
@@ -48,16 +48,16 @@ export default function CollectibleBalanceItem({
                 )
               : 1}
           </Text>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box marginLeft="auto" gap="3">
-        <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={false} onClick={onSendClick} />
+      <div className='flex flex-row items-center gap-3 ml-auto'>
+        <ButtonWithIcon icon={<img src={SendIcon} alt="Send" className='w-4 h-4' />} disabled={false} onClick={onSendClick} />
 
         {onRemoveClick && (
           <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => onRemoveClick?.()} />
         )}
-      </Box>
+      </div>
     </Card>
   )
 }

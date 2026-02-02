@@ -1,8 +1,7 @@
 import {
-    Box,
     Button,
     ChevronLeftIcon,
-    Divider,
+    IconButton,
     Modal,
     Spinner,
     Text,
@@ -11,7 +10,7 @@ import {
 } from '@0xsequence/design-system'
 import { ethers } from 'ethers'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -113,8 +112,8 @@ function Recovery() {
 
     const mnemonicWordCount = useMemo(() => {
         const wordCount = formState.mnemonic.trim().split(/\s+/g).filter(w => w).length
-        if (wordCount === 12) return 12
-        if (wordCount === 24) return 24
+        if (wordCount === 12) { return 12 }
+        if (wordCount === 24) { return 24 }
         return 12 // default
     }, [formState.mnemonic])
 
@@ -185,10 +184,6 @@ function Recovery() {
             searchForWalletsFromMnemonic(formState.mnemonic)
         }
     }, [formState.mnemonic])
-
-    const handleWalletSelect = useCallback((address: string) => {
-        updateFormField('selectedWallet', address)
-    }, [updateFormField])
 
     const handleRecoverWallet = useCallback(async () => {
         if (!validation.isFormValid) {
@@ -271,38 +266,33 @@ function Recovery() {
     const isAnyLoading = loadingState.isSearchingWallets || loadingState.isRecovering
 
     return (
-        <Box flexDirection="column" background="backgroundPrimary">
+        <div className='flex flex-col bg-background-primary pb-20'>
             <RecoveryHeader />
 
-            <Box
-                alignSelf="center"
-                flexDirection="column"
-                marginY="10"
-                paddingX="4"
-                gap="4"
-                width="full"
-                style={{ maxWidth: WALLET_WIDTH }}
-            >
-                <Button
-                    leftIcon={ChevronLeftIcon}
-                    label="Back"
-                    size="sm"
-                    as={Link}
-                    to="/"
-                />
+            <div className='self-center flex flex-col gap-4 p-4 w-full' style={{ maxWidth: WALLET_WIDTH }}>
 
-                <Box flexDirection="column">
-                    <Text variant="xlarge" color="text80">
-                        Recover your wallet
-                    </Text>
+                <div className='flex flex-col'>
+                    <div className='flex flex-row items-center gap-2'>
+                        <IconButton
+                            size="sm"
+                            shape="circle"
+                            onClick={() => navigate('/')}
+                            icon={ChevronLeftIcon}
+                        />
 
-                    <Divider marginY="6" />
+                        <Text variant="xlarge" color="text80">
+                            Recover your wallet
+                        </Text>
+                    </div>
 
-                    <Text variant="normal" fontWeight="medium" color="text80" marginBottom="2">
+
+                    <div className='h-0.5 w-full bg-backgroundMuted my-6' />
+
+                    <Text variant="normal" fontWeight="medium" color="text80" className='mb-2'>
                         Recovery phrase
                     </Text>
 
-                    <Text variant="normal" fontWeight="medium" color="text50" marginBottom="3">
+                    <Text variant="normal" fontWeight="medium" color="text50" className='mb-3'>
                         Enter your 12 or 24-word mnemonic phrase below.
                     </Text>
 
@@ -312,17 +302,17 @@ function Recovery() {
                     />
 
                     {validation.showMnemonicError && (
-                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                        <Text variant="small" color="negative" className='ml-1 mt-2'>
                             Mnemonic must be 12 or 24 words
                         </Text>
                     )}
-                </Box>
+                </div>
 
-                <Box flexDirection="column">
+                <div className='flex flex-col'>
                     <Text variant="normal" fontWeight="medium" color="text80">
                         Create password (optional)
                     </Text>
-                    <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
+                    <Text variant="normal" fontWeight="medium" color="text50" className='mb-1'>
                         Optionally encrypt your mnemonic with a {MIN_PASSWORD_LENGTH}+ character password.
                     </Text>
 
@@ -337,14 +327,14 @@ function Recovery() {
                     />
 
                     {validation.showPasswordError && (
-                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                        <Text variant="small" color="negative" className='ml-1 mt-2'>
                             Password must be at least {MIN_PASSWORD_LENGTH} characters
                         </Text>
                     )}
-                </Box>
+                </div>
 
-                <Box flexDirection="column">
-                    <Text variant="normal" fontWeight="medium" color="text80" marginBottom="1">
+                <div className='flex flex-col'>
+                    <Text variant="normal" fontWeight="medium" color="text80" className='mb-1'>
                         Confirm password
                     </Text>
 
@@ -359,25 +349,24 @@ function Recovery() {
                     />
 
                     {validation.showPasswordMismatchError && (
-                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
+                        <Text variant="small" color="negative" className='ml-1 mt-2'>
                             Passwords must match
                         </Text>
                     )}
-                </Box>
+                </div>
 
                 {loadingState.isSearchingWallets && (
-                    <Box alignSelf="center" alignItems="center" gap="1">
+                    <div className='self-center items-center gap-1'>
                         <Spinner size="md" />
                         <Text variant="small" color="text80">
                             Searching for wallet address...
                         </Text>
-                    </Box>
+                    </div>
                 )}
 
                 {!loadingState.isSearchingWallets && possibleWallets.length > 0 && (
                     <WalletList
                         possibleWallets={possibleWallets}
-                        handleSelectWallet={handleWalletSelect}
                     />
                 )}
 
@@ -387,26 +376,26 @@ function Recovery() {
                     </Text>
                 )}
 
-                <Box flexDirection="row" gap="4">
+                <div className='flex flex-row gap-4'>
                     <Button
                         variant="primary"
                         size={isMobile ? 'lg' : 'md'}
                         shape="square"
-                        label={loadingState.isRecovering ? 'Recovering...' : 'Recover wallet'}
-                        marginLeft="auto"
+                        className='ml-auto'
                         disabled={!validation.isFormValid || isAnyLoading}
                         onClick={handleRecoverWallet}
-                        style={{ whiteSpace: 'normal' }}
-                    />
-                </Box>
-            </Box>
+                    >
+                        {loadingState.isRecovering ? 'Recovering...' : 'Recover wallet'}
+                    </Button>
+                </div>
+            </div>
 
             {isNetworkModalOpen && (
                 <Modal onClose={() => walletStore.isNetworkModalOpen.set(false)}>
                     <Networks />
                 </Modal>
             )}
-        </Box>
+        </div>
     )
 }
 

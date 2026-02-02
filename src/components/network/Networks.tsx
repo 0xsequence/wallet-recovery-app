@@ -1,4 +1,4 @@
-import { Box, TabsContent, TabsPrimitive } from '@0xsequence/design-system'
+import { TabsContent, TabsPrimitive } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
 import { useState } from 'react'
 
@@ -26,16 +26,16 @@ export default function Networks() {
   const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkType | 'arweave'>(NetworkType.MAINNET)
 
   return (
-    <Box flexDirection="column">
+    <div className='flex flex-col'>
       {!isAddingNetwork ? (
-        <Box flexDirection="column" justifyContent="space-between">
+        <div className='flex flex-col justify-between'>
           <TabsPrimitive.Root
             value={selectedNetworkType}
             onValueChange={value => setSelectedNetworkType(value as NetworkType)}
           >
             <NetworkHeader selectedNetworkType={selectedNetworkType} />
 
-            <Box paddingX="6" style={{ marginTop: '108px', marginBottom: '85px' }}>
+            <div className='p-6' style={{ marginTop: '108px', marginBottom: '85px' }}>
               <TabsContent value={NetworkType.MAINNET}>
                 <NetworkList networks={sortedMainnets} />
               </TabsContent>
@@ -47,13 +47,13 @@ export default function Networks() {
               <TabsContent value="arweave">
                 <Arweave />
               </TabsContent>
-            </Box>
+            </div>
           </TabsPrimitive.Root>
           <NetworkFooter />
-        </Box>
+        </div>
       ) : (
         <AddNetwork onClose={() => networkStore.isAddingNetwork.set(false)} />
       )}
-    </Box>
+    </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Box, Button, Text, CheckmarkIcon } from "@0xsequence/design-system"
+import { Button, Text, CheckmarkIcon } from "@0xsequence/design-system"
 import { Network } from "@0xsequence/wallet-primitives"
 
 interface PayloadActionButtonProps {
@@ -33,8 +33,8 @@ export function PayloadActionButton({
   // Show success state
   if (status === 'final' && opStatus === 'confirmed' && explorerUrl) {
     return (
-      <Box flexDirection="column" gap="1" alignItems="center">
-        <Text variant="small" fontWeight="bold" color="text80" flexDirection="row" gap="1" alignItems="center">
+      <div className='flex flex-col gap-1 items-center'>
+        <Text variant="small" fontWeight="bold" color="text80" className='flex flex-row gap-1 items-center'>
           <CheckmarkIcon width="14" height="14" color="positive" /> Recovery completed
         </Text>
         {explorerUrl && (
@@ -43,11 +43,14 @@ export function PayloadActionButton({
               variant="primary"
               size="sm"
               shape="square"
-              label="View on explorer"
-            />
+            >
+              <Text variant="small" fontWeight="bold" color="text100">
+                View on explorer
+              </Text>
+            </Button>
           </a>
         )}
-      </Box>
+      </div>
     )
   }
 
@@ -58,9 +61,12 @@ export function PayloadActionButton({
         variant="primary"
         size="sm"
         shape="square"
-        label="Executing..."
         disabled={true}
-      />
+      >
+        <Text variant="small" fontWeight="bold" color="text100">
+          Executing...
+        </Text>
+      </Button>
     )
   }
 
@@ -72,17 +78,12 @@ export function PayloadActionButton({
         size="sm"
         shape="square"
         onClick={onExecute}
-        label={
-          isExecuted 
-            ? "Executed" 
-            : isLocked 
-              ? "Locked" 
-              : selectedExternalProvider 
-                ? "Execute" 
-                : "Connect wallet"
-        }
         disabled={!readyToExecute || isExecuted || !hasEnoughBalance}
-      />
+      >
+        <Text variant="small" fontWeight="bold" color="text100">
+          {isExecuted ? "Executed" : isLocked ? "Locked" : selectedExternalProvider ? "Execute" : "Connect wallet"}
+        </Text>
+      </Button>
     )
   }
 

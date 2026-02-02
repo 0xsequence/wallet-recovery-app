@@ -1,10 +1,7 @@
 import {
   AddIcon,
-  Box,
   Button,
   Card,
-  Divider,
-  Image,
   Modal,
   Spinner,
   Text,
@@ -47,38 +44,39 @@ export default function CollectibleList({
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
   return (
-    <Box width="full">
-      <Box justifyContent="space-between" alignItems="center">
-        <Box alignItems="center" gap="2">
-          <Image src={CollectionIcon} width="5" height="5" />
+    <div className='w-full'>
+      <div className='flex flex-row justify-between items-center'>
+        <div className='flex flex-row items-center gap-2'>
+          <img src={CollectionIcon} alt="Collectibles" className='w-4 h-4' />
 
           <Text variant="normal" fontWeight="bold" color="text100">
             Collectibles
           </Text>
-        </Box>
+        </div>
         <Button
           size="sm"
-          leftIcon={AddIcon}
-          label="Import"
           shape="square"
           onClick={() => setIsImportCollectibleViewOpen(true)}
-        />
-      </Box>
+        >
+          <AddIcon />
+          Import
+        </Button>
+      </div>
 
-      <Divider marginY="2" />
+      <div className='h-0 my-2' />
 
-      <Box width="full" flexDirection="column" gap="4" marginBottom="8">
+      <div className='flex flex-col gap-4 mb-8'>
         {isFetchingBalances ? (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
+          <div className='flex flex-row items-center justify-center mt-4'>
             <Spinner size="lg" />
-          </Box>
+          </div>
         ) : (
           <>
             {filteredCollectibles.length > 0 ? (
               <>
                 {collectibles.map(collectibleInfo => {
                   return (
-                    <Box
+                    <div
                       key={
                         collectibleInfo.collectibleInfoParams.chainId +
                         collectibleInfo.collectibleInfoParams.address +
@@ -94,20 +92,20 @@ export default function CollectibleList({
                           collectibleStore.removeCollectible(collectibleInfo)
                         }}
                       />
-                    </Box>
+                    </div>
                   )
                 })}
               </>
             ) : (
-              <Card flexDirection="column">
-                <Text textAlign="center" variant="normal" color="text50" padding="4">
+              <Card className='flex flex-col'>
+                <Text variant="normal" color="text50" className='text-center p-4'>
                   Import ERC721 or ERC1155 Collectibles
                 </Text>
               </Card>
             )}
           </>
         )}
-      </Box>
+      </div>
 
       {isImportCollectibleViewOpen && (
         <Modal
@@ -127,6 +125,6 @@ export default function CollectibleList({
           <ImportCollectible onClose={() => setIsImportCollectibleViewOpen(false)} />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

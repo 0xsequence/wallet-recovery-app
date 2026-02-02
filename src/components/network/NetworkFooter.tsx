@@ -1,4 +1,4 @@
-import { AddIcon, Box, Button, Divider } from '@0xsequence/design-system'
+import { AddIcon, Button, Text } from '@0xsequence/design-system'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
@@ -9,25 +9,27 @@ export default function NetworkFooter() {
   const unsavedArweaveURLs = useObservable(networkStore.unsavedArweaveURLs)
 
   return (
-    <Box flexDirection="column" width="full" position="absolute" bottom="0" background="backgroundPrimary">
-      <Divider marginY="0" />
-      <Box alignSelf="flex-end" padding="5" gap="2">
+    <div className='flex flex-col w-full absolute bottom-0 bg-background-primary'>
+      <div className='h-0.5 bg-backgroundBackdrop' />
+      <div className='flex flex-row justify-end items-center gap-2 p-5'>
         <Button
-          leftIcon={AddIcon}
-          label="Add Network"
           shape="square"
           onClick={() => networkStore.isAddingNetwork.set(true)}
-        ></Button>
+        >
+          <AddIcon />
+          <Text variant="normal" fontWeight="medium" color="text100">Add Network</Text>
+        </Button>
         <Button
-          label="Confirm"
           variant="primary"
           shape="square"
           disabled={
             unsavedNetworkEditChainIds.length === 0 && !Object.values(unsavedArweaveURLs || {}).length
           }
           onClick={() => networkStore.saveUnsavedNetworkEdits()}
-        />
-      </Box>
-    </Box>
+        >
+          <Text variant="normal" fontWeight="medium" color="text100">Confirm</Text>
+        </Button>
+      </div>
+    </div>
   )
 }

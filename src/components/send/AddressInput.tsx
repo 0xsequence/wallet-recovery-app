@@ -1,4 +1,4 @@
-import { Box, Text, TextInput } from '@0xsequence/design-system'
+import { Text, TextInput } from '@0xsequence/design-system'
 import { ChangeEvent } from 'react'
 
 export type AddressInputProps = {
@@ -19,7 +19,7 @@ export function AddressInput({
   onChange
 }: AddressInputProps) {
   return (
-    <Box flexDirection="column" gap="1">
+    <div className='flex flex-col gap-1'>
       <Text variant="normal" fontWeight="medium" color="text80">
         {label}
       </Text>
@@ -39,6 +39,6 @@ export function AddressInput({
           {helperText}
         </Text>
       )}
-    </Box>
+    </div>
   )
 }

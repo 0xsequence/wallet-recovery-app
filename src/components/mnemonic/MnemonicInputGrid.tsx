@@ -1,4 +1,4 @@
-import { Box, Button, Text, TextInput, IconButton, VisibleIcon, HiddenIcon } from '@0xsequence/design-system'
+import { Button, Text, TextInput, IconButton, VisibleIcon, HiddenIcon } from '@0xsequence/design-system'
 import { ChangeEvent, useState } from 'react'
 
 interface MnemonicInputGridProps {
@@ -90,45 +90,48 @@ export const MnemonicInputGrid = ({
     const cols = 4
 
     return (
-        <Box flexDirection="column" gap="4">
-            <Box borderRadius="md" padding="2" width="fit" flexDirection="row" gap="2" alignItems="center" background="backgroundMuted">
+        <div className='flex flex-col gap-4'>
+            <div className='flex flex-row gap-2 items-center rounded-md p-2 w-fit'>
                 <Button
                     shape="square"
-                    variant={wordCount === 12 ? 'primary' : 'glass'}
-                    label="12 Words"
+                    variant={wordCount === 12 ? 'primary' : "secondary"}
                     size="xs"
                     onClick={() => handleWordCountChange(12)}
-                />
+                >
+                    <Text className='px-4' variant="small" color={wordCount === 12 ? 'text100' : 'text50'}>12 Words</Text>
+                </Button>
+
                 <Button
                     shape="square"
-                    variant={wordCount === 24 ? 'primary' : 'glass'}
-                    label="24 Words"
+                    variant={wordCount === 24 ? 'primary' : "secondary"}
                     size="xs"
                     onClick={() => handleWordCountChange(24)}
-                />
-            </Box>
+                >
+                    <Text className='px-4' variant="small" color={wordCount === 24 ? 'text100' : 'text50'}>24 Words</Text>
+                </Button>
+            </div>
 
-            <Box
-                flexDirection="column"
-                gap="2"
-            >
-                <Box flexDirection="row" justifyContent="flex-end" alignItems="center" gap="2">
+            <div className='flex flex-col gap-2'>
+                <div className='flex flex-row justify-end items-center gap-2'>
                     <Text variant="small" color="text50">
                         {isVisible ? 'Hide' : 'Show'}
                     </Text>
+
                     <IconButton
                         icon={isVisible ? HiddenIcon : VisibleIcon}
                         onClick={() => setIsVisible(!isVisible)}
                         size="xs"
-                        variant="glass"
+                        variant="text"
                     />
-                </Box>
+                </div>
                 {Array.from({ length: rows }).map((_, rowIndex) => (
-                    <Box key={rowIndex} flexDirection="row" gap="2">
+                    <div key={rowIndex} className='flex flex-row gap-2'>
                         {Array.from({ length: cols }).map((_, colIndex) => {
                             const wordIndex = rowIndex * cols + colIndex
                             return (
-                                <Box key={wordIndex} flexDirection="column" gap="1" style={{ flex: 1 }}>
+                                <div key={wordIndex} className='flex flex-col gap-1 relative' style={{ flex: 1 }}>
+                                    <p className='text-center text-primary/30 font-bold absolute top-1/2 left-4 -translate-x-1/2 -translate-y-1/2 z-10 text-sm pointer-events-none'>{wordIndex + 1}</p>
+
                                     <TextInput
                                         name={`word-${wordIndex}`}
                                         autoFocus={wordIndex === 0}
@@ -141,18 +144,18 @@ export const MnemonicInputGrid = ({
                                             const pastedText = ev.clipboardData.getData('text')
                                             handlePaste(wordIndex, pastedText)
                                         }}
-                                        placeholder={`Word ${wordIndex + 1}`}
+                                        className='bg-background-raised w-full h-12 py-3.5 px-6 rounded-lg text-primary text-center'
                                         style={{
                                             WebkitTextSecurity: !isVisible && words[wordIndex] ? 'disc' : 'none',
-                                            transition: 'all 0.2s ease'
+                                            paddingLeft: 40
                                         } as React.CSSProperties}
                                     />
-                                </Box>
+                                </div>
                             )
                         })}
-                    </Box>
+                    </div>
                 ))}
-            </Box>
-        </Box >
+            </div>
+        </div >
     )
 }

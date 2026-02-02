@@ -1,14 +1,11 @@
-import { Box, Card, CloseIcon, Image, Text, tokenImageUrl } from '@0xsequence/design-system'
+import { Card, CloseIcon, IconButton, SendIcon, Text, tokenImageUrl } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 
 import { truncateNumber } from '~/utils/bignumber'
 
-import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
 import { ExternalIcon } from '~/components/misc/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
-
-import SendIcon from '~/assets/icons/send.svg'
 
 export default function TokenBalanceItem({
   disabled,
@@ -25,35 +22,32 @@ export default function TokenBalanceItem({
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
 
   return (
-    <Card flexDirection="row" alignItems="center" gap="3">
+    <Card className='flex flex-row items-center gap-3'>
       <ExternalIcon
-        background="text80"
-        src={tokenImageUrl(tokenBalance?.chainId!, tokenBalance?.contractAddress!)}
+        src={tokenImageUrl(tokenBalance.chainId, tokenBalance.contractAddress)}
       />
 
-      <Box flexDirection="column">
-        <Box gap="1" alignItems="center">
+      <div className='flex flex-col'>
+        <div className='flex flex-row items-center gap-2'>
           <Text variant="normal" fontWeight="bold" color="text80">
             {tokenBalance.contractInfo?.symbol ?? 'Native'}
           </Text>
 
           <NetworkTag chainId={tokenBalance.chainId} />
-        </Box>
+        </div>
 
-        <Box>
-          <Text variant="normal" fontWeight="medium" color="text50">
-            {truncatedBalance}
-          </Text>
-        </Box>
-      </Box>
+        <Text variant="normal" fontWeight="medium" color="text50" className='text-xs'>
+          {truncatedBalance} {tokenBalance.contractInfo?.symbol ?? 'Native'}
+        </Text>
+      </div>
 
-      <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="3">
-        <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={disabled} onClick={onSendClick} />
+      <div className='flex flex-row items-center ml-auto gap-3'>
+        <IconButton icon={SendIcon} size="sm" disabled={disabled} onClick={onSendClick} />
 
         {onRemoveClick && (
-          <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => onRemoveClick?.()} />
+          <IconButton icon={CloseIcon} size="sm" disabled={disabled} onClick={() => onRemoveClick?.()} />
         )}
-      </Box>
+      </div>
     </Card>
   )
 }

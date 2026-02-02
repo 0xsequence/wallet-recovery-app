@@ -1,13 +1,10 @@
-import { Box, BoxProps } from '@0xsequence/design-system'
-
 import Checkmark from '~/assets/icons/checkmark.svg'
 import EmptyCheckBox from '~/assets/icons/square-checkbox.svg'
 
-export function FilledCheckBox({ checked, size = 'lg', ...rest }: { checked: boolean; size?: 'lg' | 'md' } & BoxProps) {
+export function FilledCheckBox({ checked, size = 'lg', ...rest }: { checked: boolean; size?: 'lg' | 'md' }) {
   return (
-    <Box
-      justifyContent="center"
-      alignItems="center"
+    <div
+      className='flex flex-row justify-center items-center'
       style={{
         width: size === 'lg' ? '28px' : '22px',
         height: size === 'lg' ? '28px' : '22px',
@@ -29,6 +26,6 @@ export function FilledCheckBox({ checked, size = 'lg', ...rest }: { checked: boo
           style={{ width: size === 'lg' ? '28px' : '22px', height: size === 'lg' ? '28px' : '22px' }}
         />
       )}
-    </Box>
+    </div>
   )
 }

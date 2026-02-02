@@ -1,4 +1,4 @@
-import { Box, Card, CloseIcon, ExternalLinkIcon, Text } from '@0xsequence/design-system'
+import { Card, CloseIcon, ExternalLinkIcon, Text } from '@0xsequence/design-system'
 import { SessionTypes } from '@walletconnect/types'
 
 import { useStore } from '~/stores'
@@ -13,16 +13,16 @@ export default function ConnectionList({ sessionList }: { sessionList: SessionTy
   return (
     <>
       {sessionList.map((session, index) => (
-        <Card key={index} flexDirection="row" justifyContent="space-between" alignItems="center" gap="2">
-          <Box alignItems="center" gap="4">
-            <ExternalIcon background="text80" src={session.peer.metadata.icons[0]} />
+        <Card key={index} className='flex flex-row justify-between items-center gap-2'>
+          <div className='flex flex-row items-center gap-4'>
+            <ExternalIcon src={session.peer.metadata.icons[0]} />
 
             <Text variant="normal" fontWeight="bold" color="text100">
-              {!!!session.peer.metadata.name ? session.peer.metadata.url : session.peer.metadata.name}
+              {!session.peer.metadata.name ? session.peer.metadata.url : session.peer.metadata.name}
             </Text>
-          </Box>
+          </div>
 
-          <Box gap="2">
+          <div className='flex flex-row gap-2'>
             {session.peer.metadata.url && (
               <ButtonWithIcon
                 icon={<ExternalLinkIcon color="text100" />}
@@ -33,7 +33,7 @@ export default function ConnectionList({ sessionList }: { sessionList: SessionTy
               icon={<CloseIcon color="text100" />}
               onClick={() => walletConnectSignClientStore.disconnectSession(session.topic)}
             />
-          </Box>
+          </div>
         </Card>
       ))}
     </>

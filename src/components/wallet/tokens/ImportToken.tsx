@@ -1,10 +1,10 @@
 import {
-  Box,
   Button,
   Card,
-  Divider,
-  Image,
+  CheckmarkIcon,
+  cn,
   Modal,
+  RefreshIcon,
   SearchIcon,
   Select,
   Spinner,
@@ -19,8 +19,6 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
-
-import { FilledRoundCheckBox } from '~/components/misc'
 
 export default function ImportToken({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
@@ -64,17 +62,18 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     }
   }, [selectedNetwork, tokenManualAddress])
 
-  const selectOptions = mainnetNetworks
-    .filter(network => !network.disabled)
-    .map(network => ({
-      label: (
-        <Box flexDirection="row" alignItems="center" gap="2">
-          <Image src={network.logoURI} maxWidth="8" maxHeight="8" />
-          <Text>{network.title}</Text>
-        </Box>
-      ),
-      value: network.chainId.toString()
-    }))
+  /* const selectOptions = mainnetNetworks
+     .filter(network => !network.disabled)
+     .map(network => ({
+       label: (
+         <div className='flex flex-row items-center gap-2'>
+           <img src={network.logoURI} className='w-8 h-8' />
+           <Text>{network.title}</Text>
+         </div>
+       ),
+       value: network.chainId.toString()
+     }))
+       */
 
   useEffect(() => {
     const fetchTokenList = async () => {
@@ -97,7 +96,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!tokenListFilter) return setFilteredTokenList(tokenList.slice(0, 8))
+    if (!tokenListFilter) { return setFilteredTokenList(tokenList.slice(0, 8)) }
     setFilteredTokenList(
       tokenList
         .filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
@@ -222,25 +221,27 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Box flexDirection="column" height="fit" minHeight="full">
-      <Box flexDirection="column" height="full" padding="6" gap="6">
-        <Box flexDirection="row" alignItems="center" gap="4">
+    <div className='flex flex-col h-fit min-h-full'>
+      <div className='flex flex-col h-full p-6 gap-6'>
+        <div className='flex flex-row items-center gap-4'>
           <Text variant="large" fontWeight="bold" color="text80">
             Import Tokens
           </Text>
 
-          <Select
+          <Select.Helper
             name="tokenNetwork"
-            placeholder="Select Network"
-            options={selectOptions}
+            options={mainnetNetworks.map(network => ({
+              label: network.title,
+              value: network.chainId.toString()
+            }))}
             value={selectedNetwork?.chainId.toString()}
             onValueChange={value =>
               setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
             }
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="3">
+        <div className='flex flex-col gap-3'>
           <TextInput
             leftIcon={SearchIcon}
             value={tokenListFilter}
@@ -249,36 +250,37 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           />
 
           <Button
-            label={
-              selectedNetwork
-                ? `Import custom token list for ${' ' + selectedNetwork?.title}`
-                : 'Select Network to import custom token list'
-            }
             variant="text"
             onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
-          />
-        </Box>
+          >
+            {selectedNetwork
+              ? `Import custom token list for ${' ' + selectedNetwork?.title}`
+              : 'Select Network to import custom token list'}
+          </Button>
+        </div>
 
-        <Box flexDirection="column">
+        <div className='flex flex-col'>
           {filteredTokenList?.map((token, i) => {
             return (
-              <Box
+              <div
                 key={i}
-                flexDirection="row"
-                alignItems="center"
-                background={{ base: 'backgroundPrimary', hover: 'backgroundSecondary' }}
+                className={cn(
+                  'flex flex-row items-center justify-between bg-background-primary hover:bg-background-secondary rounded-sm p-3',
+                  (selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0 && 'bg-background-secondary'
+                )}
                 onClick={() => {
                   toggleSelectToken(token.address)
                 }}
-                borderRadius="sm"
-                padding="3"
-                gap="4"
               >
-                <Image src={token.logoURI} maxHeight="10" maxWidth="10" borderRadius="circle" />
-                <Text variant="normal" fontWeight="semibold" color="text80">
-                  {token.symbol}
-                </Text>
-                <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
+                <div className='flex flex-row items-center'>
+                  <img src={token.logoURI} className='w-6 h-6 rounded-full mr-4' />
+
+                  <Text variant="normal" fontWeight="medium" color="text80">
+                    {token.symbol}
+                  </Text>
+                </div>
+
+                <div className='flex flex-row items-center justify-end gap-2'>
                   {selectedTokens?.filter(t => t.address.includes(token.address)).length > 0 && (
                     <>
                       <Text variant="normal" fontWeight="bold" color="text80">
@@ -289,18 +291,19 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                           {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance}
                         </Text>
                       ) : (
-                        <Spinner size="md" marginRight="1" />
+                        <Spinner size="md" className='mr-1' />
                       )}
                     </>
                   )}
-                  <FilledRoundCheckBox
-                    checked={(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0}
+                  <CheckmarkIcon
+                    size="sm"
+                    className={`${(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0 ? 'text-primary' : 'text-primary/30'}`}
                   />
-                </Box>
-              </Box>
+                </div>
+              </div>
             )
           })}
-        </Box>
+        </div>
 
         <input
           type="file"
@@ -312,19 +315,21 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
         {tokenListDate && (
           <Button
-            label={`Refresh list - last updated: ${tokenListDate?.toLocaleString()}`}
             shape="square"
             size="xs"
             color="text80"
             onClick={() => setConfirmRefreshList(true)}
-          />
+          >
+            <RefreshIcon size="xs" className='mr-1' />
+            Refresh list - last updated: {tokenListDate?.toLocaleString()}
+          </Button>
         )}
-      </Box>
+      </div>
 
-      <Box marginTop="auto">
-        <Box paddingX="6">
+      <div className='mt-auto'>
+        <div className='p-6'>
           {isAddingTokenManually && (
-            <Box flexDirection="column" marginBottom="6" gap="0.5">
+            <div className='flex flex-col mb-6 gap-0.5'>
               <Text variant="normal" fontWeight="medium" color="text80">
                 Token Address
               </Text>
@@ -336,16 +341,16 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setTokenManualAddress(ev.target.value)
                 }}
               />
-            </Box>
+            </div>
           )}
 
           {isFetchingTokenInfo && tokenManualAddress ? (
-            <Box alignItems="center" marginBottom="6" justifyContent="center">
+            <div className='flex items-center mb-6 justify-center'>
               <Spinner size="lg" />
-            </Box>
+            </div>
           ) : (
             tokenInfo && (
-              <Card flexDirection="column" marginBottom="6" gap="2">
+              <Card className='flex flex-col mb-6 gap-2'>
                 <Text variant="medium" fontWeight="bold" color="text80">
                   {tokenInfo.symbol ?? ''}
                 </Text>
@@ -358,15 +363,14 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               </Card>
             )
           )}
-        </Box>
+        </div>
 
-        <Divider marginY="0" />
+        <div className='my-0' />
 
-        <Box>
-          <Box flexDirection="row" padding="6" gap="2">
+        <div >
+          <div className='flex flex-row p-6 gap-2 pt-4'>
             {isAddingTokenManually ? (
               <Button
-                label="Hide"
                 shape="square"
                 disabled={!selectedNetwork}
                 onClick={() => {
@@ -374,53 +378,62 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setTokenManualAddress('')
                   setTokenInfo(undefined)
                 }}
-              />
+              >
+                Hide
+              </Button>
             ) : (
               <Button
-                label="Manual Import"
                 shape="square"
                 disabled={!selectedNetwork}
                 onClick={() => {
                   setIsAddingTokenManually(true)
                 }}
-              />
+              >
+                Manual Import
+              </Button>
             )}
 
-            <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
+            <Button size="md" shape="square" className='ml-auto' onClick={onClose}>
+              Cancel
+            </Button>
 
             <Button
-              label="Add"
               variant="primary"
               shape="square"
               disabled={(!tokenInfo && !selectedTokens.length) || isAddingToken}
               onClick={() => {
                 handleAdd()
               }}
-            />
-          </Box>
-        </Box>
-      </Box>
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {confirmRefreshList && (
         <Modal size="sm">
-          <Box flexDirection="column" padding="6" gap="6">
-            <Text variant="normal" fontWeight="medium" color="text80">
+          <div className='flex flex-col p-6 gap-6'>
+            <Text variant="normal" fontWeight="medium" color="text80" className='pr-4'>
               {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
             </Text>
 
-            <Box alignSelf="flex-end" flexDirection="row" gap="3">
-              <Button label="Cancel" size="md" shape="square" onClick={() => setConfirmRefreshList(false)} />
+            <div className='flex flex-row justify-end gap-3'>
+              <Button size="sm" shape="square" onClick={() => setConfirmRefreshList(false)}>
+                Cancel
+              </Button>
               <Button
-                label="Confirm"
-                variant="danger"
-                size="md"
+                variant="destructive"
+                size="sm"
                 shape="square"
                 onClick={handleRefreshTokenList}
-              />
-            </Box>
-          </Box>
+              >
+                Confirm
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

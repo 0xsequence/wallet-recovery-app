@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import { Button, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { ChangeEvent, useState } from 'react'
 
@@ -26,16 +26,16 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
   }
 
   return (
-    <Box flexDirection="column">
-      <Box flexDirection="column" justifyContent="space-between" padding="6" gap="6">
+    <div className='flex flex-col'>
+      <div className='flex flex-col justify-between gap-6 p-6'>
         <Text variant="large" fontWeight="bold" color="text80">
           Connect a Dapp
         </Text>
 
-        <Box alignSelf="center" style={{ height: '280px', width: '280px' }}>
+        <div className='self-center' style={{ height: '280px', width: '280px' }}>
           <Scanner
             onScan={result => {
-              if (!!result[0].rawValue) {
+              if (result[0].rawValue) {
                 setSignClientUri(result[0].rawValue)
               }
             }}
@@ -46,8 +46,8 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
               }
             }}
           />
-        </Box>
-        <Box flexDirection="column" gap="1">
+        </div>
+        <div className='flex flex-col gap-1'>
           <Text variant="normal" fontWeight="medium" color="text80">
             Paste connection string
           </Text>
@@ -57,33 +57,35 @@ export default function WalletScan({ onQrUri }: { onQrUri: (isPaired: boolean) =
             value={signClientUri}
             onChange={(ev: ChangeEvent<HTMLInputElement>) => setSignClientUri(ev.target.value)}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Divider marginY="0" />
+      <div className='h-0 my-0' />
 
-      <Box justifyContent="flex-end" padding="6" gap="2">
+      <div className='flex flex-row justify-end gap-2 p-6'>
         <Button
           size="md"
           shape="square"
-          label="Cancel"
           onClick={() => {
             onQrUri(false)
           }}
-        />
+        >
+          Cancel
+        </Button>
         <Button
           variant="primary"
           size="md"
           shape="square"
-          label="Connect Dapp"
           disabled={!signClientUri}
           onClick={() => {
             if (signClientUri) {
               handleSignClientUri()
             }
           }}
-        />
-      </Box>
-    </Box>
+        >
+          Connect Dapp
+        </Button>
+      </div>
+    </div>
   )
 }

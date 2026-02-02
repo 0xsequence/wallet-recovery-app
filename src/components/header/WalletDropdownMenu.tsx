@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Card,
   CheckmarkIcon,
@@ -8,7 +7,6 @@ import {
   Modal,
   SignoutIcon,
   Text,
-  truncateAddress
 } from '@0xsequence/design-system'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { useEffect, useState } from 'react'
@@ -18,6 +16,7 @@ import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
 import ConfirmSignOut from '~/components/wallet/ConfirmSignOut'
+import { truncateNumber } from '~/utils/bignumber'
 
 export default function SettingsDropdownMenu() {
   const authStore = useStore(AuthStore)
@@ -47,38 +46,48 @@ export default function SettingsDropdownMenu() {
     <PopoverPrimitive.Root open={isOpen} onOpenChange={toggleOpen}>
       <PopoverPrimitive.Trigger asChild>
         <Button
-          label={
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <GradientAvatar address={walletAddress} size="sm" />
-              <Text variant="normal" fontWeight="bold" color="text100">
-                {truncateAddress(walletAddress!, 2, 4)}
-              </Text>
-            </Box>
-          }
           variant="text"
-        />
+        >
+          <div className='flex flex-row items-center gap-2'>
+            <GradientAvatar address={walletAddress!} size="sm" />
+            <Text variant="normal" fontWeight="bold" color="text100">
+              {truncateNumber(Number(walletAddress!), 4)}
+            </Text>
+          </div>
+        </Button>
       </PopoverPrimitive.Trigger>
 
       {isOpen && (
         <PopoverPrimitive.Portal forceMount>
           <PopoverPrimitive.Content asChild side="bottom" sideOffset={8} align="center">
-            <Card flexDirection="column" backdropFilter="blur" gap="2">
+            <Card className='flex flex-col backdrop-blur-sm gap-2'>
               <Button
-                leftIcon={isCopied ? CheckmarkIcon : CopyIcon}
-                label="Copy wallet address"
                 shape="square"
                 size="sm"
-                width="full"
                 onClick={handleCopy}
-              />
+                className='w-full'
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  {isCopied ? <CheckmarkIcon /> : <CopyIcon />}
+                  <Text variant="normal" fontWeight="bold" color="text100">
+                    Copy wallet address
+                  </Text>
+                </div>
+              </Button>
+
               <Button
-                leftIcon={SignoutIcon}
-                label="Sign out"
                 shape="square"
                 size="sm"
-                width="full"
+                className='w-full'
                 onClick={() => setIsConfirmSignOutModalOpen(true)}
-              />
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <SignoutIcon />
+                  <Text variant="normal" fontWeight="bold" color="text100">
+                    Sign out
+                  </Text>
+                </div>
+              </Button>
             </Card>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>

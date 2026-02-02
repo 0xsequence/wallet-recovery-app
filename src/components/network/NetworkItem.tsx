@@ -1,7 +1,5 @@
 import {
-  Box,
   Button,
-  Card,
   ChevronDownIcon,
   CollapsiblePrimitive,
   Text,
@@ -56,32 +54,31 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
   }, [rpcUrl, blockExplorerUrl, disabled])
 
   return (
-    <Card flexDirection="column" gap="4">
-      <Box flexDirection="row" gap="3">
+    <div className='flex flex-col gap-4'>
+      <div className='flex flex-row gap-3'>
         <Button
           variant="text"
-          label={
-            <Box flexDirection="row" gap="2" alignItems="center">
-              <FilledCheckBox checked={!disabled} />
-
-              <Text
-                variant="normal"
-                fontWeight="medium"
-                color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
-              >
-                {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
-              </Text>
-
-              {(hasPreviousEdit || isUserAddition) && (
-                <Text variant="normal" fontWeight="medium" color="text50">
-                  {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
-                </Text>
-              )}
-            </Box>
-          }
           onClick={() => setDisabled(!disabled)}
-        ></Button>
-      </Box>
+        >
+          <div className='flex flex-row gap-2 items-center'>
+            <FilledCheckBox checked={!disabled} />
+
+            <Text
+              variant="normal"
+              fontWeight="medium"
+              color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
+            >
+              {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
+            </Text>
+
+            {(hasPreviousEdit || isUserAddition) && (
+              <Text variant="normal" fontWeight="medium" color="text50">
+                {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
+              </Text>
+            )}
+          </div>
+        </Button>
+      </div>
 
       <CollapsiblePrimitive.Root>
         <CollapsiblePrimitive.Trigger
@@ -92,18 +89,18 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
             width: '100%'
           }}
         >
-          <Box flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Text variant="normal" fontWeight="bold" color={disabled ? 'borderNormal' : 'text50'}>
+          <div className='flex flex-row justify-between items-center'>
+            <Text variant="normal" fontWeight="bold" color={disabled ? 'text50' : 'text100'}>
               Network Settings
             </Text>
 
             <ChevronDownIcon color={disabled ? 'text50' : 'text100'} />
-          </Box>
+          </div>
         </CollapsiblePrimitive.Trigger>
 
         <CollapsiblePrimitive.Content>
-          <Box flexDirection="column" paddingTop="4" gap="3">
-            <Box flexDirection="column" gap="1">
+          <div className='flex flex-col gap-3 p-4'>
+            <div className='flex flex-col gap-1'>
               <Text variant="normal" fontWeight="medium" color="text100">
                 RPC URL
               </Text>
@@ -116,8 +113,8 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
                   setRpcUrl(ev.target.value)
                 }}
               />
-            </Box>
-            <Box flexDirection="column" gap="1">
+            </div>
+            <div className='flex flex-col gap-1'>
               <Text variant="normal" fontWeight="medium" color="text100">
                 Block Explorer URL
               </Text>
@@ -130,10 +127,10 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
                   setBlockExplorerUrl(ev.target.value)
                 }}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CollapsiblePrimitive.Content>
       </CollapsiblePrimitive.Root>
-    </Card>
+    </div>
   )
 }
