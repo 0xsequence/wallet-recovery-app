@@ -15,7 +15,7 @@ import { InsufficientBalanceMessage } from "./InsufficientBalanceMessage"
 export function QueuePayloadItem({ payload, executedHidden = false }: { payload: Sequence.QueuedRecoveryPayload; executedHidden?: boolean }) {
 	const walletStore = useStore(WalletStore)
 	const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
-	
+
 	const startDate = new Date(Number(payload.startTimestamp) * 1000)
 	const endDate = new Date(Number(payload.endTimestamp) * 1000)
 	const isLocked = endDate > new Date()
@@ -58,7 +58,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	}
 
 	return (
-		<div className='flex flex-col gap-2 bg-background-muted rounded-md p-2'>
+		<div className='flex flex-col gap-2 bg-background-muted border border-border-normal rounded-xl p-2'>
 			<Card
 				className='flex flex-row gap-3 p-4 bg-background-secondary rounded-md border-none'
 				style={{ opacity: isExecuted ? 0.5 : 1, pointerEvents: isExecuted ? 'none' : 'auto' }}
