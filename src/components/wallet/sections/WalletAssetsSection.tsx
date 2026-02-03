@@ -3,6 +3,7 @@ import { TokenBalance } from '@0xsequence/indexer'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 import CollectibleList from '~/components/wallet/collectibles/CollectibleList'
 import TokenList from '~/components/wallet/tokens/TokenList'
+import { AssetDiscoveryInfoBox } from '~/components/wallet/AssetDiscoveryInfoBox'
 
 interface WalletAssetsSectionProps {
   onTokenSendClick: (tokenBalance: TokenBalance) => void
@@ -18,6 +19,8 @@ export function WalletAssetsSection({ onTokenSendClick, onCollectibleSendClick }
       <Text variant="small" fontWeight="bold" color="text50">
         My Sequence wallet
       </Text>
+
+      <AssetDiscoveryInfoBox />
 
       <TokenList onSendClick={onTokenSendClick} />
 
