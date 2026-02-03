@@ -9,8 +9,6 @@ import WalletV2Recovery from './WalletV2Recovery'
 import WalletV3Recovery from './WalletV3Recovery'
 import { WalletRecoveryProvider } from '~/components/provider/WalletRecoveryProvider'
 import { useCreateWalletRecoveryContext } from '~/hooks/wallet-recovery-context'
-import { AuthStore } from '~/stores/AuthStore'
-import { useObservable, useStore } from '~/stores'
 import { NAVIGATION_KEY } from '~/constants/storage'
 
 const RouterContent = () => {
@@ -58,11 +56,7 @@ const RouterContent = () => {
 
 export const AppRouter = () => {
   const value = useCreateWalletRecoveryContext()
-  const authStore = useStore(AuthStore)
-  const isLoadingAccount = useObservable(authStore.isLoadingAccount)
-  const accountAddress = useObservable(authStore.accountAddress)
 
-  console.log(isLoadingAccount, accountAddress)
   return (
     <WalletRecoveryProvider value={value}>
       <Router basename={'/'}>

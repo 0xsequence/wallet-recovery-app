@@ -10,7 +10,7 @@ type RecoveryQueueProps = {
        refetch: () => void
 }
 
-export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProps) {
+function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProps) {
 	const [executedHidden, setExecutedHidden] = useState(true)
 	const [selectedChain, setSelectedChain] = useState<string>("all")
 

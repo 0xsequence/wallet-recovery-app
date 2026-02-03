@@ -3,7 +3,7 @@ import { useObservable } from 'micro-observables'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-export type SendFormState = {
+type SendFormState = {
   amount: string | undefined
   toAddress: string | undefined
   sendToExternalWallet: boolean
