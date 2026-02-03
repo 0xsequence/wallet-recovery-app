@@ -1,6 +1,5 @@
 import { Button, Text, CheckmarkIcon, Spinner } from "@0xsequence/design-system"
 import { Network } from "@0xsequence/wallet-primitives"
-import { useExternalWallet } from "~/hooks/use-external-wallet"
 
 interface PayloadActionButtonProps {
   isPending: boolean
