@@ -16,8 +16,8 @@ export default function NetworkTag({
       {renderImage && <NetworkImage chainId={chainId} style={{ width: '16px', height: '16px' }} />}
 
       <Text
-        variant="xsmall"
-        color="text80"
+        variant="xsmall-bold"
+        className='text-primary/80'
         style={{
           whiteSpace: 'nowrap',
           maxWidth: '100px',

@@ -119,7 +119,11 @@ export default function ExternalWallet() {
         )}
       </Card>
       {isSelectProviderModalOpen && (
-        <Modal size="sm" onClose={() => setIsSelectProviderModalOpen(false)}>
+        <Modal size="sm" contentProps={{
+          style: {
+            width: 400
+          }
+        }} onClose={() => setIsSelectProviderModalOpen(false)}>
           <SelectProvider
             onSelectProvider={async provider => {
               if (provider) {

@@ -98,7 +98,7 @@ export default function SelectProvider({
           </Text>
           <div className='flex flex-col gap-3'>
             <Button
-              className='flex flex-row justify-center gap-2 cursor-pointer'
+              className='flex flex-row gap-2 cursor-pointer'
               shape="square"
               onClick={() => {
                 setIsConfirmingWalletConnect(true)
@@ -117,7 +117,7 @@ export default function SelectProvider({
                 key={provider.info.uuid}
                 variant="secondary"
                 shape="square"
-                className='flex flex-row justify-center gap-2 cursor-pointer'
+                className='flex flex-row gap-2 cursor-pointer'
                 onClick={() => onSelectProvider(provider)}
               >
                 <div className='flex flex-row items-center gap-2'>

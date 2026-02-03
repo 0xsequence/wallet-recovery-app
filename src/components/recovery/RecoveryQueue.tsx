@@ -25,13 +25,12 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
 
 	const uniqueChains = Object.keys(payloadsByChain).map(Number)
 
-	// Create select options for chain filtering
 	const chainOptions = useMemo(() => {
 		const options = [
 			{
 				value: "all", label: (
 					<div className='flex flex-row items-center gap-2'>
-						<Text variant="normal" className='text-primary/80'>All Chains</Text>
+						<Text variant="xsmall" className='text-primary/80'>All Chains</Text>
 					</div>
 				)
 			}
@@ -42,7 +41,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
 				label: (
 					<div className='flex flex-row items-center gap-2'>
 						<NetworkImage chainId={chainId} size="sm" />
-						<Text variant="normal" className='text-primary/80'>{getNetworkTitle(chainId)}</Text>
+						<Text variant="xsmall" className='text-primary/80'>{getNetworkTitle(chainId)}</Text>
 					</div>
 				)
 			})
@@ -84,7 +83,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
 							value={selectedChain}
 							options={chainOptions}
 							onValueChange={setSelectedChain}
-							className="h-7! rounded-lg!"
+							className="h-7! rounded-lg! bg-background-secondary [&>span>div>span]:text-primary [&>svg]:text-primary"
 						/>
 					)}
 					<Button
@@ -107,7 +106,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
 			<div
 				className='max-h-[700px] overflow-y-auto scrollbar-thin scrollbar-color-gray-black rounded-md'
 			>
-				<div className='flex flex-col gap-2 bg-background-secondary rounded-md p-2'>
+				<div className='flex flex-col gap-2 bg-background-secondary border border-border-card rounded-xl p-2'>
 					{isLoading ? (
 						<div className='py-10'>
 							<Text variant="normal" fontWeight="medium" color="text50" className='flex flex-row gap-2 items-center justify-center'>
