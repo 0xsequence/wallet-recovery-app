@@ -17,7 +17,6 @@ import { SendCollectibleModal } from '~/components/wallet/modals/SendCollectible
 import { SignTransactionModal } from '~/components/wallet/modals/SignTransactionModal'
 import { SignMessageModal } from '~/components/wallet/modals/SignMessageModal'
 import { useExternalProviderSync } from '~/hooks/use-external-provider-sync'
-import { PasswordUnlock } from '~/components/auth/PasswordUnlock'
 
 export const WALLET_WIDTH = 800
 
@@ -85,33 +84,6 @@ function WalletV2Recovery() {
         }
     }
 
-    // Show password unlock if account is loading but not yet unlocked
-    if (isLoadingAccount && !hasAccount) {
-        return (
-            <Box>
-                <RecoveryHeader />
-                <Box
-                    flexDirection="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    padding="5"
-                    gap="10"
-                    style={{ minHeight: '60vh' }}
-                >
-                    <Box
-                        flexDirection="column"
-                        gap="10"
-                        width="full"
-                        style={{ maxWidth: '500px' }}
-                    >
-                        <PasswordUnlock redirectOnSuccess={false} />
-                    </Box>
-                </Box>
-            </Box>
-        )
-    }
-
-    // If no account and not loading, redirect would happen via route guard
     if (!hasAccount && !isLoadingAccount) {
         return null
     }

@@ -6,11 +6,10 @@ import {
     Modal,
     Spinner,
     Text,
-    TextInput,
     useMediaQuery
 } from '@0xsequence/design-system'
 import { ethers } from 'ethers'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
@@ -35,26 +34,13 @@ import { WALLET_WIDTH } from './WalletV3Recovery'
 import { useFindWalletViaSigner } from '~/hooks/use-find-wallet-via-signer'
 import { useValidateSigner } from '~/hooks/use-validate-signer'
 
-const MIN_PASSWORD_LENGTH = 8
-
 const validateMnemonic = (mnemonic: string): boolean => {
     const wordCount = mnemonic.trim().split(/\s+/g).length
     return wordCount === 12 || wordCount === 24
 }
 
-const validatePassword = (password: string): boolean => {
-    // Password is optional - if provided, must meet minimum length
-    return password.length === 0 || password.length >= MIN_PASSWORD_LENGTH
-}
-
-const validatePasswordMatch = (password: string, confirmPassword: string): boolean => {
-    return password === confirmPassword
-}
-
 interface FormState {
     mnemonic: string
-    password: string
-    confirmPassword: string
     selectedWallet: string
 }
 
@@ -73,8 +59,6 @@ function Recovery() {
 
     const [formState, setFormState] = useState<FormState>({
         mnemonic: '',
-        password: '',
-        confirmPassword: '',
         selectedWallet: ''
     })
 
@@ -94,27 +78,20 @@ function Recovery() {
 
     const validation = useMemo(() => {
         const isMnemonicValid = validateMnemonic(formState.mnemonic)
-        const isPasswordValid = validatePassword(formState.password)
-        const doPasswordsMatch = validatePasswordMatch(formState.password, formState.confirmPassword)
         const isWalletSelected = ethers.isAddress(formState.selectedWallet)
-        const hasPassword = formState.password.length > 0
 
         return {
             isMnemonicValid,
-            isPasswordValid,
-            doPasswordsMatch,
             isWalletSelected,
-            isFormValid: isMnemonicValid && isPasswordValid && doPasswordsMatch && isWalletSelected,
-            showMnemonicError: formState.mnemonic && !isMnemonicValid,
-            showPasswordError: hasPassword && !isPasswordValid,
-            showPasswordMismatchError: hasPassword && formState.confirmPassword && !doPasswordsMatch
+            isFormValid: isMnemonicValid && isWalletSelected,
+            showMnemonicError: formState.mnemonic && !isMnemonicValid
         }
     }, [formState])
 
     const mnemonicWordCount = useMemo(() => {
         const wordCount = formState.mnemonic.trim().split(/\s+/g).filter(w => w).length
-        if (wordCount === 12) return 12
-        if (wordCount === 24) return 24
+        if (wordCount === 12) { return 12 }
+        if (wordCount === 24) { return 24 }
         return 12 // default
     }, [formState.mnemonic])
 
@@ -228,7 +205,7 @@ function Recovery() {
                 await authStore.signInWithRecoveryMnemonic(
                     formState.selectedWallet,
                     formState.mnemonic.trim(),
-                    formState.password
+                    ''
                 )
                 navigate('/wallet-v2-recovery')
 
@@ -247,7 +224,7 @@ function Recovery() {
                 await authStore.signInWithRecoveryMnemonic(
                     walletAddress,
                     formState.mnemonic.trim(),
-                    formState.password
+                    ''
                 )
                 navigate('/wallet-v3-recovery')
             }
@@ -260,7 +237,6 @@ function Recovery() {
     }, [
         validation.isFormValid,
         formState.mnemonic,
-        formState.password,
         formState.selectedWallet,
         findWallets,
         validateSigner,
@@ -314,53 +290,6 @@ function Recovery() {
                     {validation.showMnemonicError && (
                         <Text variant="small" color="negative" marginLeft="1" marginTop="2">
                             Mnemonic must be 12 or 24 words
-                        </Text>
-                    )}
-                </Box>
-
-                <Box flexDirection="column">
-                    <Text variant="normal" fontWeight="medium" color="text80">
-                        Create password (optional)
-                    </Text>
-                    <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
-                        Optionally encrypt your mnemonic with a {MIN_PASSWORD_LENGTH}+ character password.
-                    </Text>
-
-                    <TextInput
-                        type="password"
-                        name="password"
-                        value={formState.password}
-                        onChange={(ev: ChangeEvent<HTMLInputElement>) =>
-                            updateFormField('password', ev.target.value)
-                        }
-                        disabled={isAnyLoading}
-                    />
-
-                    {validation.showPasswordError && (
-                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-                            Password must be at least {MIN_PASSWORD_LENGTH} characters
-                        </Text>
-                    )}
-                </Box>
-
-                <Box flexDirection="column">
-                    <Text variant="normal" fontWeight="medium" color="text80" marginBottom="1">
-                        Confirm password
-                    </Text>
-
-                    <TextInput
-                        type="password"
-                        name="confirmPassword"
-                        value={formState.confirmPassword}
-                        onChange={(ev: ChangeEvent<HTMLInputElement>) =>
-                            updateFormField('confirmPassword', ev.target.value)
-                        }
-                        disabled={isAnyLoading}
-                    />
-
-                    {validation.showPasswordMismatchError && (
-                        <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-                            Passwords must match
                         </Text>
                     )}
                 </Box>

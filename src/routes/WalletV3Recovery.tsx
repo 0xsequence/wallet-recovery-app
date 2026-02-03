@@ -26,7 +26,6 @@ import { SendCollectibleModal } from '~/components/wallet/modals/SendCollectible
 import { WalletConnectionsSection } from '~/components/wallet/sections/WalletConnectionsSection'
 import { WalletAssetsSection } from '~/components/wallet/sections/WalletAssetsSection'
 import { WalletRecoverySection } from '~/components/wallet/sections/WalletRecoverySection'
-import { PasswordUnlock } from '~/components/auth/PasswordUnlock'
 
 export const WALLET_WIDTH = 800
 
@@ -94,33 +93,6 @@ function WalletV3Recovery() {
     } else {
       handleSignMsg(details)
     }
-  }
-
-  // Show password unlock if account is loading but not yet unlocked
-  // Only show after initial mount to avoid flashing
-  if (isLoadingAccount && !hasAccount) {
-    return (
-      <Box>
-        <RecoveryHeader />
-        <Box
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          padding="5"
-          gap="10"
-          style={{ minHeight: '60vh' }}
-        >
-          <Box
-            flexDirection="column"
-            gap="10"
-            width="full"
-            style={{ maxWidth: '500px' }}
-          >
-            <PasswordUnlock redirectOnSuccess={false} />
-          </Box>
-        </Box>
-      </Box>
-    )
   }
 
   // If no account and not loading, redirect would happen via route guard
