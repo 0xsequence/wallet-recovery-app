@@ -14,7 +14,6 @@ import { clearAllState } from './utils/clear-state'
 
 const initApp = async () => {
   const navigationState = sessionStorage.getItem(NAVIGATION_KEY)
-
   if (!navigationState) {
     try {
       await clearAllState()

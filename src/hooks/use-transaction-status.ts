@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTxHashesStore, TxHashTransaction } from './use-tx-hash-store'
 
-export type TransactionStatus = {
+type TransactionStatus = {
   transaction?: TxHashTransaction
   isSigned: boolean
   isRejected: boolean

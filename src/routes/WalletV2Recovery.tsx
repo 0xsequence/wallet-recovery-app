@@ -17,7 +17,7 @@ import { SignTransactionModal } from '~/components/wallet/modals/SignTransaction
 import { SignMessageModal } from '~/components/wallet/modals/SignMessageModal'
 import { useExternalProviderSync } from '~/hooks/use-external-provider-sync'
 
-export const WALLET_WIDTH = 800
+const WALLET_WIDTH = 800
 
 function WalletV2Recovery() {
     const authStore = useStore(AuthStore)
