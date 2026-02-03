@@ -18,7 +18,7 @@ export default function WalletList({
           <div key={wallet}>
             <div className='flex flex-row items-center gap-2' style={{ height: '52px' }}>
               <div className='bg-background-raised rounded-md flex items-center h-full p-4 w-full gap-2'>
-                <CheckmarkIcon className={"w-4 h-4 text-lime-500"} />
+                <CheckmarkIcon className={"w-4 h-4 text-positive"} />
 
                 <Text
                   variant="normal"

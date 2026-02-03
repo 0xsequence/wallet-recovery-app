@@ -57,38 +57,38 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
               <div className='flex flex-col gap-1.5 mt-2'>
                      <div className='flex flex-row gap-1 items-center'>
                             <img src={SendIcon} style={{ width: '16px', height: '16px' }} />
-                            <Text variant="small" fontWeight="bold" color="text80">
+                            <Text variant="small" fontWeight="medium" className='text-primary/80'>
                                    Transfers ({parsedCalls.length})
                             </Text>
                      </div>
                      {parsedCalls.map((parsedCall, idx) => (
                             <Card
                                    key={idx}
-                                   className='flex flex-col gap-1 border border-borderNormal rounded-sm p-2 bg-backgroundMuted'
+                                   className='flex flex-col gap-1 border border-border-normal rounded-sm p-2 bg-background-muted'
                             >
                                    <div className='flex flex-row gap-2 items-center'>
                                           {getTransferIcon(parsedCall.type) && (
-                                                 <div className='p-1.5 bg-backgroundSecondary rounded-sm flex items-center justify-center'>
+                                                 <div className='p-1.5 bg-background-secondary rounded-sm flex items-center justify-center'>
                                                         <img src={getTransferIcon(parsedCall.type)!} style={{ width: '20px', height: '20px' }} />
                                                  </div>
                                           )}
                                           <div className='flex flex-col gap-0.25 flex-1'>
-                                                 <Text variant="small" fontWeight="bold" color="text100">
+                                                 <Text variant="small" fontWeight="medium" className='text-primary/80'>
                                                         {getTransferTypeLabel(parsedCall)}
                                                  </Text>
-                                                 <Text variant="xsmall" color="text50">
+                                                 <Text variant="xsmall" className='text-primary/50'>
                                                         {parsedCall.description}
                                                  </Text>
                                           </div>
                                    </div>
 
-                                   <div className='h-0.5 bg-backgroundBackdrop' />
+                                   <div className='h-0.5 bg-background-active' />
 
                                    <div className='flex flex-col gap-1'>
                                           {parsedCall.recipient && (
                                                  <div className='flex flex-row gap-2 items-center'>
                                                         <div className='min-w-20'>
-                                                               <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                               <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                       Recipient:
                                                                </Text>
                                                         </div>
@@ -102,7 +102,7 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                                                              borderRadius: '4px',
                                                                              cursor: 'pointer'
                                                                       }}
-                                                                      color="text80"
+                                                                      className='text-primary/80'
                                                                >
                                                                       {truncateAddress(parsedCall.recipient, 6, 4)}
                                                                </Text>
@@ -120,11 +120,11 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                                  return (
                                                         <div className='flex flex-row gap-2 items-center'>
                                                                <div className='min-w-20'>
-                                                                      <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                                      <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                              Amount:
                                                                       </Text>
                                                                </div>
-                                                               <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                               <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                       {formattedAmount} {symbol}
                                                                </Text>
                                                         </div>
@@ -134,11 +134,11 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                           {parsedCall.type === 'erc721' && parsedCall.tokenId !== undefined && (
                                                  <div className='flex flex-row gap-2 items-center'>
                                                         <div className='min-w-20'>
-                                                               <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                               <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                       Token ID:
                                                                </Text>
                                                         </div>
-                                                        <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                        <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                #{parsedCall.tokenId.toString()}
                                                         </Text>
                                                  </div>
@@ -148,22 +148,22 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                                  <div className='flex flex-col gap-0.5'>
                                                         <div className='flex flex-row gap-2 items-center'>
                                                                <div className='min-w-20'>
-                                                                      <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                                      <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                              Token ID:
                                                                       </Text>
                                                                </div>
-                                                               <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                               <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                       #{parsedCall.tokenId.toString()}
                                                                </Text>
                                                         </div>
                                                         {parsedCall.amount !== undefined && (
                                                                <div className='flex flex-row gap-2 items-center'>
                                                                       <div className='min-w-20'>
-                                                                             <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                                             <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                     Quantity:
                                                                              </Text>
                                                                       </div>
-                                                                      <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                                      <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                              {parsedCall.amount.toString()}
                                                                       </Text>
                                                                </div>

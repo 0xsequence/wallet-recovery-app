@@ -1,5 +1,6 @@
-import { Button, Text, CheckmarkIcon } from "@0xsequence/design-system"
+import { Button, Text, CheckmarkIcon, Spinner } from "@0xsequence/design-system"
 import { Network } from "@0xsequence/wallet-primitives"
+import { useExternalWallet } from "~/hooks/use-external-wallet"
 
 interface PayloadActionButtonProps {
   isPending: boolean
@@ -29,20 +30,22 @@ export function PayloadActionButton({
   onExecute
 }: PayloadActionButtonProps) {
   const explorerUrl = hash ? getTransactionExplorerUrl(hash, chainId) : null
+  const externalProviderName = selectedExternalProvider?.info.name
 
   // Show success state
   if (status === 'final' && opStatus === 'confirmed' && explorerUrl) {
     return (
       <div className='flex flex-col gap-1 items-center'>
         <Text variant="small" fontWeight="bold" color="text80" className='flex flex-row gap-1 items-center'>
-          <CheckmarkIcon width="14" height="14" color="positive" /> Recovery completed
+          <CheckmarkIcon className='w-4 h-4 text-positive' /> Recovery completed
         </Text>
         {explorerUrl && (
-          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="w-full">
             <Button
               variant="primary"
               size="sm"
               shape="square"
+              className="w-full justify-center"
             >
               <Text variant="small" fontWeight="bold" color="text100">
                 View on explorer
@@ -63,8 +66,10 @@ export function PayloadActionButton({
         shape="square"
         disabled={true}
       >
+        <Spinner size="xs" className="text-white mr-1" />
+
         <Text variant="small" fontWeight="bold" color="text100">
-          Executing...
+          Continue with {externalProviderName}
         </Text>
       </Button>
     )

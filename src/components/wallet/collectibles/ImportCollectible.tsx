@@ -407,6 +407,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               onValueChange={value =>
                 setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
               }
+              className='h-7! rounded-lg!'
             />
           </div>
 
@@ -546,7 +547,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
           {manualCollectibleInfo && manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
             <div className='flex flex-row gap-6 items-center bg-background-secondary p-2 px-6'>
-              <CheckmarkIcon className='w-4 h-4 text-primary' />
+              <CheckmarkIcon className='w-4 h-4 text-positive' />
 
               <img src={manualCollectibleInfo.image} className='w-12 h-12' />
 

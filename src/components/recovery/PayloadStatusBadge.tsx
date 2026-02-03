@@ -42,7 +42,9 @@ export function PayloadStatusBadge({
         <NetworkTag chainId={chainId} renderImage={true} />
         {isExecuted && (
           <div className='flex flex-row gap-1 items-center'>
-            <CheckmarkIcon width="14" height="14" color="positive" />
+            <div className='p-1 bg-positive/10 rounded-full flex items-center justify-center'>
+              <CheckmarkIcon className="w-4 h-4 text-positive" />
+            </div>
             <Text variant="small" fontWeight="medium" color="positive">
               Executed
             </Text>
@@ -64,7 +66,7 @@ export function PayloadStatusBadge({
             <Text variant="small" fontWeight="medium" color="text50">
               {readyToExecute ? (
                 <div className='flex flex-row gap-1 items-center'>
-                  <CheckmarkIcon width="12" height="12" color="positive" /> Ready to execute
+                  <CheckmarkIcon className='w-4 h-4 text-positive' /> Ready to execute
                 </div>
               ) : (
                 'Locked until:'

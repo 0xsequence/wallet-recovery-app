@@ -58,9 +58,9 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	}
 
 	return (
-		<div className='flex flex-col gap-2 bg-backgroundMuted rounded-md p-2'>
+		<div className='flex flex-col gap-2 bg-background-muted rounded-md p-2'>
 			<Card
-				className='flex flex-row gap-3 p-4 bg-backgroundSecondary rounded-md'
+				className='flex flex-row gap-3 p-4 bg-background-secondary rounded-md border-none'
 				style={{ opacity: isExecuted ? 0.5 : 1, pointerEvents: isExecuted ? 'none' : 'auto' }}
 			>
 				<PayloadStatusBadge

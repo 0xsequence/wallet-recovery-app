@@ -18,20 +18,20 @@ export function TransactionSuccess({
   onClose
 }: TransactionSuccessProps) {
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-4 p-6 pt-0'>
       <div className='flex flex-col gap-2'>
         <div className='flex flex-row items-center justify-center gap-1'>
           <div
             className='w-5 h-5 rounded-full bg-backgroundRaised flex items-center justify-center'
           >
-            <CheckmarkIcon color="positive" />
+            <CheckmarkIcon className='w-4 h-4 text-positive' />
           </div>
           <Text variant="normal" fontWeight="bold" color="text100" className='text-center'>
             Recovery transaction enqueued
           </Text>
         </div>
 
-        <Text variant="small" color="text50" className='text-center'>
+        <Text variant="small" color="text50" className='text-center' >
           Enqueued recovery transaction of {assetName}. You will be able to execute and transfer your {assetName} after 30 days.
         </Text>
 
@@ -57,7 +57,7 @@ export function TransactionSuccess({
         {transactionHash && explorerUrl && (
           <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
             <Button
-              variant="primary"
+              variant="secondary"
               size="md"
               shape="square"
             >

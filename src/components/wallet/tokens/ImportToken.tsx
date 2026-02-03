@@ -243,6 +243,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             onValueChange={value =>
               setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
             }
+            className='h-7! rounded-lg!'
           />
         </div>
 
@@ -301,8 +302,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                     </>
                   )}
                   <CheckmarkIcon
-                    size="sm"
-                    className={`${(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0 ? 'text-primary' : 'text-primary/30'}`}
+                    className={`${(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0 ? 'text-positive' : 'text-primary/30'}`}
                   />
                 </div>
               </div>

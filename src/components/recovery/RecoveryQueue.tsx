@@ -26,18 +26,29 @@ export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQu
 	const uniqueChains = Object.keys(payloadsByChain).map(Number)
 
 	// Create select options for chain filtering
-/*	const chainOptions = useMemo(() => {
+	const chainOptions = useMemo(() => {
 		const options = [
-			{ value: "all", label: "All Chains" }
+			{
+				value: "all", label: (
+					<div className='flex flex-row items-center gap-2'>
+						<Text variant="normal" className='text-primary/80'>All Chains</Text>
+					</div>
+				)
+			}
 		]
 		uniqueChains.forEach(chainId => {
 			options.push({
 				value: chainId.toString(),
-				label: getNetworkTitle(chainId)
+				label: (
+					<div className='flex flex-row items-center gap-2'>
+						<NetworkImage chainId={chainId} size="sm" />
+						<Text variant="normal" className='text-primary/80'>{getNetworkTitle(chainId)}</Text>
+					</div>
+				)
 			})
 		})
 		return options
-	}, [uniqueChains])*/
+	}, [uniqueChains])
 
 	// Filter payloads based on selected chain
 	const filteredPayloads = useMemo(() => {
@@ -68,14 +79,16 @@ export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQu
 
 				<div className='flex flex-row gap-2 items-center'>
 					{uniqueChains.length > 1 && (
-						<Select
+						<Select.Helper
 							name="chain-filter"
 							value={selectedChain}
+							options={chainOptions}
 							onValueChange={setSelectedChain}
+							className="h-7! rounded-lg!"
 						/>
 					)}
 					<Button
-						variant="emphasis"
+						variant="secondary"
 						shape="square"
 						size="xs"
 						onClick={() => setExecutedHidden(!executedHidden)}
@@ -84,7 +97,7 @@ export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQu
 					</Button>
 					<IconButton
 						icon={RefreshIcon}
-						variant="emphasis"
+						variant="secondary"
 						size="xs"
 						onClick={() => refetch()}
 					/>
@@ -92,9 +105,9 @@ export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQu
 			</div>
 
 			<div
-				className='max-h-700px overflow-y-auto scrollbar-thin scrollbar-color-gray-black rounded-md'
+				className='max-h-[700px] overflow-y-auto scrollbar-thin scrollbar-color-gray-black rounded-md'
 			>
-				<div className='flex flex-col gap-2 bg-backgroundSecondary rounded-md p-2'>
+				<div className='flex flex-col gap-2 bg-background-secondary rounded-md p-2'>
 					{isLoading ? (
 						<div className='py-10'>
 							<Text fontWeight="medium" color="text50" className='flex flex-row gap-2 items-center justify-center'>
@@ -105,7 +118,7 @@ export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQu
 						// Display grouped by chain
 						filteredUniqueChains.map((chainId) => (
 							<div key={chainId} className='flex flex-col gap-2'>
-								<div className='sticky top-8 left-0 z-10 flex flex-row gap-2 p-2 bg-backgroundBackdrop rounded-md'>
+								<div className='sticky top-0 my-2 left-0 z-10 flex flex-row gap-2 p-2 bg-background-secondary rounded-md'>
 									<NetworkImage chainId={chainId} size="sm" />
 									<Text variant="normal" fontWeight="bold" color="text80">
 										{getNetworkTitle(chainId)}
