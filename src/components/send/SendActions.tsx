@@ -13,14 +13,13 @@ export type SendActionsProps = {
 export function SendActions({
   isWaitingForSignature,
   isRejected,
-  insufficientBalance,
   isDisabled,
   connectedWalletName,
   onCancel,
   onRecover
 }: SendActionsProps) {
   return (
-    <div className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-2 p-6 pt-0 transition-all duration-300'>
       <div className='flex flex-row items-center justify-end gap-2'>
         <Button
           size="md"
@@ -37,6 +36,7 @@ export function SendActions({
           shape="square"
           disabled={isDisabled}
           onClick={onRecover}
+          className="transition-all duration-300"
         >
           {isWaitingForSignature ? (
             <div className='flex flex-row items-center gap-2'>
@@ -52,12 +52,6 @@ export function SendActions({
       {isRejected && (
         <Text variant="small" color="negative" className='text-center pt-2'>
           You need to sign the transaction to proceed
-        </Text>
-      )}
-
-      {insufficientBalance && (
-        <Text variant="small" color="warning" className='text-center pt-2'>
-          Insufficient balance for this transaction
         </Text>
       )}
     </div>

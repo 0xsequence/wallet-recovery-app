@@ -27,11 +27,11 @@ export function AmountInput({
   return (
     <div className='flex flex-col gap-1'>
       <div className='flex flex-col gap-0.5'>
-        <Text variant="normal" fontWeight="medium" color="text80">
+        <Text variant="normal" className='text-primary/80'>
           {label}
         </Text>
 
-        <Text variant="normal" fontWeight="medium" color="text80">
+        <Text variant="small" className='text-primary/50'>
           Current Balance: {currentBalance} {symbol}
         </Text>
       </div>
@@ -60,7 +60,7 @@ export function AmountInput({
         <div className='flex flex-row items-center gap-1 pt-1'>
           <WarningIcon color="warning" size="xs" />
           <Text variant="small" color="warning">
-            Insufficient balance. Your current balance is {currentBalance} {symbol}
+            Insufficient balance for this transaction
           </Text>
         </div>
       )}

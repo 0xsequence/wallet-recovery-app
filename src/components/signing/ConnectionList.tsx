@@ -1,10 +1,9 @@
-import { Card, CloseIcon, ExternalLinkIcon, Text } from '@0xsequence/design-system'
+import { Card, CloseIcon, ExternalLinkIcon, IconButton, Text } from '@0xsequence/design-system'
 import { SessionTypes } from '@walletconnect/types'
 
 import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
-import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
 import { ExternalIcon } from '~/components/misc/ExternalIcon'
 
 export default function ConnectionList({ sessionList }: { sessionList: SessionTypes.Struct[] }) {
@@ -24,13 +23,17 @@ export default function ConnectionList({ sessionList }: { sessionList: SessionTy
 
           <div className='flex flex-row gap-2'>
             {session.peer.metadata.url && (
-              <ButtonWithIcon
-                icon={<ExternalLinkIcon color="text100" />}
+              <IconButton
+                icon={ExternalLinkIcon}
+                size="sm"
+                shape="square"
                 onClick={() => window.open(session.peer.metadata.url!, '_blank')}
               />
             )}
-            <ButtonWithIcon
-              icon={<CloseIcon color="text100" />}
+            <IconButton
+              icon={CloseIcon}
+              size="sm"
+              shape="square"
               onClick={() => walletConnectSignClientStore.disconnectSession(session.topic)}
             />
           </div>

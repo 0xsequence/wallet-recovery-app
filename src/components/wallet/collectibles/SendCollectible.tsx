@@ -147,9 +147,14 @@ export default function SendCollectible({
   return (
     <div style={{ minWidth: isMobile ? '100vw' : '500px' }}>
       <div className='flex flex-col gap-6 p-6'>
-        <Text variant="large" fontWeight="bold" color="text100">
-          Sending {collectibleInfo?.collectibleInfoResponse?.name} on {networkTitle}
-        </Text>
+        <div className='flex flex-row items-center gap-4'>
+          {collectibleInfo?.collectibleInfoResponse?.image && (
+            <img src={collectibleInfo?.collectibleInfoResponse?.image} className='w-7 h-7' />
+          )}
+          <Text variant="large" fontWeight="bold" color="text100">
+            Sending {collectibleInfo?.collectibleInfoResponse?.name} on {networkTitle}
+          </Text>
+        </div>
 
         <div className='flex flex-col gap-3'>
           <AmountInput

@@ -1,13 +1,11 @@
-import { Card, CloseIcon, Text } from '@0xsequence/design-system'
+import { Card, CloseIcon, IconButton, SendIcon, Text } from '@0xsequence/design-system'
 import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 
-import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
 import { ExternalIcon } from '~/components/misc/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
 
-import SendIcon from '~/assets/icons/send.svg'
 
 export default function CollectibleBalanceItem({
   collectibleInfo,
@@ -31,31 +29,29 @@ export default function CollectibleBalanceItem({
           <Text variant="normal" fontWeight="bold" color="text80">
             {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
           </Text>
-          <Text variant="small" fontWeight="bold" color="text50">
+          <Text variant="small" fontWeight="bold" color="text50" className='text-xs'>
             #{collectibleInfo.collectibleInfoParams.tokenId}
           </Text>
           <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
         </div>
 
-        <div>
-          <Text variant="normal" fontWeight="medium" color="text50">
-            {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
-              ? Number(
-                  ethers.formatUnits(
-                    collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
-                    collectibleInfo.collectibleInfoResponse.decimals ?? 0
-                  )
-                )
-              : 1}
-          </Text>
-        </div>
+        <Text variant="small" fontWeight="medium" color="text50" className='text-xs'>
+          {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
+            ? Number(
+              ethers.formatUnits(
+                collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                collectibleInfo.collectibleInfoResponse.decimals ?? 0
+              )
+            )
+            : 1}
+        </Text>
       </div>
 
       <div className='flex flex-row items-center gap-3 ml-auto'>
-        <ButtonWithIcon icon={<img src={SendIcon} alt="Send" className='w-4 h-4' />} disabled={false} onClick={onSendClick} />
+        <IconButton shape="square" icon={SendIcon} size="sm" disabled={false} onClick={onSendClick} />
 
         {onRemoveClick && (
-          <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => onRemoveClick?.()} />
+          <IconButton shape="square" icon={CloseIcon} size="sm" onClick={() => onRemoveClick?.()} />
         )}
       </div>
     </Card>

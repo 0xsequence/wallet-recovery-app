@@ -42,10 +42,10 @@ export default function TokenBalanceItem({
       </div>
 
       <div className='flex flex-row items-center ml-auto gap-3'>
-        <IconButton icon={SendIcon} size="sm" disabled={disabled} onClick={onSendClick} />
+        <IconButton shape="square" icon={SendIcon} size="sm" disabled={disabled} onClick={onSendClick} />
 
         {onRemoveClick && (
-          <IconButton icon={CloseIcon} size="sm" disabled={disabled} onClick={() => onRemoveClick?.()} />
+          <IconButton shape="square" icon={CloseIcon} size="sm" disabled={disabled} onClick={() => onRemoveClick?.()} />
         )}
       </div>
     </Card>

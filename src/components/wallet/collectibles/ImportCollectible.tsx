@@ -1,11 +1,18 @@
 import {
   Button,
+  CheckmarkIcon,
   ChevronLeftIcon,
+  CloseIcon,
+  cn,
+  CollectionIcon,
+  FolderIcon,
   IconButton,
   Modal,
+  RefreshIcon,
   SearchIcon,
   Select,
   Spinner,
+  TabsPrimitive,
   Text,
   TextInput,
   useToast
@@ -22,8 +29,6 @@ import {
   CollectibleStore
 } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-
-import { FilledRoundCheckBox } from '~/components/misc'
 
 export default function ImportCollectible({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
@@ -61,19 +66,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   const [queryCollectibleTokenIdsMap, setQueryCollectibleTokenIdsMap] = useState<Record<string, string>>({})
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-/*  const selectOptions = mainnetNetworks
-    .filter(network => !network.disabled)
-    .map(network => ({
-      label: (
-        <div className='flex flex-row items-center gap-2'>
-          <img src={network.logoURI} className='w-8 h-8' />
-          <Text>{network.title}</Text>
-        </div>
-      ),
-      value: network.chainId.toString()
-    }))
-      */
 
   useEffect(() => {
     const fetchCollectibleList = async () => {
@@ -117,7 +109,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   useEffect(() => {
     const fetchQueriedCollectibles = async () => {
       setQueriedCollectibles([])
-      if (!queryCollectibleTokenIdsMap[selectedCollection.address]) {return}
+      if (!queryCollectibleTokenIdsMap[selectedCollection.address]) { return }
 
       setIsFetchingQueriedCollectibles(true)
       const tokenIds = queryCollectibleTokenIdsMap[selectedCollection.address].split(',').map(Number)
@@ -175,7 +167,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!collectionListFilter) {return setFilteredCollectionList(collectionList?.slice(0, 8))}
+    if (!collectionListFilter) { return setFilteredCollectionList(collectionList?.slice(0, 8)) }
     setFilteredCollectionList(
       collectionList
         ?.filter(
@@ -311,6 +303,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         <Text variant="normal" fontWeight="semibold" color="text80">
           {collectible.collectibleInfo.name}
         </Text>
+
         <div className='flex flex-row items-center gap-2 ml-auto'>
           <Text variant="normal" fontWeight="bold" color="text80">
             Balance:
@@ -323,10 +316,9 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                 collectible.collectibleInfo.decimals ?? 0
               )}
           </Text>
-          <FilledRoundCheckBox
-            checked={
-              (selectedCollectibles?.filter(c => c.address.includes(collectible.address)).length || 0) > 0
-            }
+          <CheckmarkIcon
+            size="sm"
+            className={`${(selectedCollectibles?.filter(c => c.address.includes(collectible.address)).length || 0) > 0 ? 'text-primary' : 'text-primary/30'}`}
           />
         </div>
       </div>
@@ -354,11 +346,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           <div className='flex flex-row items-center gap-4'>
             <IconButton icon={ChevronLeftIcon} onClick={() => setSelectedCollection(undefined)} />
 
-            <img src={selectedCollection.logoURI} className='w-10 h-10' />
-
-            <Text variant="large" fontWeight="bold" color="text80">
-              {selectedCollection.name}
-            </Text>
+            <SelectedCollectionHeader collection={selectedCollection} />
           </div>
 
           <div className='flex flex-col gap-2'>
@@ -401,12 +389,20 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         <div className='flex flex-col h-full p-6 gap-6'>
           <div className='flex flex-row items-center gap-4'>
             <Text variant="large" fontWeight="bold" color="text80">
-              Import NFT
+              Import Collectibles
             </Text>
 
-            <Select
+            <Select.Helper
               name="collectibleNetwork"
-
+              options={mainnetNetworks.map(network => ({
+                label: (
+                  <div className='flex flex-row items-center gap-2'>
+                    <img src={network.logoURI} className='w-4 h-4' />
+                    <Text variant="normal" className='text-primary/80'>{network.title}</Text>
+                  </div>
+                ),
+                value: network.chainId.toString()
+              }))}
               value={selectedNetwork?.chainId.toString()}
               onValueChange={value =>
                 setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
@@ -414,42 +410,39 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             />
           </div>
 
-          <div className='flex flex-col gap-2' style={{ gap: '5px' }}>
-            <div className='flex flex-row gap-2'>
-              <div onClick={() => setContractType(CollectibleContractTypeValues.ERC721)}>
+          <TabsPrimitive.Root
+            value={contractType}
+            onValueChange={(value) => setContractType(value as CollectibleContractType)}
+          >
+            <TabsPrimitive.TabsList>
+              <TabsPrimitive.TabsTrigger value={CollectibleContractTypeValues.ERC721}     >
                 <Text
                   variant="normal"
                   fontWeight="semibold"
                   color={contractType === CollectibleContractTypeValues.ERC721 ? 'text100' : 'text50'}
-                  className='px-4 cursor-pointer'
+                  className={cn('px-4 pb-2', contractType === CollectibleContractTypeValues.ERC721 ? 'border-b-2 border-primary' : '')}
                 >
                   ERC721
                 </Text>
                 {contractType === CollectibleContractTypeValues.ERC721 && (
-                  <div
-                    className='h-0.5 relative top-6 bg-white'
-                  />
+                  <div className='h-0.5 bg-backgroundBackdrop relative top-1.5' />
                 )}
-              </div>
-
-              <div onClick={() => setContractType(CollectibleContractTypeValues.ERC1155)}>
+              </TabsPrimitive.TabsTrigger>
+              <TabsPrimitive.TabsTrigger value={CollectibleContractTypeValues.ERC1155}>
                 <Text
                   variant="normal"
                   fontWeight="semibold"
                   color={contractType === CollectibleContractTypeValues.ERC1155 ? 'text100' : 'text50'}
-                  className='px-4 cursor-pointer'
+                  className={cn('px-4 pb-2', contractType === CollectibleContractTypeValues.ERC1155 ? 'border-b-2 border-primary' : '')}
                 >
                   ERC1155
                 </Text>
                 {contractType === CollectibleContractTypeValues.ERC1155 && (
-                  <div
-                    className='h-0.5 relative top-6 bg-white'
-                  />
+                  <div className='h-0.5 bg-backgroundBackdrop relative top-1.5' />
                 )}
-              </div>
-            </div>
-            <div className='h-0 bg-white' />
-          </div>
+              </TabsPrimitive.TabsTrigger>
+            </TabsPrimitive.TabsList>
+          </TabsPrimitive.Root>
 
           <div className='flex flex-col gap-3'>
             <TextInput
@@ -460,34 +453,21 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             />
 
             <Button
-              variant="text"
+              variant="secondary"
               shape="square"
               className='mt-auto'
               onClick={selectedNetwork && contractType ? handleImportCustomCollectibleList : undefined}
             >
+              <FolderIcon className='w-4 h-4' />
+
               {selectedNetwork && contractType
                 ? `Import custom token list for ${contractType === CollectibleContractTypeValues.ERC721 ? 'ERC721' + ' on ' + selectedNetwork?.title : 'ERC1155' + ' on ' + selectedNetwork?.title}`
                 : 'Select Network and Type to import custom token list'}
             </Button>
           </div>
 
-          <div className='flex flex-col'>
-            {filteredCollectionList?.map((collection, i) => {
-              return (
-                <div
-                  key={i}
-                  className='flex flex-row items-center gap-4 bg-background-primary hover:bg-backgroundSecondary rounded-sm p-3'
-                  onClick={() => {
-                    setSelectedCollection(collection)
-                  }}
-                >
-                  <img src={collection.logoURI} className='w-10 h-10 rounded-full' />
-                  <Text variant="normal" fontWeight="semibold" color="text80">
-                    {collection.name}
-                  </Text>
-                </div>
-              )
-            })}
+          <div className='flex flex-col h-[340px] overflow-y-auto'>
+            {filteredCollectionList?.map((collection, i) => <CollectionListItem collection={collection} key={i} onClick={() => setSelectedCollection(collection)} />)}
           </div>
 
           <input
@@ -504,6 +484,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               size="xs"
               onClick={() => setConfirmRefreshList(true)}
             >
+              <RefreshIcon className='w-4 h-4' />
               Refresh list - last updated: {collectionListDate?.toLocaleString()}
             </Button>
           )}
@@ -514,12 +495,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           {isAddingCollectibleManually && (
             <div className='flex flex-col gap-3'>
               <div className='flex flex-col gap-0.5'>
-                <Text variant="normal" fontWeight="medium" color="text80">
+                <Text variant="small" fontWeight="medium" color="text80">
                   Collectible Address
                 </Text>
 
                 <TextInput
                   name="collectibleAddress"
+                  className='h-10 rounded-md'
                   value={collectibleManualAddress ?? ''}
                   onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                     setCollectibleManualAddress(ev.target.value)
@@ -527,12 +509,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                 />
               </div>
               <div className='flex flex-col mb-6 gap-0.5'>
-                <Text variant="normal" fontWeight="medium" color="text80">
+                <Text variant="small" fontWeight="medium" color="text80">
                   Token ID
                 </Text>
 
                 <TextInput
                   name="collectibleTokenId"
+                  className='h-10 rounded-md'
                   value={collectibleManualTokenId ?? ''}
                   onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                     if (ev.target.value === '') {
@@ -562,26 +545,36 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           )}
 
           {manualCollectibleInfo && manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
-            <div className='flex flex-row gap-6'>
-              <img src={manualCollectibleInfo.image} className='w-32 h-32' />
+            <div className='flex flex-row gap-6 items-center bg-background-secondary p-2 px-6'>
+              <CheckmarkIcon className='w-4 h-4 text-primary' />
+
+              <img src={manualCollectibleInfo.image} className='w-12 h-12' />
 
               <div className='flex flex-col gap-2'>
-                <Text variant="medium" fontWeight="bold" color="text80">
+                <Text variant="normal" fontWeight="bold" color="text80">
                   {manualCollectibleInfo.name ?? ''}
                 </Text>
-                <Text variant="small" color="text80">
-                  Your Balance:
-                </Text>
-                <Text variant="medium" fontWeight="bold" color="text80">
-                  {manualCollectibleInfo.balance
-                    ? Number(
-                      ethers.formatUnits(
-                        manualCollectibleInfo.balance as BigNumberish,
-                        manualCollectibleInfo.decimals ?? 0
-                      )
-                    )
-                    : 1}
-                </Text>
+                <div className='flex flex-row items-center gap-2'>
+                  <Text variant="small" className='text-primary/80'>
+                    You have this collectible
+                  </Text>
+
+                  <div className='flex flex-row items-center gap-2'>
+                    <CloseIcon className='w-3 h-3' />
+                    <Text variant="small" fontWeight="bold" color="text80">
+
+
+                      {manualCollectibleInfo.balance
+                        ? Number(
+                          ethers.formatUnits(
+                            manualCollectibleInfo.balance as BigNumberish,
+                            manualCollectibleInfo.decimals ?? 0
+                          )
+                        )
+                        : 1}
+                    </Text>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -654,6 +647,48 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           </div>
         </Modal>
       )}
+    </div>
+  )
+}
+
+function CollectionListItem({ collection, onClick }: { collection: any, onClick: () => void }) {
+  const [imageError, setImageError] = useState(false)
+
+  return (
+    <Button variant="secondary" className='flex border-none flex-row items-center gap-4 bg-background-primary hover:bg-background-hover rounded-sm p-3' onClick={onClick}>
+      {imageError || !collection.logoURI ? (
+        <div className='w-10 h-10 rounded-full bg-background-secondary flex items-center justify-center'>
+          <CollectionIcon className='w-4 h-4 text-secondary' />
+        </div>
+      ) : (
+        <img src={collection.logoURI} className='w-10 h-10 rounded-full' onError={() => setImageError(true)} />
+      )
+      }
+
+      <Text variant="normal" fontWeight="semibold" color="text80">
+        {collection.name}
+      </Text>
+    </Button>
+  )
+}
+
+function SelectedCollectionHeader({ collection }: { collection: any }) {
+  const [imageError, setImageError] = useState(false)
+
+  return (
+    <div className='flex flex-row items-center gap-4'>
+      {imageError || !collection.logoURI ? (
+        <div className='w-10 h-10 rounded-full bg-background-secondary flex items-center justify-center'>
+          <CollectionIcon className='w-4 h-4 text-secondary' />
+        </div>
+      ) : (
+        <img src={collection.logoURI} className='w-10 h-10 rounded-full' onError={() => setImageError(true)} />
+      )
+      }
+
+      <Text variant="large" fontWeight="semibold" color="text80">
+        {collection.name}
+      </Text>
     </div>
   )
 }

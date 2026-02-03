@@ -231,7 +231,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           <Select.Helper
             name="tokenNetwork"
             options={mainnetNetworks.map(network => ({
-              label: network.title,
+              label: (
+                <div className='flex flex-row items-center gap-2'>
+                  <img src={network.logoURI} className='w-4 h-4' />
+                  <Text variant="normal" className='text-primary/80'>{network.title}</Text>
+                </div>
+              ),
               value: network.chainId.toString()
             }))}
             value={selectedNetwork?.chainId.toString()}
