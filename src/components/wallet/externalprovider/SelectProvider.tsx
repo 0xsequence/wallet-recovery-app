@@ -72,7 +72,7 @@ export default function SelectProvider({
                 </Text>
               )}
             </div>
-            <WarningIcon />
+            <img src={WarningIcon} alt="Warning" className='w-5 h-auto' />
           </Card>
           <div className='flex flex-row gap-2 w-full mt-6'>
             <Button size="md" shape="square" onClick={() => onSelectProvider()}>

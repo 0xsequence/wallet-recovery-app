@@ -1,4 +1,5 @@
 import { Text } from "@0xsequence/design-system"
+import { ethers } from "ethers"
 import { ParsedCall } from "~/utils/transaction-parser"
 import { formatPrettyBalance } from "~/utils/format-pretty-balance"
 
@@ -35,7 +36,11 @@ export function InsufficientBalanceMessage({
     }
 
     // For ERC20 and native tokens
-    const balanceOfToken = balances.find(balance => balance.contractAddress === firstCall.contractAddress)
+    const contractAddress = firstCall.contractAddress || ethers.ZeroAddress
+    const balanceOfToken = balances.find(
+      balance => balance.contractAddress.toLowerCase() === contractAddress.toLowerCase() &&
+        balance.chainId === chainId
+    )
     const metadata = tokenMetadata.get(firstCall.contractAddress!)
     const decimals = metadata?.decimals ?? 18
     const symbol = metadata?.symbol ?? 'tokens'

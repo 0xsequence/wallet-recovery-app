@@ -1,8 +1,9 @@
-import { useMemo } from "react"
+import { useMemo, useEffect, useRef } from "react"
 import { useObservable, useStore } from "~/stores"
 import { TokenStore } from "~/stores/TokenStore"
 import { CollectibleStore } from "~/stores/CollectibleStore"
 import { ParsedCall } from "~/utils/transaction-parser"
+import { ethers } from "ethers"
 
 interface UseBalanceCheckParams {
   firstCall: ParsedCall
@@ -15,6 +16,25 @@ export function useBalanceCheck({ firstCall, transactionAmount, chainId }: UseBa
   const collectibleStore = useStore(CollectibleStore)
   const balances = useObservable(tokenStore.balances)
   const collectibles = useObservable(collectibleStore.userCollectibles)
+  
+  const fetchedTokensRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!firstCall) return
+
+    if (firstCall.type === 'erc20' || firstCall.type === 'native') {
+      const contractAddress = firstCall.contractAddress || ethers.ZeroAddress
+      const tokenKey = `${chainId}-${contractAddress.toLowerCase()}`
+      
+      if (fetchedTokensRef.current.has(tokenKey)) {
+        return
+      }
+      
+      fetchedTokensRef.current.add(tokenKey)
+      
+      tokenStore.fetchTokenBalanceIfMissing(chainId, contractAddress)
+    }
+  }, [firstCall, chainId, tokenStore])
 
   const hasEnoughBalance = useMemo(() => {
     if (!firstCall) {
@@ -40,7 +60,7 @@ export function useBalanceCheck({ firstCall, transactionAmount, chainId }: UseBa
       return collectibleBalance >= (transactionAmount ?? 0n)
     } else {
       // For ERC20 and native tokens, check token balance
-      const contractAddress = firstCall.contractAddress || '0x0000000000000000000000000000000000000000'
+      const contractAddress = firstCall.contractAddress || ethers.ZeroAddress
       const balanceOfToken = balances.find(
         balance => balance.contractAddress.toLowerCase() === contractAddress.toLowerCase() &&
           balance.chainId === chainId
