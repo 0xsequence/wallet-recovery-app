@@ -110,8 +110,8 @@ export function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQu
 				<div className='flex flex-col gap-2 bg-background-secondary rounded-md p-2'>
 					{isLoading ? (
 						<div className='py-10'>
-							<Text fontWeight="medium" color="text50" className='flex flex-row gap-2 items-center justify-center'>
-								<Spinner /> Loading queued recovery payloads...
+							<Text variant="normal" fontWeight="medium" color="text50" className='flex flex-row gap-2 items-center justify-center'>
+								<Spinner size="sm" /> Loading queued recovery payloads...
 							</Text>
 						</div>
 					) : hasMultipleChainsInFiltered ? (

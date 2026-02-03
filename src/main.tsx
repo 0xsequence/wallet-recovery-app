@@ -9,17 +9,34 @@ import { AppRouter } from '~/routes/index.tsx'
 
 import '~/css/global.css'
 import '~/css/reset.css'
+import { NAVIGATION_KEY } from './constants/storage'
+import { clearAllState } from './utils/clear-state'
 
-const store = createStore()
+const initApp = async () => {
+  const navigationState = sessionStorage.getItem(NAVIGATION_KEY)
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <StoreProvider store={store}>
-      <ThemeProvider theme="dark">
-        <ToastProvider>
-          <AppRouter />
-        </ToastProvider>
-      </ThemeProvider>
-    </StoreProvider>
-  </React.StrictMode>
-)
+  if (!navigationState) {
+    try {
+      await clearAllState()
+      sessionStorage.setItem(`${NAVIGATION_KEY}-redirect`, 'true')
+    } catch (error) {
+      console.error('Failed to clear state on refresh:', error)
+    }
+  }
+
+  const store = createStore()
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <StoreProvider store={store}>
+        <ThemeProvider theme="dark">
+          <ToastProvider>
+            <AppRouter />
+          </ToastProvider>
+        </ThemeProvider>
+      </StoreProvider>
+    </React.StrictMode>
+  )
+}
+
+initApp()

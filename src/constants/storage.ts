@@ -11,6 +11,8 @@ export enum LocalStorageKey {
   DEFAULT_NETWORK = '@sequence-recovery.default-network'
 }
 
+export const NAVIGATION_KEY = '@sequence-recovery.navigation-state'
+
 export enum IndexedDBKey {
   SECURITY = 'security',
   ERC20 = 'erc20',

@@ -5,11 +5,10 @@ import {
     Modal,
     Spinner,
     Text,
-    TextInput,
     useMediaQuery
 } from '@0xsequence/design-system'
 import { ethers } from 'ethers'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useObservable, useStore } from '~/stores'
@@ -34,26 +33,13 @@ import { WALLET_WIDTH } from './WalletV3Recovery'
 import { useFindWalletViaSigner } from '~/hooks/use-find-wallet-via-signer'
 import { useValidateSigner } from '~/hooks/use-validate-signer'
 
-const MIN_PASSWORD_LENGTH = 8
-
 const validateMnemonic = (mnemonic: string): boolean => {
     const wordCount = mnemonic.trim().split(/\s+/g).length
     return wordCount === 12 || wordCount === 24
 }
 
-const validatePassword = (password: string): boolean => {
-    // Password is optional - if provided, must meet minimum length
-    return password.length === 0 || password.length >= MIN_PASSWORD_LENGTH
-}
-
-const validatePasswordMatch = (password: string, confirmPassword: string): boolean => {
-    return password === confirmPassword
-}
-
 interface FormState {
     mnemonic: string
-    password: string
-    confirmPassword: string
     selectedWallet: string
 }
 
@@ -72,8 +58,6 @@ function Recovery() {
 
     const [formState, setFormState] = useState<FormState>({
         mnemonic: '',
-        password: '',
-        confirmPassword: '',
         selectedWallet: ''
     })
 
@@ -93,20 +77,12 @@ function Recovery() {
 
     const validation = useMemo(() => {
         const isMnemonicValid = validateMnemonic(formState.mnemonic)
-        const isPasswordValid = validatePassword(formState.password)
-        const doPasswordsMatch = validatePasswordMatch(formState.password, formState.confirmPassword)
         const isWalletSelected = ethers.isAddress(formState.selectedWallet)
-        const hasPassword = formState.password.length > 0
 
         return {
             isMnemonicValid,
-            isPasswordValid,
-            doPasswordsMatch,
             isWalletSelected,
-            isFormValid: isMnemonicValid && isPasswordValid && doPasswordsMatch && isWalletSelected,
             showMnemonicError: formState.mnemonic && !isMnemonicValid,
-            showPasswordError: hasPassword && !isPasswordValid,
-            showPasswordMismatchError: hasPassword && formState.confirmPassword && !doPasswordsMatch
         }
     }, [formState])
 
@@ -186,7 +162,7 @@ function Recovery() {
     }, [formState.mnemonic])
 
     const handleRecoverWallet = useCallback(async () => {
-        if (!validation.isFormValid) {
+        if (!validation.isMnemonicValid || !validation.isWalletSelected) {
             return
         }
 
@@ -223,7 +199,6 @@ function Recovery() {
                 await authStore.signInWithRecoveryMnemonic(
                     formState.selectedWallet,
                     formState.mnemonic.trim(),
-                    formState.password
                 )
                 navigate('/wallet-v2-recovery')
 
@@ -242,7 +217,6 @@ function Recovery() {
                 await authStore.signInWithRecoveryMnemonic(
                     walletAddress,
                     formState.mnemonic.trim(),
-                    formState.password
                 )
                 navigate('/wallet-v3-recovery')
             }
@@ -253,9 +227,9 @@ function Recovery() {
             setLoadingState(prev => ({ ...prev, isRecovering: false }))
         }
     }, [
-        validation.isFormValid,
+        validation.isMnemonicValid,
+        validation.isWalletSelected,
         formState.mnemonic,
-        formState.password,
         formState.selectedWallet,
         findWallets,
         validateSigner,
@@ -308,55 +282,8 @@ function Recovery() {
                     )}
                 </div>
 
-                <div className='flex flex-col'>
-                    <Text variant="normal" fontWeight="medium" color="text80">
-                        Create password (optional)
-                    </Text>
-                    <Text variant="normal" fontWeight="medium" color="text50" className='mb-1'>
-                        Optionally encrypt your mnemonic with a {MIN_PASSWORD_LENGTH}+ character password.
-                    </Text>
-
-                    <TextInput
-                        type="password"
-                        name="password"
-                        value={formState.password}
-                        onChange={(ev: ChangeEvent<HTMLInputElement>) =>
-                            updateFormField('password', ev.target.value)
-                        }
-                        disabled={isAnyLoading}
-                    />
-
-                    {validation.showPasswordError && (
-                        <Text variant="small" color="negative" className='ml-1 mt-2'>
-                            Password must be at least {MIN_PASSWORD_LENGTH} characters
-                        </Text>
-                    )}
-                </div>
-
-                <div className='flex flex-col'>
-                    <Text variant="normal" fontWeight="medium" color="text80" className='mb-1'>
-                        Confirm password
-                    </Text>
-
-                    <TextInput
-                        type="password"
-                        name="confirmPassword"
-                        value={formState.confirmPassword}
-                        onChange={(ev: ChangeEvent<HTMLInputElement>) =>
-                            updateFormField('confirmPassword', ev.target.value)
-                        }
-                        disabled={isAnyLoading}
-                    />
-
-                    {validation.showPasswordMismatchError && (
-                        <Text variant="small" color="negative" className='ml-1 mt-2'>
-                            Passwords must match
-                        </Text>
-                    )}
-                </div>
-
                 {loadingState.isSearchingWallets && (
-                    <div className='self-center items-center gap-1'>
+                    <div className='self-center flex flex-row items-center gap-1'>
                         <Spinner size="md" />
                         <Text variant="small" color="text80">
                             Searching for wallet address...
@@ -382,10 +309,10 @@ function Recovery() {
                         size={isMobile ? 'lg' : 'md'}
                         shape="square"
                         className='ml-auto'
-                        disabled={!validation.isFormValid || isAnyLoading}
+                        disabled={!validation.isMnemonicValid || !validation.isWalletSelected || isAnyLoading}
                         onClick={handleRecoverWallet}
                     >
-                        {loadingState.isRecovering ? 'Recovering...' : 'Recover wallet'}
+                        {loadingState.isRecovering ? 'Loading...' : 'Recover wallet'}
                     </Button>
                 </div>
             </div>
