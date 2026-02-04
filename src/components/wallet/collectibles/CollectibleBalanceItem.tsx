@@ -1,4 +1,4 @@
-import { Card, CloseIcon, IconButton, SendIcon, Text } from '@0xsequence/design-system'
+import { Card, IconButton, SendIcon, Text } from '@0xsequence/design-system'
 import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
@@ -8,13 +8,13 @@ import NetworkTag from '~/components/network/NetworkTag'
 
 
 export default function CollectibleBalanceItem({
+  disabled,
   collectibleInfo,
   onSendClick,
-  onRemoveClick
 }: {
+  disabled?: boolean
   collectibleInfo: CollectibleInfo
   onSendClick: () => void
-  onRemoveClick?: () => void
 }) {
   return (
     <Card className='flex flex-row items-center gap-3'>
@@ -48,11 +48,7 @@ export default function CollectibleBalanceItem({
       </div>
 
       <div className='flex flex-row items-center gap-3 ml-auto'>
-        <IconButton shape="square" icon={SendIcon} size="sm" disabled={false} onClick={onSendClick} />
-
-        {onRemoveClick && (
-          <IconButton shape="square" icon={CloseIcon} size="sm" onClick={() => onRemoveClick?.()} />
-        )}
+        <IconButton shape="square" icon={SendIcon} size="sm" disabled={disabled} onClick={onSendClick} />
       </div>
     </Card>
   )

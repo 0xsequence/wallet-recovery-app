@@ -1,5 +1,5 @@
 import { AddIcon, Button, Card, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
-import { ContractType, TokenBalance } from '@0xsequence/indexer'
+import { TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -46,19 +46,6 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
     return Array.from(uniqueBalances.values())
   }, [balances, filterZeroBalances, isFetchingBalances])
-
-  const onRemoveClick = (balance: TokenBalance) =>
-    balance.contractType === ContractType.NATIVE
-      ? undefined
-      : () => {
-        tokenStore.removeToken({
-          chainId: balance.chainId,
-          address: balance.contractAddress,
-          contractType: balance.contractType,
-          decimals: balance.contractInfo?.decimals ?? 18,
-          symbol: balance.contractInfo?.symbol ?? 'Native'
-        })
-      }
 
   return (
     <div className='flex flex-col'>
@@ -108,7 +95,6 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
                     tokenBalance={balance}
                     disabled={!isConnected}
                     onSendClick={() => onSendClick(balance)}
-                    onRemoveClick={onRemoveClick(balance)}
                   />
                 ))}
               </>

@@ -1,4 +1,4 @@
-import { Button, Card, Text } from '@0xsequence/design-system'
+import { Button, Card, Text, WarningIcon } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useState } from 'react'
 
@@ -10,7 +10,6 @@ import { useStore } from '~/stores'
 import { WalletConnectSignClientStore } from '~/stores/WalletConnectSignClientStore'
 
 import WalletConnectIcon from '~/assets/icons/wallet-connect.svg'
-import WarningIcon from '~/assets/icons/warning.svg'
 
 export interface ProviderInfo {
   walletId?: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask
@@ -54,27 +53,30 @@ export default function SelectProvider({
           <Text variant="large" fontWeight="bold" color="text80">
             Use WalletConnect for External Wallet?
           </Text>
-          <Card className='flex flex-col items-center gap-3' style={{ background: 'rgba(176, 126, 30, 0.3)' }}>
+          <Card className='flex flex-col items-center gap-3 border'
+            style={{ background: 'rgba(176, 126, 30, 0.2)', borderColor: 'rgba(176, 126, 30, 0.3)' }}>
             <div className='flex flex-col gap-2'>
-              <Text variant="medium" fontWeight="bold" color="text100">
-                Attention
-              </Text>
+              <div className='flex flex-row items-center gap-2'>
+                <WarningIcon color="warning" size="xs" />
+                <Text variant="medium" fontWeight="bold" color="text100">
+                  Attention
+                </Text>
+              </div>
               {walletConnectDappsConnected ? (
                 <Text variant="normal" fontWeight="medium" color="text80">
                   If you connect your external wallet using WalletConnect, you'll lose all Dapps connections
                   you already made using WalletConnect.
                 </Text>
               ) : (
-                <Text variant="normal" fontWeight="medium" color="text80">
+                <Text variant="small" fontWeight="medium" className='text-primary/80'>
                   If you connect your external wallet using WalletConnect, you won't be able to connect to any
                   other Dapps during this session. <br /> <br />
                   If you need to connect Dapps, please consider using a different external wallet instead.
                 </Text>
               )}
             </div>
-            <img src={WarningIcon} alt="Warning" className='w-5 h-auto' />
           </Card>
-          <div className='flex flex-row gap-2 w-full mt-6'>
+          <div className='flex flex-row gap-2 w-full mt-6 justify-end'>
             <Button size="md" shape="square" onClick={() => onSelectProvider()}>
               Cancel
             </Button>

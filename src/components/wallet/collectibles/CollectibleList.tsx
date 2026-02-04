@@ -18,6 +18,7 @@ import CollectionIcon from '~/assets/icons/collection.svg'
 
 import CollectibleBalanceItem from './CollectibleBalanceItem'
 import ImportCollectible from './ImportCollectible'
+import { WalletStore } from '~/stores/WalletStore'
 
 export default function CollectibleList({
   onSendClick
@@ -28,9 +29,11 @@ export default function CollectibleList({
 
   const collectibleStore = useStore(CollectibleStore)
   const networkStore = useStore(NetworkStore)
+const walletStore = useStore(WalletStore)
 
   const isFetchingBalances = useObservable(collectibleStore.isFetchingBalances)
   const userCollectibles = useObservable(collectibleStore.userCollectibles)
+  
 
   const collectibles = useMemo(() => userCollectibles, [userCollectibles])
   const filteredCollectibles = useMemo(() => {
@@ -40,6 +43,8 @@ export default function CollectibleList({
         .find(network => network.chainId === collectibleInfo.collectibleInfoParams.chainId)?.disabled
     })
   }, [collectibles, networkStore])
+  const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
+
 
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
@@ -84,12 +89,10 @@ export default function CollectibleList({
                       }
                     >
                       <CollectibleBalanceItem
+                        disabled={!isConnected}
                         collectibleInfo={collectibleInfo}
                         onSendClick={() => {
                           onSendClick(collectibleInfo)
-                        }}
-                        onRemoveClick={() => {
-                          collectibleStore.removeCollectible(collectibleInfo)
                         }}
                       />
                     </div>

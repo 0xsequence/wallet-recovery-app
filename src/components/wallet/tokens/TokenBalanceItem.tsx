@@ -1,4 +1,4 @@
-import { Card, CloseIcon, IconButton, SendIcon, Text, tokenImageUrl } from '@0xsequence/design-system'
+import { Card, IconButton, SendIcon, Text, tokenImageUrl } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
 
@@ -11,12 +11,10 @@ export default function TokenBalanceItem({
   disabled,
   tokenBalance,
   onSendClick,
-  onRemoveClick
 }: {
   disabled?: boolean
   tokenBalance: TokenBalance
   onSendClick: () => void
-  onRemoveClick?: () => void
 }) {
   const formattedBalance = ethers.formatUnits(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
   const truncatedBalance = truncateNumber(Number(formattedBalance), 5)
@@ -43,10 +41,6 @@ export default function TokenBalanceItem({
 
       <div className='flex flex-row items-center ml-auto gap-3'>
         <IconButton shape="square" icon={SendIcon} size="sm" disabled={disabled} onClick={onSendClick} />
-
-        {onRemoveClick && (
-          <IconButton shape="square" icon={CloseIcon} size="sm" disabled={disabled} onClick={() => onRemoveClick?.()} />
-        )}
       </div>
     </Card>
   )
