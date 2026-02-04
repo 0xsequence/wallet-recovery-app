@@ -243,10 +243,10 @@ function Recovery() {
         <div className='flex flex-col bg-background-primary pb-20'>
             <RecoveryHeader />
 
-            <div className='self-center flex flex-col gap-4 p-4 w-full' style={{ maxWidth: WALLET_WIDTH }}>
+            <div className='self-center flex flex-col gap-6 p-4 sm:p-6 w-full' style={{ maxWidth: WALLET_WIDTH }}>
 
                 <div className='flex flex-col'>
-                    <div className='flex flex-row items-center gap-2'>
+                    <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
                         <IconButton
                             size="sm"
                             shape="circle"
@@ -254,7 +254,7 @@ function Recovery() {
                             icon={ChevronLeftIcon}
                         />
 
-                        <Text variant="xlarge" color="text80">
+                        <Text variant="xlarge" color="text80" className='leading-tight'>
                             Recover your wallet
                         </Text>
                     </div>
@@ -303,12 +303,12 @@ function Recovery() {
                     </Text>
                 )}
 
-                <div className='flex flex-row gap-4'>
+                <div className='flex flex-col sm:flex-row gap-3'>
                     <Button
                         variant="primary"
                         size={isMobile ? 'lg' : 'md'}
                         shape="square"
-                        className='ml-auto'
+                        className='w-full sm:w-auto sm:ml-auto'
                         disabled={!validation.isMnemonicValid || !validation.isWalletSelected || isAnyLoading}
                         onClick={handleRecoverWallet}
                     >

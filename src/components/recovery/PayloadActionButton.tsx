@@ -34,12 +34,12 @@ export function PayloadActionButton({
   // Show success state
   if (status === 'final' && opStatus === 'confirmed' && explorerUrl) {
     return (
-      <div className='flex flex-col gap-1 items-center'>
+      <div className='flex flex-col gap-1 items-start sm:items-center'>
         <Text variant="small" fontWeight="bold" color="text80" className='flex flex-row gap-1 items-center'>
           <CheckmarkIcon className='w-4 h-4 text-positive' /> Recovery completed
         </Text>
         {explorerUrl && (
-          <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
             <Button
               variant="primary"
               size="sm"
@@ -64,6 +64,7 @@ export function PayloadActionButton({
         size="sm"
         shape="square"
         disabled={true}
+        className="w-full sm:w-auto justify-center"
       >
         <Spinner size="xs" className="text-white mr-1" />
 
@@ -83,6 +84,7 @@ export function PayloadActionButton({
         shape="square"
         onClick={onExecute}
         disabled={!readyToExecute || isExecuted || !hasEnoughBalance}
+        className="w-full sm:w-auto justify-center"
       >
         <Text variant="small" fontWeight="bold" color="text100">
           {isExecuted ? "Executed" : isLocked ? "Locked" : selectedExternalProvider ? "Execute" : "Connect wallet"}

@@ -145,11 +145,17 @@ export default function SendCollectible({
   }
 
   return (
-    <div style={{ minWidth: isMobile ? '100vw' : '500px' }}>
-      <div className='flex flex-col gap-6 p-6'>
-        <div className='flex flex-row items-center gap-4'>
+    <div
+      className='w-full'
+      style={{ width: isMobile ? '100%' : '520px', maxWidth: '100%' }}
+    >
+      <div className='flex flex-col gap-6 p-4 sm:p-6'>
+        <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4'>
           {collectibleInfo?.collectibleInfoResponse?.image && (
-            <img src={collectibleInfo?.collectibleInfoResponse?.image} className='w-7 h-7' />
+            <img
+              src={collectibleInfo?.collectibleInfoResponse?.image}
+              className='w-8 h-8 sm:w-7 sm:h-7'
+            />
           )}
           <Text variant="large" fontWeight="bold" color="text100">
             Sending {collectibleInfo?.collectibleInfoResponse?.name} on {networkTitle}
@@ -195,7 +201,7 @@ export default function SendCollectible({
 
       </div>
 
-      <div className='h-0 bg-white' />
+      <div className='my-0' />
 
       {isSigned ? (
         <TransactionSuccess

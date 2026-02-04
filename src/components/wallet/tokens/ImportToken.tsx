@@ -221,9 +221,9 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className='flex flex-col h-fit min-h-full'>
-      <div className='flex flex-col h-full p-6 gap-6'>
-        <div className='flex flex-row items-center gap-4'>
+    <div className='flex flex-col h-fit min-h-full w-full'>
+      <div className='flex flex-col h-full p-4 sm:p-6 gap-6'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4'>
           <Text variant="large" fontWeight="bold" color="text80">
             Import Tokens
           </Text>
@@ -243,7 +243,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             onValueChange={value =>
               setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
             }
-            className='h-7! rounded-lg!'
+            className='h-7! rounded-lg! w-full sm:w-auto'
           />
         </div>
 
@@ -258,6 +258,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           <Button
             variant="text"
             onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
+            className='text-left whitespace-normal'
           >
             {selectedNetwork
               ? `Import custom token list for ${' ' + selectedNetwork?.title}`
@@ -324,6 +325,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             size="xs"
             color="text80"
             onClick={() => setConfirmRefreshList(true)}
+            className='w-full sm:w-auto'
           >
             <RefreshIcon size="xs" className='mr-1' />
             Refresh list - last updated: {tokenListDate?.toLocaleString()}
@@ -332,7 +334,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className='mt-auto'>
-        <div className='p-6'>
+        <div className='p-4 sm:p-6'>
           {isAddingTokenManually && (
             <div className='flex flex-col mb-6 gap-0.5'>
               <Text variant="normal" fontWeight="medium" color="text80">
@@ -372,8 +374,8 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
         <div className='my-0' />
 
-        <div >
-          <div className='flex flex-row p-6 gap-2 pt-4'>
+        <div>
+          <div className='flex flex-col sm:flex-row p-4 sm:p-6 gap-2 pt-4'>
             {isAddingTokenManually ? (
               <Button
                 shape="square"
@@ -383,6 +385,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setTokenManualAddress('')
                   setTokenInfo(undefined)
                 }}
+                className='w-full sm:w-auto'
               >
                 Hide
               </Button>
@@ -393,12 +396,13 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                 onClick={() => {
                   setIsAddingTokenManually(true)
                 }}
+                className='w-full sm:w-auto'
               >
                 Manual Import
               </Button>
             )}
 
-            <Button size="md" shape="square" className='ml-auto' onClick={onClose}>
+            <Button size="md" shape="square" className='w-full sm:w-auto sm:ml-auto' onClick={onClose}>
               Cancel
             </Button>
 
@@ -409,6 +413,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               onClick={() => {
                 handleAdd()
               }}
+              className='w-full sm:w-auto'
             >
               Add
             </Button>
@@ -418,12 +423,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
       {confirmRefreshList && (
         <Modal size="sm">
-          <div className='flex flex-col p-6 gap-6'>
+          <div className='flex flex-col p-4 sm:p-6 gap-6'>
             <Text variant="normal" fontWeight="medium" color="text80" className='pr-4'>
               {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
             </Text>
 
-            <div className='flex flex-row justify-end gap-3'>
+            <div className='flex flex-col sm:flex-row justify-end gap-3'>
               <Button size="sm" shape="square" onClick={() => setConfirmRefreshList(false)}>
                 Cancel
               </Button>

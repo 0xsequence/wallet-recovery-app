@@ -1,4 +1,4 @@
-import { Modal } from '@0xsequence/design-system'
+import { Modal, useMediaQuery } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import SendToken from '~/components/wallet/tokens/SendToken'
 
@@ -19,6 +19,7 @@ export function SendTokenModal({
   onRecover,
   onDismissibleChange
 }: SendTokenModalProps) {
+  const isMobile = useMediaQuery('isMobile')
   if (!isOpen) return null
 
   return (
@@ -26,6 +27,16 @@ export function SendTokenModal({
       size="sm"
       isDismissible={isDismissible}
       onClose={onClose}
+      contentProps={{
+        style: {
+          width: isMobile ? '100%' : 'auto',
+          maxWidth: '100%',
+          minWidth: 0,
+          maxHeight: isMobile ? '100%' : '90vh',
+          overflow: 'auto'
+        }
+      }}
+      rootProps={{ className: 'px-3 sm:px-0' }}
     >
       <SendToken
         tokenBalance={tokenBalance}

@@ -16,14 +16,14 @@ export default function WalletList({
       {possibleWallets.map(wallet => {
         return (
           <div key={wallet}>
-            <div className='flex flex-row items-center gap-2' style={{ height: '52px' }}>
-              <div className='bg-background-raised rounded-md flex items-center h-full p-4 w-full gap-2'>
+            <div className='flex flex-row items-center gap-2 min-h-[52px]'>
+              <div className='bg-background-raised rounded-md flex items-center p-4 w-full gap-2'>
                 <CheckmarkIcon className={"w-4 h-4 text-positive"} />
 
                 <Text
                   variant="normal"
                   fontWeight="medium"
-                  className='text-primary/80'
+                  className='text-primary/80 text-xs sm:text-sm'
                   style={{ fontFamily: 'monospace' }}
                 >
                   {truncateAddress(wallet as Address, 20, 6)}

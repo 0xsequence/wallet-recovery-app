@@ -50,7 +50,7 @@ export function InsufficientBalanceMessage({
 
   return (
     <div className='flex flex-col gap-1'>
-      <Text variant="small" fontWeight="medium" color="negative">
+      <Text variant="small" fontWeight="medium" color="negative" className="break-words">
         {getMessage()}
       </Text>
     </div>

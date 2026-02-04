@@ -55,7 +55,7 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
 
        return (
               <div className='flex flex-col gap-1.5 mt-2'>
-                     <div className='flex flex-row gap-1 items-center'>
+                     <div className='flex flex-row flex-wrap gap-1 items-center'>
                             <img src={SendIcon} style={{ width: '16px', height: '16px' }} />
                             <Text variant="small" fontWeight="medium" className='text-primary/80'>
                                    Transfers ({parsedCalls.length})
@@ -66,7 +66,7 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                    key={idx}
                                    className='flex flex-col gap-1 border border-border-normal rounded-sm p-2 bg-background-muted'
                             >
-                                   <div className='flex flex-row gap-2 items-center'>
+                                   <div className='flex flex-row flex-wrap gap-2 items-center'>
                                           {getTransferIcon(parsedCall.type) && (
                                                  <div className='p-1.5 bg-background-secondary rounded-sm flex items-center justify-center'>
                                                         <img src={getTransferIcon(parsedCall.type)!} style={{ width: '20px', height: '20px' }} />
@@ -86,8 +86,8 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
 
                                    <div className='flex flex-col gap-1'>
                                           {parsedCall.recipient && (
-                                                 <div className='flex flex-row gap-2 items-center'>
-                                                        <div className='min-w-20'>
+                                                 <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                        <div className='sm:min-w-20'>
                                                                <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                       Recipient:
                                                                </Text>
@@ -118,8 +118,8 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                                  const formattedAmount = ethers.formatUnits(amountStr, decimals)
 
                                                  return (
-                                                        <div className='flex flex-row gap-2 items-center'>
-                                                               <div className='min-w-20'>
+                                                        <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                               <div className='sm:min-w-20'>
                                                                       <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                              Amount:
                                                                       </Text>
@@ -132,8 +132,8 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                           })()}
 
                                           {parsedCall.type === 'erc721' && parsedCall.tokenId !== undefined && (
-                                                 <div className='flex flex-row gap-2 items-center'>
-                                                        <div className='min-w-20'>
+                                                 <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                        <div className='sm:min-w-20'>
                                                                <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                       Token ID:
                                                                </Text>
@@ -146,8 +146,8 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
 
                                           {parsedCall.type === 'erc1155' && parsedCall.tokenId !== undefined && (
                                                  <div className='flex flex-col gap-0.5'>
-                                                        <div className='flex flex-row gap-2 items-center'>
-                                                               <div className='min-w-20'>
+                                                        <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                               <div className='sm:min-w-20'>
                                                                       <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                              Token ID:
                                                                       </Text>
@@ -157,8 +157,8 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                                                </Text>
                                                         </div>
                                                         {parsedCall.amount !== undefined && (
-                                                               <div className='flex flex-row gap-2 items-center'>
-                                                                      <div className='min-w-20'>
+                                                               <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                      <div className='sm:min-w-20'>
                                                                              <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                     Quantity:
                                                                              </Text>

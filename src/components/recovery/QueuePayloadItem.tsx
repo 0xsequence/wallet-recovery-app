@@ -60,7 +60,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	return (
 		<div className='flex flex-col gap-2 bg-background-muted border border-border-normal rounded-xl p-2'>
 			<Card
-				className='flex flex-row gap-3 p-4 bg-background-secondary rounded-md border-none'
+				className='flex flex-col gap-3 p-4 bg-background-secondary rounded-md border-none sm:flex-row sm:items-center'
 				style={{ opacity: isExecuted ? 0.5 : 1, pointerEvents: isExecuted ? 'none' : 'auto' }}
 			>
 				<PayloadStatusBadge
@@ -73,7 +73,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 					readyToExecute={readyToExecute}
 				/>
 
-				<div className='ml-auto'>
+				<div className='w-full sm:w-auto sm:ml-auto'>
 					<PayloadActionButton
 						isPending={isPending}
 						hash={hash}

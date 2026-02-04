@@ -29,7 +29,7 @@ export default function CollectibleList({
 
   const collectibleStore = useStore(CollectibleStore)
   const networkStore = useStore(NetworkStore)
-const walletStore = useStore(WalletStore)
+  const walletStore = useStore(WalletStore)
 
   const isFetchingBalances = useObservable(collectibleStore.isFetchingBalances)
   const userCollectibles = useObservable(collectibleStore.userCollectibles)
@@ -45,12 +45,11 @@ const walletStore = useStore(WalletStore)
   }, [collectibles, networkStore])
   const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
 
-
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
   return (
-    <div className='w-full'>
-      <div className='flex flex-row justify-between items-center'>
+    <div className='w-full mb-5'>
+      <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3'>
         <div className='flex flex-row items-center gap-2'>
           <img src={CollectionIcon} alt="Collectibles" className='w-4 h-4' />
 
@@ -62,6 +61,7 @@ const walletStore = useStore(WalletStore)
           size="sm"
           shape="square"
           onClick={() => setIsImportCollectibleViewOpen(true)}
+          className='w-full sm:w-auto'
         >
           <AddIcon />
           Import
@@ -70,7 +70,7 @@ const walletStore = useStore(WalletStore)
 
       <div className='h-0 my-2' />
 
-      <div className='flex flex-col gap-4 mb-8'>
+      <div className='flex flex-col gap-2'>
         {isFetchingBalances ? (
           <div className='flex flex-row items-center justify-center mt-4'>
             <Spinner size="lg" />
@@ -118,9 +118,10 @@ const walletStore = useStore(WalletStore)
             style: {
               scrollbarColor: 'gray black',
               scrollbarWidth: 'thin',
-              width: !isMobile ? '800px' : '100%',
+              width: '100%',
+              maxWidth: !isMobile ? '800px' : '100%',
               minHeight: 'auto',
-              maxHeight: '80%',
+              maxHeight: !isMobile ? '80%' : '90%',
               overflow: 'hidden'
             }
           }}

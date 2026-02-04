@@ -19,22 +19,28 @@ export default function Landing() {
 
   return (
     <div
-      className='h-dvh flex justify-center lg:justify-start pt-20 lg:pt-0 p-4 pb-0'
-      style={isMobile ? { paddingTop: '40px' } : desktopBg}
+      className='h-dvh flex justify-center lg:justify-start p-4 pb-0 pt-10 sm:pt-16 lg:pt-0'
+      style={isMobile ? undefined : desktopBg}
     >
-      <div className='flex flex-col justify-start lg:justify-center items-center lg:items-start max-w-800px gap-10 z-20 p-20'>
-        <div className='flex flex-col justify-center items-center lg:items-start gap-6'>
-          <img src={SequenceRecoveryLogo} className='h-8' />
+      <div className='flex flex-col justify-start lg:justify-center items-center lg:items-start w-full max-w-800px gap-8 sm:gap-10 z-20 px-4 sm:px-8 lg:px-20 py-10 sm:py-16 lg:py-20'>
+        <div className='flex flex-col justify-center items-center lg:items-start gap-6 w-full'>
+          <img src={SequenceRecoveryLogo} className='h-8 sm:h-9' />
 
-          {isMobile && <img src={bgImageMobile} className='max-w-calc(100% + 32px)' />}
+          {isMobile && <img src={bgImageMobile} className='w-full max-w-none rounded-lg' />}
 
-          <Text color="text100" className={cn("w-3/5 text-4xl", isMobile ? 'text-center' : 'text-left')}>
+          <Text
+            color="text100"
+            className={cn(
+              "w-full lg:w-3/5 text-2xl sm:text-3xl lg:text-4xl leading-tight",
+              isMobile ? 'text-center' : 'text-left'
+            )}
+          >
             A fully open source and forever accessible way to recover your Sequence Wallet
           </Text>
         </div>
 
 
-        <div className='flex flex-row gap-2'>
+        <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
           {/* TODO: Change link */}
           <Button
             size="md"
@@ -44,8 +50,8 @@ export default function Landing() {
 
           <Button variant="primary" onClick={() => navigate('/recovery')}>Start Recovery</Button>
         </div>
-        <div className='flex flex-col lg:flex-row gap-2 w-full lg:w-1/2 select-none'>
-          <Card className='flex flex-col gap-2'>
+        <div className='flex flex-col lg:flex-row gap-4 w-full lg:w-2/3 select-none'>
+          <Card className='flex flex-col gap-2 w-full'>
             <div className='flex flex-row gap-2'>
               <img src={contractsIcon} className='w-4 h-4' />
 
@@ -57,7 +63,7 @@ export default function Landing() {
               Connect your wallet to any web3 application via WalletConnect
             </Text>
           </Card>
-          <Card className='flex flex-col gap-2'>
+          <Card className='flex flex-col gap-2 w-full'>
             <div className='flex flex-row gap-2'>
               <img src={walletIcon} className='w-4 h-4' />
 

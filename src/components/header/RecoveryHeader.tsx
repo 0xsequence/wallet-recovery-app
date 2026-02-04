@@ -1,5 +1,6 @@
 import { Button, IconButton, MenuIcon, Text, useMediaQuery } from '@0xsequence/design-system'
 import { AnimatePresence } from 'framer-motion'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -24,6 +25,26 @@ export default function RecoveryHeader() {
 
   const signedIn = useObservable(authStore.accountAddress)
   const isNavDrawerOpen = useObservable(walletStore.isNavDrawerOpen)
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const [headerHeight, setHeaderHeight] = useState(RECOVERY_HEADER_HEIGHT)
+
+  useLayoutEffect(() => {
+    const headerEl = headerRef.current
+    if (!headerEl) return
+
+    const updateHeaderHeight = () => {
+      setHeaderHeight(headerEl.offsetHeight || RECOVERY_HEADER_HEIGHT)
+    }
+
+    updateHeaderHeight()
+
+    const resizeObserver = new ResizeObserver(updateHeaderHeight)
+    resizeObserver.observe(headerEl)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   const openNetworkModal = () => {
     walletStore.isNetworkModalOpen.set(true)
@@ -34,16 +55,18 @@ export default function RecoveryHeader() {
   }
 
   return (
-    <div style={{ paddingBottom: `${RECOVERY_HEADER_HEIGHT}px` }} className='flex flex-col'>
-      <div className='bg-background-primary fixed w-full z-50'>
+    <div style={{ paddingBottom: `${headerHeight}px` }} className='flex flex-col'>
+      <div ref={headerRef} className='bg-background-primary fixed w-full z-50'>
         <div
-          style={{ height: RECOVERY_HEADER_HEIGHT - 1 }}
-          className='flex flex-row justify-between items-center'
+          style={{ minHeight: RECOVERY_HEADER_HEIGHT - 1 }}
+          className='flex flex-row flex-wrap justify-between items-center gap-3 px-4 py-2 sm:px-6'
         >
           {isMobile ? (
             <>
-              <div className='flex flex-row'>
-                <AnimatePresence>{isNavDrawerOpen && <MobileDrawerContent />}</AnimatePresence>
+              <div className='flex flex-row items-center gap-2 shrink-0'>
+                <AnimatePresence>
+                  {isNavDrawerOpen && <MobileDrawerContent topOffset={headerHeight} />}
+                </AnimatePresence>
 
                 <IconButton
                   variant="text"
@@ -51,16 +74,16 @@ export default function RecoveryHeader() {
                   icon={MenuIcon}
                 />
 
-                <img src={SequenceLogo} className='ml-5' />
+                <img src={SequenceLogo} className='ml-2 h-5 w-auto' />
               </div>
-              <div className='flex flex-row items-center gap-5 mr-20'>
+              <div className='flex flex-row flex-wrap items-center gap-3'>
                 {signedIn && <SettingsDropdownMenu />}
               </div>
             </>
           ) : (
             <>
-              <img src={SequenceRecoveryLogo} className='ml-5' />
-              <div style={{ marginRight: '80px' }} className='flex flex-row items-center gap-5'>
+              <img src={SequenceRecoveryLogo} className='h-6 w-auto shrink-0' />
+              <div className='flex flex-row flex-wrap items-center gap-4'>
                 <Button
                   variant="text"
                   // TODO: change link
@@ -80,12 +103,12 @@ export default function RecoveryHeader() {
                   }}
                 >
                   <div className='flex flex-row items-center gap-2'>
-                      <img src={networkIcon} height="5" />
-                      <Text variant="normal" fontWeight="bold" color="text50">
-                        Networks
-                      </Text>
-                    </div>
-</Button>
+                    <img src={networkIcon} height="5" />
+                    <Text variant="normal" fontWeight="bold" color="text50">
+                      Networks
+                    </Text>
+                  </div>
+                </Button>
                 {signedIn && <SettingsDropdownMenu />}
               </div>
             </>

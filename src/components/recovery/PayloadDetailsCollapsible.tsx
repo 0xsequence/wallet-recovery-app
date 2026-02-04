@@ -26,7 +26,7 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
        return (
               <Collapsible label="Show details">
                      <div className='flex flex-col gap-1.5 mt-2'>
-                            <div className='flex flex-row gap-1 items-center'>
+                            <div className='flex flex-row flex-wrap gap-1 items-center'>
                                    <img src={SendIcon} style={{ width: '16px', height: '16px' }} />
                                    <Text variant="small" fontWeight="medium" className='text-primary/80'>
                                           Transfers ({parsedCalls.length})
@@ -65,7 +65,7 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
                                                  key={idx}
                                                  className='flex flex-col gap-1 p-2 bg-background-muted rounded-sm border border-border-normal'
                                           >
-                                                 <div className='flex flex-row gap-2 items-center'>
+                                                 <div className='flex flex-row flex-wrap gap-2 items-center'>
                                                         {getTransferIcon() && (
                                                                <div className='p-1.5 bg-background-secondary rounded-sm flex items-center justify-center'>
                                                                       <img src={getTransferIcon()!} style={{ width: '20px', height: '20px' }} />
@@ -85,8 +85,8 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
 
                                                  <div className='flex flex-col gap-1'>
                                                         {parsedCall.recipient && (
-                                                               <div className='flex flex-row gap-2 items-center'>
-                                                                      <div className='min-w-20'>
+                                                               <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                      <div className='sm:min-w-20'>
                                                                              <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                     Recipient:
                                                                              </Text>
@@ -116,8 +116,8 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
                                                                const formattedAmount = ethers.formatUnits(amountStr, decimals)
 
                                                                return (
-                                                                      <div className='flex flex-row gap-2 items-center'>
-                                                                             <div className='min-w-20'>
+                                                                      <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                             <div className='sm:min-w-20'>
                                                                                     <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                            Amount:
                                                                                     </Text>
@@ -130,8 +130,8 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
                                                         })()}
 
                                                         {parsedCall.type === 'erc721' && parsedCall.tokenId !== undefined && (
-                                                               <div className='flex flex-row gap-2 items-center'>
-                                                                      <div className='min-w-20'>
+                                                               <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                      <div className='sm:min-w-20'>
                                                                              <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                     Token ID:
                                                                              </Text>
@@ -144,8 +144,8 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
 
                                                         {parsedCall.type === 'erc1155' && parsedCall.tokenId !== undefined && (
                                                                <div className='flex flex-col gap-0.5'>
-                                                                      <div className='flex flex-row gap-2 items-center'>
-                                                                             <div className='min-w-20'>
+                                                                      <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                             <div className='sm:min-w-20'>
                                                                                     <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                            Token ID:
                                                                                     </Text>
@@ -155,12 +155,12 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
                                                                              </Text>
                                                                       </div>
                                                                       {parsedCall.amount !== undefined && (
-                                                                             <div className='flex flex-row gap-2 items-center'>
-                                                                                    <div className='min-w-20'>
-                                                                                           <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
-                                                                                                  Quantity:
-                                                                                           </Text>
-                                                                                    </div>
+                                                                             <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                                    <div className='sm:min-w-20'>
+                                                                                          <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
+                                                                                                 Quantity:
+                                                                                          </Text>
+                                                                                   </div>
                                                                                     <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                                            {parsedCall.amount.toString()}
                                                                                     </Text>

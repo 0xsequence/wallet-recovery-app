@@ -6,9 +6,11 @@ import { WalletStore } from '~/stores/WalletStore'
 import networkIcon from '~/assets/icons/chain.svg'
 import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
 
-import { RECOVERY_HEADER_HEIGHT } from './RecoveryHeader'
+type MobileDrawerContentProps = {
+  topOffset: number
+}
 
-export const MobileDrawerContent = () => {
+export const MobileDrawerContent = ({ topOffset }: MobileDrawerContentProps) => {
   const walletStore = useStore(WalletStore)
 
   const openNetworkModal = () => {
@@ -21,9 +23,9 @@ export const MobileDrawerContent = () => {
 
   return (
     <div
-      className='fixed left-0 w-vw h-vh bg-backgroundOverlay flex flex-row lg:hidden z-20 top-[61px]'
+      className='fixed left-0 w-vw h-vh bg-backgroundOverlay flex flex-row lg:hidden z-20'
       style={{
-        top: RECOVERY_HEADER_HEIGHT
+        top: topOffset
       }}
     >
       <div

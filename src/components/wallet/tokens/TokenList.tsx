@@ -49,7 +49,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
 
   return (
     <div className='flex flex-col'>
-      <div className='flex flex-row items-center'>
+      <div className='flex flex-col sm:flex-row sm:items-center gap-3'>
         <div className='flex flex-row items-center gap-2'>
           <img src={CoinIcon} alt="Coins" className='w-4 h-4' />
 
@@ -58,8 +58,11 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
           </Text>
         </div>
 
-        <div className='flex flex-row gap-4 ml-auto'>
-          <div className='flex flex-row items-center cursor-pointer gap-2' onClick={() => setFilterZeroBalances(!filterZeroBalances)}>
+        <div className='flex flex-col sm:flex-row gap-3 sm:gap-4 sm:ml-auto'>
+          <div
+            className='flex flex-row items-center cursor-pointer gap-2'
+            onClick={() => setFilterZeroBalances(!filterZeroBalances)}
+          >
             <FilledCheckBox checked={filterZeroBalances} size="md" />
 
             <Text variant="small" color="text80">
@@ -71,6 +74,7 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
             size="sm"
             shape="square"
             onClick={() => setIsImportTokenViewOpen(true)}
+            className='w-full sm:w-auto'
           >
             <AddIcon />
             Import
@@ -117,9 +121,10 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
             style: {
               scrollbarColor: 'gray black',
               scrollbarWidth: 'thin',
-              width: !isMobile ? '800px' : '100%',
+              width: '100%',
+              maxWidth: !isMobile ? '800px' : '100%',
               minHeight: 'auto',
-              maxHeight: '80%',
+              maxHeight: !isMobile ? '80%' : '90%',
               overflow: 'hidden'
             }
           }}

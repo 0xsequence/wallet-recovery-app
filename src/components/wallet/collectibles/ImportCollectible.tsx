@@ -294,7 +294,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     return (
       <div
         key={i}
-        className='flex flex-row items-center gap-4 bg-background-primary hover:bg-backgroundSecondary rounded-sm p-3'
+        className='flex flex-row items-center gap-3 sm:gap-4 bg-background-primary hover:bg-backgroundSecondary rounded-sm p-3'
         onClick={() => {
           toggleSelectCollectible(collectible)
         }}
@@ -340,10 +340,10 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }
 
   return (
-    <div className='flex flex-col h-fit min-h-full'>
+    <div className='flex flex-col h-fit min-h-full w-full'>
       {selectedCollection ? (
-        <div className='flex flex-col h-full p-6 gap-6'>
-          <div className='flex flex-row items-center gap-4'>
+        <div className='flex flex-col h-full p-4 sm:p-6 gap-6'>
+          <div className='flex flex-row items-center gap-3 sm:gap-4'>
             <IconButton icon={ChevronLeftIcon} onClick={() => setSelectedCollection(undefined)} />
 
             <SelectedCollectionHeader collection={selectedCollection} />
@@ -386,8 +386,8 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           )}
         </div>
       ) : (
-        <div className='flex flex-col h-full p-6 gap-6'>
-          <div className='flex flex-row items-center gap-4'>
+        <div className='flex flex-col h-full p-4 sm:p-6 gap-6'>
+          <div className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4'>
             <Text variant="large" fontWeight="bold" color="text80">
               Import Collectibles
             </Text>
@@ -407,7 +407,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               onValueChange={value =>
                 setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
               }
-              className='h-7! rounded-lg!'
+              className='h-7! rounded-lg! w-full sm:w-auto'
             />
           </div>
 
@@ -456,7 +456,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             <Button
               variant="secondary"
               shape="square"
-              className='mt-auto'
+              className='mt-auto text-left whitespace-normal'
               onClick={selectedNetwork && contractType ? handleImportCustomCollectibleList : undefined}
             >
               <FolderIcon className='w-4 h-4' />
@@ -467,7 +467,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             </Button>
           </div>
 
-          <div className='flex flex-col h-[340px] overflow-y-auto'>
+          <div className='flex flex-col overflow-y-auto'>
             {filteredCollectionList?.map((collection, i) => <CollectionListItem collection={collection} key={i} onClick={() => setSelectedCollection(collection)} />)}
           </div>
 
@@ -484,6 +484,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               shape="square"
               size="xs"
               onClick={() => setConfirmRefreshList(true)}
+              className='w-full sm:w-auto'
             >
               <RefreshIcon className='w-4 h-4' />
               Refresh list - last updated: {collectionListDate?.toLocaleString()}
@@ -492,7 +493,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         </div>
       )}
       <div className='mt-auto'>
-        <div className='px-6'>
+        <div className='px-4 sm:px-6'>
           {isAddingCollectibleManually && (
             <div className='flex flex-col gap-3'>
               <div className='flex flex-col gap-0.5'>
@@ -546,7 +547,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           )}
 
           {manualCollectibleInfo && manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
-            <div className='flex flex-row gap-6 items-center bg-background-secondary p-2 px-6'>
+            <div className='flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center bg-background-secondary p-3 sm:p-4 sm:px-6'>
               <CheckmarkIcon className='w-4 h-4 text-positive' />
 
               <img src={manualCollectibleInfo.image} className='w-12 h-12' />
@@ -584,7 +585,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
         <div className='h-0 bg-white' />
 
         <div className='w-full'>
-          <div className='flex flex-row p-6 gap-2'>
+          <div className='flex flex-col sm:flex-row p-4 sm:p-6 gap-2'>
             {isAddingCollectibleManually ? (
               <Button
                 size="md"
@@ -595,6 +596,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   setCollectibleManualAddress('')
                   setManualCollectibleInfo(undefined)
                 }}
+                className='w-full sm:w-auto'
               >
                 Hide
               </Button>
@@ -606,12 +608,13 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                 onClick={() => {
                   setIsAddingCollectibleManually(true)
                 }}
+                className='w-full sm:w-auto'
               >
                 Manual Import
               </Button>
             )}
 
-            <Button size="md" shape="square" className='ml-auto' onClick={onClose}>
+            <Button size="md" shape="square" className='w-full sm:w-auto sm:ml-auto' onClick={onClose}>
               Cancel
             </Button>
 
@@ -623,6 +626,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
               onClick={() => {
                 handleAdd()
               }}
+              className='w-full sm:w-auto'
             >
               Add
             </Button>
@@ -632,12 +636,12 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
       {confirmRefreshList && (
         <Modal size="sm">
-          <div className='flex flex-col p-6 gap-6'>
+          <div className='flex flex-col p-4 sm:p-6 gap-6'>
             <Text variant="normal" fontWeight="medium" color="text80">
               {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
             </Text>
 
-            <div className='flex flex-row justify-end gap-3'>
+            <div className='flex flex-col sm:flex-row justify-end gap-3'>
               <Button size="md" shape="square" onClick={() => setConfirmRefreshList(false)}>
                 Cancel
               </Button>
@@ -656,7 +660,11 @@ function CollectionListItem({ collection, onClick }: { collection: any, onClick:
   const [imageError, setImageError] = useState(false)
 
   return (
-    <Button variant="secondary" className='flex border-none flex-row items-center gap-4 bg-background-primary hover:bg-background-hover rounded-sm p-3' onClick={onClick}>
+    <Button
+      variant="secondary"
+      className='flex border-none flex-row items-center gap-3 sm:gap-4 bg-background-primary hover:bg-background-hover rounded-sm p-3 w-full text-left mb-2 last:mb-0'
+      onClick={onClick}
+    >
       {imageError || !collection.logoURI ? (
         <div className='w-10 h-10 rounded-full bg-background-secondary flex items-center justify-center'>
           <CollectionIcon className='w-4 h-4 text-secondary' />
@@ -677,7 +685,7 @@ function SelectedCollectionHeader({ collection }: { collection: any }) {
   const [imageError, setImageError] = useState(false)
 
   return (
-    <div className='flex flex-row items-center gap-4'>
+    <div className='flex flex-row items-center gap-3 sm:gap-4'>
       {imageError || !collection.logoURI ? (
         <div className='w-10 h-10 rounded-full bg-background-secondary flex items-center justify-center'>
           <CollectionIcon className='w-4 h-4 text-secondary' />

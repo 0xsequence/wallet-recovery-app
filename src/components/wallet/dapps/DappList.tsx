@@ -4,7 +4,6 @@ import {
   Card,
   Modal,
   Text,
-  useMediaQuery
 } from '@0xsequence/design-system'
 import { useObservable } from 'micro-observables'
 import { useState } from 'react'
@@ -22,7 +21,6 @@ import WarningIcon from '../../../assets/icons/warning.svg'
 
 export default function DappList() {
   const walletStore = useStore(WalletStore)
-  const isMobile = useMediaQuery('isMobile')
 
   const walletConnectSignClientStore = useStore(WalletConnectSignClientStore)
 
@@ -84,8 +82,10 @@ export default function DappList() {
       {isScanningQrWalletConnect && (
         <Modal
           contentProps={{
-            style: { width: !isMobile ? '500px' : '100%', height:"572px" }
+            className: 'w-full max-w-[500px] !w-[calc(100vw)] sm:!w-[500px]',
+            style: { height: '572px' }
           }}
+          rootProps={{ className: 'px-3 sm:px-0' }}
           onClose={() => setIsScanningQrWalletConnect(false)}
         >
           <WalletScan

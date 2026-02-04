@@ -119,8 +119,11 @@ export default function SendToken({
   }
 
   return (
-    <div className='min-w-[500px]' style={{ minWidth: isMobile ? '100vw' : '500px' }}>
-      <div className='flex flex-col gap-6 p-6'>
+    <div
+      className='w-full'
+      style={{ width: isMobile ? '100%' : '520px', maxWidth: '100%' }}
+    >
+      <div className='flex flex-col gap-6 p-4 sm:p-6'>
         <Text variant="large" fontWeight="bold" color="text100">
           Sending {tokenBalance?.contractInfo?.symbol} on {networkTitle}
         </Text>

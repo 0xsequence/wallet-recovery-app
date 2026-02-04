@@ -71,12 +71,17 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
 
 	return (
 		<div className='flex flex-col gap-2'>
-			<div className='flex flex-row items-center justify-between'>
-				<Text variant="small" fontWeight="bold" color="text50">
+			<div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+				<Text
+					variant="small"
+					fontWeight="bold"
+					color="text50"
+					className='break-words'
+				>
 					Recovery Payloads ({filteredPayloads.length} {filteredPayloads.length === 1 ? 'payload' : 'payloads'} {selectedChain !== "all" ? 'filtered' : 'queued'})
 				</Text>
 
-				<div className='flex flex-row gap-2 items-center'>
+				<div className='flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end'>
 					{uniqueChains.length > 1 && (
 						<Select.Helper
 							name="chain-filter"
