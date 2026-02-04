@@ -15,6 +15,7 @@ import {
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { isAddress } from 'viem'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
@@ -35,6 +36,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [tokenManualAddress, setTokenManualAddress] = useState<string>('')
 
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo>()
+  const [tokenError, setTokenError] = useState<string>('')
 
   const [isAddingToken, setIsAddingToken] = useState(false)
   const [confirmRefreshList, setConfirmRefreshList] = useState(false)
@@ -54,11 +56,29 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     if (tokenManualAddress) {
       const fetchTokenInfo = async () => {
         if (selectedNetwork) {
-          const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork.chainId, tokenManualAddress)
-          setTokenInfo(tokenInfo)
+          setTokenInfo(undefined)
+          setTokenError('')
+
+          if (!isAddress(tokenManualAddress)) {
+            setTokenError('Invalid address format')
+            return
+          }
+
+          try {
+            const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork.chainId, tokenManualAddress)
+            setTokenInfo(tokenInfo)
+            setTokenError('')
+          } catch (error) {
+            console.error('Error fetching token info:', error)
+            setTokenInfo(undefined)
+            setTokenError(`There is no token with this address, check the selected chain above`)
+          }
         }
       }
       fetchTokenInfo()
+    } else {
+      setTokenInfo(undefined)
+      setTokenError('')
     }
   }, [selectedNetwork, tokenManualAddress])
 
@@ -355,6 +375,10 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             <div className='flex items-center mb-6 justify-center'>
               <Spinner size="lg" />
             </div>
+          ) : tokenError ? (
+              <Text variant="normal" fontWeight="medium" color="negative">
+                {tokenError}
+              </Text>
           ) : (
             tokenInfo && (
               <Card className='flex flex-col mb-6 gap-2'>
@@ -384,6 +408,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setIsAddingTokenManually(false)
                   setTokenManualAddress('')
                   setTokenInfo(undefined)
+                  setTokenError('')
                 }}
                 className='w-full sm:w-auto'
               >
@@ -395,6 +420,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                 disabled={!selectedNetwork}
                 onClick={() => {
                   setIsAddingTokenManually(true)
+                  setTokenError('')
                 }}
                 className='w-full sm:w-auto'
               >

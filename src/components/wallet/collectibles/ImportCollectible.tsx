@@ -20,6 +20,7 @@ import {
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { BigNumberish, ethers } from 'ethers'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { isAddress } from 'viem'
 
 import { useObservable, useStore } from '~/stores'
 import {
@@ -62,6 +63,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
   const [isAddingCollectibleManually, setIsAddingCollectibleManually] = useState(false)
   const [manualCollectibleInfo, setManualCollectibleInfo] = useState<CollectibleInfoResponse | undefined>()
+  const [collectibleError, setCollectibleError] = useState<string>('')
 
   const [queryCollectibleTokenIdsMap, setQueryCollectibleTokenIdsMap] = useState<Record<string, string>>({})
 
@@ -89,16 +91,33 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
     const fetchCollectibleInfo = async () => {
       if (selectedNetwork && contractType && collectibleManualAddress && collectibleManualTokenId) {
-        collectibleStore
-          .getCollectibleInfo({
+        setManualCollectibleInfo(undefined)
+        setCollectibleError('')
+
+        if (!isAddress(collectibleManualAddress)) {
+          setCollectibleError('Invalid address format')
+          return
+        }
+
+        try {
+          const response = await collectibleStore.getCollectibleInfo({
             chainId: selectedNetwork.chainId,
             address: collectibleManualAddress,
             tokenId: collectibleManualTokenId,
             contractType
           })
-          .then(response => {
-            setManualCollectibleInfo(response)
-          })
+          setManualCollectibleInfo(response)
+          setCollectibleError('')
+        } catch (error: any) {
+          console.error('Error fetching collectible info:', error)
+          setManualCollectibleInfo(undefined)
+
+          const errorMessage = error.message || 'Unable to fetch collectible information'
+          setCollectibleError(errorMessage)
+        }
+      } else {
+        setManualCollectibleInfo(undefined)
+        setCollectibleError('')
       }
     }
 
@@ -538,9 +557,15 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             </div>
           )}
 
+          {collectibleError && !isFetchingCollectibleInfo && (
+            <Text variant="normal" fontWeight="medium" color="negative">
+              {collectibleError}
+            </Text>
+          )}
+
           {manualCollectibleInfo && !manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
-            <div className='flex flex-row items-center justify-center mb-6'>
-              <Text variant="medium" color="warning">
+            <div className='flex flex-row items-center mb-6'>
+              <Text color="warning">
                 You do not own this collectible
               </Text>
             </div>
@@ -595,6 +620,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   setIsAddingCollectibleManually(false)
                   setCollectibleManualAddress('')
                   setManualCollectibleInfo(undefined)
+                  setCollectibleError('')
                 }}
                 className='w-full sm:w-auto'
               >
@@ -607,6 +633,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                 disabled={!selectedNetwork}
                 onClick={() => {
                   setIsAddingCollectibleManually(true)
+                  setCollectibleError('')
                 }}
                 className='w-full sm:w-auto'
               >
