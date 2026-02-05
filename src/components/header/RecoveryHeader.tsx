@@ -8,9 +8,9 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import SettingsDropdownMenu from '~/components/header/WalletDropdownMenu'
 
-import networkIcon from '../../assets/icons/chain.svg'  
+import networkIcon from '../../assets/icons/chain.svg'
 import externalArrowIcon from '../../assets/icons/external-link-arrow.svg'
-import SequenceRecoveryLogo from '../../assets/images/sequence-wallet-recovery.svg'
+import SequenceRecoveryLogo from '../../assets/images/sequence.svg'
 import SequenceLogo from '../../assets/images/sequence.svg'
 
 import { MobileDrawerContent } from './MobileDrawerContent'
@@ -82,7 +82,17 @@ export default function RecoveryHeader() {
             </>
           ) : (
             <>
-              <img src={SequenceRecoveryLogo} className='h-6 w-auto shrink-0' />
+              <div className='flex flex-row items-center gap-2' >
+                <img src={SequenceRecoveryLogo} className='h-6 w-auto shrink-0' />
+                <div className='flex items-center gap-1 pb-1'>
+                  <Text variant="xlarge" fontWeight="bold" className='text-primary'>
+                    Sequence
+                  </Text>
+                  <Text variant="xlarge" fontWeight="bold" className='text-primary/70'>
+                    Wallet Recovery
+                  </Text>
+                </div>
+              </div>
               <div className='flex flex-row flex-wrap items-center gap-4'>
                 <Button
                   variant="text"

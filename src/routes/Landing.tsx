@@ -5,7 +5,7 @@ import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
 import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
 import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
-import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
+import SequenceRecoveryLogo from '~/assets/images/sequence.svg'
 
 const desktopBg = {
   backgroundImage: `url(${bgImage})`,
@@ -24,7 +24,18 @@ export default function Landing() {
     >
       <div className='flex flex-col justify-start lg:justify-center items-center lg:items-start w-full max-w-800px gap-8 sm:gap-10 z-20 px-4 sm:px-8 lg:px-20 py-10 sm:py-16 lg:py-20'>
         <div className='flex flex-col justify-center items-center lg:items-start gap-6 w-full'>
-          <img src={SequenceRecoveryLogo} className='h-8 sm:h-9' />
+          <div className='flex flex-row items-center gap-2'>
+            <img src={SequenceRecoveryLogo} className='h-8 sm:h-9 mr-2' />
+            <div className='flex items-center gap-1 '>
+              <Text variant="xxlarge" fontWeight="bold" className='text-primary'>
+                Sequence
+              </Text>
+              <Text variant="xxlarge" fontWeight="bold" className='text-primary/70'>
+                Wallet Recovery
+              </Text>
+            </div>
+
+          </div>
 
           {isMobile && <img src={bgImageMobile} className='w-full max-w-none rounded-lg' />}
 
