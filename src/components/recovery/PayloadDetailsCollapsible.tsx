@@ -1,4 +1,4 @@
-import { Text, Collapsible, Card, Tooltip } from '@0xsequence/design-system'
+import { Text, Collapsible, Card, GradientAvatar, Tooltip } from '@0xsequence/design-system'
 import { ethers } from 'ethers'
 import SendIcon from '~/assets/icons/send.svg'
 import CoinIcon from '~/assets/icons/coin.svg'
@@ -92,17 +92,20 @@ function PayloadDetailsCollapsible({ parsedCalls, tokenMetadata }: PayloadDetail
                                                                              </Text>
                                                                       </div>
                                                                       <Tooltip message={parsedCall.recipient}>
-                                                                             <Text
-                                                                                    variant="xsmall"
-                                                                                    style={{
-                                                                                           fontFamily: 'monospace',
-                                                                                           textDecoration: 'underline',
-                                                                                           cursor: 'pointer'
-                                                                                    }}
-                                                                                    className='text-primary/80'
-                                                                             >
-                                                                                    {truncateAddress(parsedCall.recipient, 6, 4)}
-                                                                             </Text>
+                                                                             <div className='inline-flex items-center gap-1'>
+                                                                                    <GradientAvatar address={parsedCall.recipient} size="xs" />
+                                                                                    <Text
+                                                                                           variant="xsmall"
+                                                                                           style={{
+                                                                                                  fontFamily: 'monospace',
+                                                                                                  textDecoration: 'underline',
+                                                                                                  cursor: 'pointer'
+                                                                                           }}
+                                                                                           className='text-primary/80'
+                                                                                    >
+                                                                                           {truncateAddress(parsedCall.recipient, 6, 4)}
+                                                                                    </Text>
+                                                                             </div>
                                                                       </Tooltip>
                                                                </div>
                                                         )}

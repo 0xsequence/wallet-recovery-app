@@ -5,6 +5,7 @@ import {
   CheckmarkIcon,
   CloseIcon,
   CopyIcon,
+  GradientAvatar,
   IconButton,
   Modal,
   Text,
@@ -97,6 +98,7 @@ export default function ExternalWallet() {
                 </Text>
 
                 <div className='flex flex-row items-center gap-1'>
+                  <GradientAvatar address={selectedExternalWalletAddress!} size="xs" />
                   <Text variant="normal" fontWeight="medium" color="text50" className='w-full'>
                     {truncateAddress(selectedExternalWalletAddress as Address, 10, 4)}
                   </Text>

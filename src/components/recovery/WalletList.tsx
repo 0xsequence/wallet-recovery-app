@@ -1,4 +1,4 @@
-import { CheckmarkIcon, Text } from '@0xsequence/design-system'
+import { CheckmarkIcon, GradientAvatar, Text } from '@0xsequence/design-system'
 import { truncateAddress } from '~/utils/truncateAddress'
 import { Address } from 'viem'
 
@@ -19,6 +19,7 @@ export default function WalletList({
             <div className='flex flex-row items-center gap-2 min-h-[52px]'>
               <div className='bg-background-raised rounded-md flex items-center p-4 w-full gap-2'>
                 <CheckmarkIcon className={"w-4 h-4 text-positive"} />
+                <GradientAvatar address={wallet} size="xs" />
 
                 <Text
                   variant="normal"
