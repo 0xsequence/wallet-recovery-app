@@ -1,4 +1,4 @@
-import { Text } from "@0xsequence/design-system"
+import { Alert } from "@0xsequence/design-system"
 import { ethers } from "ethers"
 import { ParsedCall } from "~/utils/transaction-parser"
 import { formatPrettyBalance } from "~/utils/format-pretty-balance"
@@ -22,7 +22,7 @@ export function InsufficientBalanceMessage({
 }: InsufficientBalanceMessageProps) {
   const getMessage = () => {
     if (firstCall.type === 'erc721') {
-      return `Insufficient balance. You don't own this NFT (Token ID: ${firstCall.tokenId?.toString()})`
+      return `You don't own this NFT (Token ID: ${firstCall.tokenId?.toString()}).`
     }
 
     if (firstCall.type === 'erc1155') {
@@ -32,7 +32,7 @@ export function InsufficientBalanceMessage({
           c.collectibleInfoParams.chainId === chainId
       )
       const userBalance = collectible?.collectibleInfoResponse.balance?.toString() ?? '0'
-      return `Insufficient balance. You have ${userBalance} but need ${transactionAmount?.toString() ?? '0'} of Token ID: ${firstCall.tokenId?.toString()}.`
+      return `You have ${userBalance} but need ${transactionAmount?.toString() ?? '0'} of Token ID: ${firstCall.tokenId?.toString()}.`
     }
 
     // For ERC20 and native tokens
@@ -45,14 +45,15 @@ export function InsufficientBalanceMessage({
     const decimals = metadata?.decimals ?? 18
     const symbol = metadata?.symbol ?? 'tokens'
 
-    return `Insufficient balance. You have ${formatPrettyBalance(balanceOfToken?.balance ?? '0', decimals)} ${symbol} but need ${formatPrettyBalance(transactionAmount?.toString() ?? '0', decimals)} ${symbol}.`
+    return `You have ${formatPrettyBalance(balanceOfToken?.balance ?? '0', decimals)} ${symbol} but need ${formatPrettyBalance(transactionAmount?.toString() ?? '0', decimals)} ${symbol}.`
   }
 
   return (
-    <div className='flex flex-col gap-1'>
-      <Text variant="small" fontWeight="medium" color="negative" className="break-words">
-        {getMessage()}
-      </Text>
-    </div>
+    <Alert.Helper
+      variant="error"
+      title="Insufficient balance"
+      description={getMessage()}
+      className='[&_[data-slot=alert-description]]:break-words'
+    />
   )
 }

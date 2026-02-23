@@ -1,4 +1,4 @@
-import { Button, Text, TextInput, WarningIcon } from '@0xsequence/design-system'
+import { Alert, Button, Text, TextInput } from '@0xsequence/design-system'
 import { ChangeEvent } from 'react'
 
 export type AmountInputProps = {
@@ -57,12 +57,11 @@ export function AmountInput({
       />
 
       {insufficientBalance && (
-        <div className='flex flex-row items-center gap-1 pt-1'>
-          <WarningIcon color="warning" size="xs" />
-          <Text variant="small" color="warning">
-            Insufficient balance for this transaction
-          </Text>
-        </div>
+        <Alert.Helper
+          className='mt-1'
+          variant="warning"
+          title="Insufficient balance for this transaction"
+        />
       )}
     </div>
   )
