@@ -1,37 +1,20 @@
-import { Text } from '@0xsequence/design-system'
-import { TabsPrimitive } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
+import { TabsTrigger } from '@0xsequence/design-system'
 
 export default function NetworkTab({
-  value,
-  selectedNetworkType
+  value
 }: {
-  value: string
-  selectedNetworkType: NetworkType | 'arweave'
+  value: NetworkType | 'arweave'
 }) {
   const networkTypeString =
     value === NetworkType.MAINNET ? 'Mainnets' : value === NetworkType.TESTNET ? 'Testnets' : 'Arweave'
 
   return (
-    <TabsPrimitive.TabsTrigger
+    <TabsTrigger
       value={value}
-      style={{
-        backgroundColor: 'inherit',
-        border: 'none',
-        cursor: 'pointer'
-      }}
+      className='h-8 px-4'
     >
-      <Text
-        variant="normal"
-        fontWeight="semibold"
-        color={selectedNetworkType === value ? 'text100' : 'text50'}
-        className='px-4'
-      >
-        {networkTypeString}
-      </Text>
-      {selectedNetworkType === value && (
-        <div className='h-0.5 bg-backgroundBackdrop relative top-1.5' />
-      )}
-    </TabsPrimitive.TabsTrigger>
+      {networkTypeString}
+    </TabsTrigger>
   )
 }

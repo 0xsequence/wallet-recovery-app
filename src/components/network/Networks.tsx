@@ -1,4 +1,4 @@
-import { TabsContent, TabsPrimitive } from '@0xsequence/design-system'
+import { Tabs, TabsContent } from '@0xsequence/design-system'
 import { NetworkType } from '@0xsequence/network'
 import { useState } from 'react'
 
@@ -12,6 +12,8 @@ import NetworkHeader from './NetworkHeader'
 import NetworkList from './NetworkList'
 
 export default function Networks() {
+  type NetworkTabValue = NetworkType | 'arweave'
+
   const networkStore = useStore(NetworkStore)
   const networks = useObservable(networkStore.networks)
   const userAdditions = useObservable(networkStore.userAdditionNetworkChainIds)
@@ -23,17 +25,17 @@ export default function Networks() {
 
   const testnets = networks.filter(network => network.type === NetworkType.TESTNET)
 
-  const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkType | 'arweave'>(NetworkType.MAINNET)
+  const [selectedNetworkType, setSelectedNetworkType] = useState<NetworkTabValue>(NetworkType.MAINNET)
 
   return (
     <div className='flex flex-col'>
       {!isAddingNetwork ? (
         <div className='flex flex-col justify-between'>
-          <TabsPrimitive.Root
+          <Tabs
             value={selectedNetworkType}
-            onValueChange={value => setSelectedNetworkType(value as NetworkType)}
+            onValueChange={value => setSelectedNetworkType(value as NetworkTabValue)}
           >
-            <NetworkHeader selectedNetworkType={selectedNetworkType} />
+            <NetworkHeader />
 
             <div className='p-6' style={{ marginTop: '108px', marginBottom: '85px' }}>
               <TabsContent value={NetworkType.MAINNET}>
@@ -48,7 +50,7 @@ export default function Networks() {
                 <Arweave />
               </TabsContent>
             </div>
-          </TabsPrimitive.Root>
+          </Tabs>
           <NetworkFooter />
         </div>
       ) : (
