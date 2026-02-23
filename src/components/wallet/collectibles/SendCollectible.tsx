@@ -1,4 +1,4 @@
-import { Button, Text, useMediaQuery } from '@0xsequence/design-system'
+import { Button, Checkbox, Text, useMediaQuery } from '@0xsequence/design-system'
 import { BigNumberish } from 'ethers'
 import { useEffect, useMemo, useState } from 'react'
 import { useObservable } from 'micro-observables'
@@ -12,7 +12,6 @@ import { useStore } from '~/stores'
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 import { WalletStore } from '~/stores/WalletStore'
 
-import { FilledCheckBox } from '~/components/misc'
 import { AmountInput } from '~/components/send/AmountInput'
 import { AddressInput } from '~/components/send/AddressInput'
 import { TransactionSuccess } from '~/components/send/TransactionSuccess'
@@ -192,7 +191,7 @@ export default function SendCollectible({
           onClick={() => setSendToExternalWallet(!sendToExternalWallet)}
         >
           <div className='flex flex-row items-center gap-2'>
-            <FilledCheckBox checked={sendToExternalWallet} size="md" />
+            <Checkbox checked={sendToExternalWallet} />
             <Text variant="small" color="text80">
               Send to connected external wallet address
             </Text>

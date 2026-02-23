@@ -1,5 +1,5 @@
 import {
-  Button,
+  Checkbox,
   ChevronDownIcon,
   CollapsiblePrimitive,
   NetworkImage,
@@ -11,8 +11,6 @@ import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
-
-import { FilledCheckBox } from '~/components/misc'
 
 export default function NetworkItem({ network }: { network: NetworkConfig }) {
   const networkStore = useStore(NetworkStore)
@@ -58,15 +56,13 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
     <CollapsiblePrimitive.Root className="rounded-lg border border-border-normal bg-background-secondary ">
       <div className="flex items-center justify-between">
         <div className="flex items-center justify-center aspect-square pl-3">
-          <Button
-            variant="text"
-            size="xs"
-            shape="square"
-            className="shrink-0"
-            onClick={() => setDisabled(!disabled)}
-          >
-            <FilledCheckBox checked={!disabled} />
-          </Button>
+          <Checkbox
+            checked={!disabled}
+            size="lg"
+            className='shrink-0'
+            aria-label={`${disabled ? 'Enable' : 'Disable'} ${network.title}`}
+            onCheckedChange={checked => setDisabled(!(checked === true))}
+          />
         </div>
         <CollapsiblePrimitive.Trigger asChild>
           <button

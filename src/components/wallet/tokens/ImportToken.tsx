@@ -1,8 +1,8 @@
 import {
   Button,
   Card,
-  CheckmarkIcon,
-  cn,
+  Checkbox,
+  FileInput,
   FolderIcon,
   Modal,
   RefreshIcon,
@@ -11,6 +11,7 @@ import {
   Spinner,
   Text,
   TextInput,
+  cn,
   useToast
 } from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
@@ -117,7 +118,9 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!tokenListFilter) { return setFilteredTokenList(tokenList.slice(0, 8)) }
+    if (!tokenListFilter) {
+      return setFilteredTokenList(tokenList.slice(0, 8))
+    }
     setFilteredTokenList(
       tokenList
         .filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
@@ -190,40 +193,41 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      try {
-        const text = await file.text()
-        const tokenList = JSON.parse(text)
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
+      return
+    }
 
-        if (Array.isArray(tokenList)) {
-          tokenList.map(token => {
-            if (!token.address || !token.symbol) {
-              throw new Error('Invalid token list')
-            }
-          })
+    try {
+      const text = await file.text()
+      const tokenList = JSON.parse(text)
 
-          if (selectedNetwork) {
-            await tokenStore.addExternalTokenList(selectedNetwork.chainId, tokenList)
+      if (Array.isArray(tokenList)) {
+        tokenList.map(token => {
+          if (!token.address || !token.symbol) {
+            throw new Error('Invalid token list')
           }
-
-          toast({
-            variant: 'success',
-            title: `Custom token list imported successfully`
-          })
-          onClose()
-        } else {
-          throw new Error('Invalid file format')
-        }
-      } catch (error) {
-        console.error(error)
-        toast({
-          variant: 'error',
-          title: 'Failed to import token list',
-          description: 'Please ensure the file format is correct.'
         })
+
+        if (selectedNetwork) {
+          await tokenStore.addExternalTokenList(selectedNetwork.chainId, tokenList)
+        }
+
+        toast({
+          variant: 'success',
+          title: `Custom token list imported successfully`
+        })
+        onClose()
+      } else {
+        throw new Error('Invalid file format')
       }
+    } catch (error) {
+      console.error(error)
+      toast({
+        variant: 'error',
+        title: 'Failed to import token list',
+        description: 'Please ensure the file format is correct.'
+      })
     }
   }
 
@@ -242,9 +246,9 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className='flex flex-col h-fit min-h-full w-full'>
-      <div className='flex flex-col h-full p-4 sm:p-6 gap-6'>
-        <div className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4'>
+    <div className="flex flex-col h-fit min-h-full w-full">
+      <div className="flex flex-col h-full p-4 sm:p-6 gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <Text variant="large" fontWeight="bold" color="text80">
             Import Tokens
           </Text>
@@ -253,9 +257,11 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             name="tokenNetwork"
             options={mainnetNetworks.map(network => ({
               label: (
-                <div className='flex flex-row items-center gap-2'>
-                  <img src={network.logoURI} className='w-4 h-4' />
-                  <Text variant="normal" className='text-primary/80'>{network.title}</Text>
+                <div className="flex flex-row items-center gap-2">
+                  <img src={network.logoURI} className="w-4 h-4" />
+                  <Text variant="normal" className="text-primary/80">
+                    {network.title}
+                  </Text>
                 </div>
               ),
               value: network.chainId.toString()
@@ -264,11 +270,11 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             onValueChange={value =>
               setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
             }
-            className='h-7! rounded-lg! w-full sm:w-auto'
+            className="h-7! rounded-lg! w-full sm:w-auto"
           />
         </div>
 
-        <div className='flex flex-col gap-3'>
+        <div className="flex flex-col gap-3">
           <TextInput
             leftIcon={SearchIcon}
             value={tokenListFilter}
@@ -280,66 +286,67 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             variant="secondary"
             shape="square"
             onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
-            className='mt-auto text-left whitespace-normal'
+            className="mt-auto text-left whitespace-normal"
           >
-            <FolderIcon className='w-4 h-4' />
+            <FolderIcon className="w-4 h-4" />
             {selectedNetwork
               ? `Import custom token list for ${' ' + selectedNetwork?.title}`
               : 'Select Network to import custom token list'}
           </Button>
         </div>
 
-        <div className='flex flex-col'>
+        <div className="flex flex-col">
           {filteredTokenList?.map((token, i) => {
+            const isSelected = selectedTokens.some(t => t.address === token.address)
+            const selectedToken = selectedTokens.find(t => t.address === token.address)
+
             return (
               <div
                 key={i}
                 className={cn(
                   'flex flex-row items-center justify-between bg-background-primary hover:bg-background-secondary rounded-sm p-3',
-                  (selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0 && 'bg-background-secondary'
+                  isSelected && 'bg-background-secondary'
                 )}
                 onClick={() => {
                   toggleSelectToken(token.address)
                 }}
               >
-                <div className='flex flex-row items-center'>
-                  <img src={token.logoURI} className='w-6 h-6 rounded-full mr-4' />
+                <div className="flex flex-row items-center">
+                  <img src={token.logoURI} className="w-6 h-6 rounded-full mr-4" />
 
                   <Text variant="normal" fontWeight="medium" color="text80">
                     {token.symbol}
                   </Text>
                 </div>
 
-                <div className='flex flex-row items-center justify-end gap-2'>
-                  {selectedTokens?.filter(t => t.address.includes(token.address)).length > 0 && (
+                <div className="flex flex-row items-center justify-end gap-2">
+                  {isSelected && (
                     <>
                       <Text variant="normal" fontWeight="bold" color="text80">
                         Balance:
                       </Text>
-                      {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance ? (
+                      {selectedToken?.info?.balance ? (
                         <Text variant="normal" fontWeight="bold" color="text80">
-                          {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance}
+                          {selectedToken.info.balance}
                         </Text>
                       ) : (
-                        <Spinner size="md" className='mr-1' />
+                        <Spinner size="md" className="mr-1" />
                       )}
                     </>
                   )}
-                  <CheckmarkIcon
-                    className={`${(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0 ? 'text-positive' : 'text-primary/30'}`}
-                  />
+                  <Checkbox checked={isSelected} />
                 </div>
               </div>
             )
           })}
         </div>
 
-        <input
-          type="file"
-          accept=".json"
-          style={{ display: 'none' }}
+        <FileInput
+          name="tokenListFile"
+          validExtensions={['json']}
+          className="hidden"
           ref={fileInputRef}
-          onChange={handleFileChange}
+          onValueChange={handleFileChange}
         />
 
         {tokenListDate && (
@@ -348,18 +355,18 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             size="xs"
             color="text80"
             onClick={() => setConfirmRefreshList(true)}
-            className='w-full sm:w-auto'
+            className="w-full sm:w-auto"
           >
-            <RefreshIcon size="xs" className='mr-1' />
+            <RefreshIcon size="xs" className="mr-1" />
             Refresh list - last updated: {tokenListDate?.toLocaleString()}
           </Button>
         )}
       </div>
 
-      <div className='mt-auto'>
-        <div className='p-4 sm:p-6'>
+      <div className="mt-auto">
+        <div className="p-4 sm:p-6">
           {isAddingTokenManually && (
-            <div className='flex flex-col mb-6 gap-0.5'>
+            <div className="flex flex-col mb-6 gap-0.5">
               <Text variant="normal" fontWeight="medium" color="text80">
                 Token Address
               </Text>
@@ -375,16 +382,16 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           )}
 
           {isFetchingTokenInfo && tokenManualAddress ? (
-            <div className='flex items-center mb-6 justify-center'>
+            <div className="flex items-center mb-6 justify-center">
               <Spinner size="lg" />
             </div>
           ) : tokenError ? (
-              <Text variant="normal" fontWeight="medium" color="negative">
-                {tokenError}
-              </Text>
+            <Text variant="normal" fontWeight="medium" color="negative">
+              {tokenError}
+            </Text>
           ) : (
             tokenInfo && (
-              <Card className='flex flex-col mb-6 gap-2'>
+              <Card className="flex flex-col mb-6 gap-2">
                 <Text variant="medium" fontWeight="bold" color="text80">
                   {tokenInfo.symbol ?? ''}
                 </Text>
@@ -399,10 +406,10 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        <div className='my-0' />
+        <div className="my-0" />
 
         <div>
-          <div className='flex flex-col sm:flex-row p-4 sm:p-6 gap-2 pt-4'>
+          <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2 pt-4">
             {isAddingTokenManually ? (
               <Button
                 shape="square"
@@ -413,7 +420,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setTokenInfo(undefined)
                   setTokenError('')
                 }}
-                className='w-full sm:w-auto'
+                className="w-full sm:w-auto"
               >
                 Hide
               </Button>
@@ -425,13 +432,13 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setIsAddingTokenManually(true)
                   setTokenError('')
                 }}
-                className='w-full sm:w-auto'
+                className="w-full sm:w-auto"
               >
                 Manual Import
               </Button>
             )}
 
-            <Button size="md" shape="square" className='w-full sm:w-auto sm:ml-auto' onClick={onClose}>
+            <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
               Cancel
             </Button>
 
@@ -442,7 +449,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               onClick={() => {
                 handleAdd()
               }}
-              className='w-full sm:w-auto'
+              className="w-full sm:w-auto"
             >
               Add
             </Button>
@@ -452,21 +459,16 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
       {confirmRefreshList && (
         <Modal size="sm">
-          <div className='flex flex-col p-4 sm:p-6 gap-6'>
-            <Text variant="normal" fontWeight="medium" color="text80" className='pr-4'>
+          <div className="flex flex-col p-4 sm:p-6 gap-6">
+            <Text variant="normal" fontWeight="medium" color="text80" className="pr-4">
               {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
             </Text>
 
-            <div className='flex flex-col sm:flex-row justify-end gap-3'>
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <Button size="sm" shape="square" onClick={() => setConfirmRefreshList(false)}>
                 Cancel
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                shape="square"
-                onClick={handleRefreshTokenList}
-              >
+              <Button variant="destructive" size="sm" shape="square" onClick={handleRefreshTokenList}>
                 Confirm
               </Button>
             </div>

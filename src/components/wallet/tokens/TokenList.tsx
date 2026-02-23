@@ -1,4 +1,4 @@
-import { AddIcon, Button, Card, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
+import { AddIcon, Button, Card, Checkbox, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
@@ -6,8 +6,6 @@ import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
-
-import { FilledCheckBox } from '~/components/misc'
 
 import CoinIcon from '~/assets/icons/coin.svg'
 
@@ -59,13 +57,18 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
         </div>
 
         <div className='flex flex-col sm:flex-row gap-3 sm:gap-4 sm:ml-auto'>
-          <div
-            className='flex flex-row items-center cursor-pointer gap-2'
-            onClick={() => setFilterZeroBalances(!filterZeroBalances)}
-          >
-            <FilledCheckBox checked={filterZeroBalances} size="md" />
+          <div className='flex flex-row items-center gap-2'>
+            <Checkbox
+              checked={filterZeroBalances}
+              onCheckedChange={checked => setFilterZeroBalances(checked === true)}
+            />
 
-            <Text variant="small" color="text80">
+            <Text
+              variant="small"
+              color="text80"
+              className='cursor-pointer'
+              onClick={() => setFilterZeroBalances(!filterZeroBalances)}
+            >
               Filter zero balances
             </Text>
           </div>
