@@ -1,5 +1,11 @@
 import { useEffect } from 'react'
-import { Route, HashRouter as Router, Routes, useNavigate, useLocation } from 'react-router-dom'
+import { Route, HashRouter as Router, Routes, useLocation, useNavigate } from 'react-router-dom'
+
+import { NAVIGATION_KEY } from '~/constants/storage'
+
+import { useCreateWalletRecoveryContext } from '~/hooks/wallet-recovery-context'
+
+import { WalletRecoveryProvider } from '~/components/provider/WalletRecoveryProvider'
 
 import GitHubCorner from '~/assets/GithubCorner'
 
@@ -7,9 +13,6 @@ import Landing from './Landing'
 import Recovery from './Recovery'
 import WalletV2Recovery from './WalletV2Recovery'
 import WalletV3Recovery from './WalletV3Recovery'
-import { WalletRecoveryProvider } from '~/components/provider/WalletRecoveryProvider'
-import { useCreateWalletRecoveryContext } from '~/hooks/wallet-recovery-context'
-import { NAVIGATION_KEY } from '~/constants/storage'
 
 const RouterContent = () => {
   const navigate = useNavigate()

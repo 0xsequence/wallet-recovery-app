@@ -10,9 +10,7 @@ import SettingsDropdownMenu from '~/components/header/WalletDropdownMenu'
 
 import networkIcon from '../../assets/icons/chain.svg'
 import externalArrowIcon from '../../assets/icons/external-link-arrow.svg'
-import SequenceRecoveryLogo from '../../assets/images/sequence.svg'
-import SequenceLogo from '../../assets/images/sequence.svg'
-
+import { default as SequenceLogo, default as SequenceRecoveryLogo } from '../../assets/images/sequence.svg'
 import { MobileDrawerContent } from './MobileDrawerContent'
 
 export const RECOVERY_HEADER_HEIGHT = 61
@@ -30,7 +28,9 @@ export default function RecoveryHeader() {
 
   useLayoutEffect(() => {
     const headerEl = headerRef.current
-    if (!headerEl) return
+    if (!headerEl) {
+      return
+    }
 
     const updateHeaderHeight = () => {
       setHeaderHeight(headerEl.offsetHeight || RECOVERY_HEADER_HEIGHT)
@@ -55,15 +55,15 @@ export default function RecoveryHeader() {
   }
 
   return (
-    <div style={{ paddingBottom: `${headerHeight}px` }} className='flex flex-col'>
-      <div ref={headerRef} className='bg-background-primary fixed w-full z-50'>
+    <div style={{ paddingBottom: `${headerHeight}px` }} className="flex flex-col">
+      <div ref={headerRef} className="bg-background-primary fixed w-full z-50">
         <div
           style={{ minHeight: RECOVERY_HEADER_HEIGHT - 1 }}
-          className='flex flex-row flex-wrap justify-between items-center gap-3 px-4 py-2 sm:px-6'
+          className="flex flex-row flex-wrap justify-between items-center gap-3 px-4 py-2 sm:px-6"
         >
           {isMobile ? (
             <>
-              <div className='flex flex-row items-center gap-2 shrink-0'>
+              <div className="flex flex-row items-center gap-2 shrink-0">
                 <AnimatePresence>
                   {isNavDrawerOpen && <MobileDrawerContent topOffset={headerHeight} />}
                 </AnimatePresence>
@@ -74,32 +74,32 @@ export default function RecoveryHeader() {
                   icon={MenuIcon}
                 />
 
-                <img src={SequenceLogo} className='ml-2 h-5 w-auto' />
+                <img src={SequenceLogo} className="ml-2 h-5 w-auto" />
               </div>
-              <div className='flex flex-row flex-wrap items-center gap-3'>
+              <div className="flex flex-row flex-wrap items-center gap-3">
                 {signedIn && <SettingsDropdownMenu />}
               </div>
             </>
           ) : (
             <>
-              <div className='flex flex-row items-center gap-2' >
-                <img src={SequenceRecoveryLogo} className='h-6 w-auto shrink-0' />
-                <div className='flex items-center gap-1 pb-1'>
-                  <Text variant="xlarge" fontWeight="bold" className='text-primary'>
+              <div className="flex flex-row items-center gap-2">
+                <img src={SequenceRecoveryLogo} className="h-5 w-auto shrink-0" />
+                <div className="flex items-center gap-1">
+                  <Text variant="large" fontWeight="medium" className="text-primary">
                     Sequence
                   </Text>
-                  <Text variant="xlarge" fontWeight="bold" className='text-primary/70'>
+                  <Text variant="large" fontWeight="medium" className="text-primary/70">
                     Wallet Recovery
                   </Text>
                 </div>
               </div>
-              <div className='flex flex-row flex-wrap items-center gap-4'>
+              <div className="flex flex-row flex-wrap items-center gap-4">
                 <Button
                   variant="text"
                   // TODO: change link
                   onClick={() => window.open('https://docs.sequence.xyz/')}
                 >
-                  <div className='flex flex-row items-center gap-2'>
+                  <div className="flex flex-row items-center gap-2">
                     <img src={externalArrowIcon} height="5" />
                     <Text variant="normal" fontWeight="bold" color="text50">
                       Docs
@@ -112,7 +112,7 @@ export default function RecoveryHeader() {
                     openNetworkModal()
                   }}
                 >
-                  <div className='flex flex-row items-center gap-2'>
+                  <div className="flex flex-row items-center gap-2">
                     <img src={networkIcon} height="5" />
                     <Text variant="normal" fontWeight="bold" color="text50">
                       Networks
@@ -124,7 +124,7 @@ export default function RecoveryHeader() {
             </>
           )}
         </div>
-        <div className='h-0.5 bg-backgroundBackdrop' />
+        <div className="h-0.5 bg-backgroundBackdrop" />
       </div>
     </div>
   )
