@@ -246,8 +246,9 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="flex flex-col h-fit min-h-full w-full">
-      <div className="flex flex-col h-full p-4 sm:p-6 gap-6">
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col p-4 sm:p-6 gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <Text variant="large" fontWeight="bold" color="text80">
             Import Tokens
@@ -349,21 +350,20 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           onValueChange={handleFileChange}
         />
 
-        {tokenListDate && (
-          <Button
-            shape="square"
-            size="xs"
-            color="text80"
-            onClick={() => setConfirmRefreshList(true)}
-            className="w-full sm:w-auto"
-          >
-            <RefreshIcon size="xs" className="mr-1" />
-            Refresh list - last updated: {tokenListDate?.toLocaleString()}
-          </Button>
-        )}
-      </div>
+          {tokenListDate && (
+            <Button
+              shape="square"
+              size="xs"
+              color="text80"
+              onClick={() => setConfirmRefreshList(true)}
+              className="w-full sm:w-auto"
+            >
+              <RefreshIcon size="xs" className="mr-1" />
+              Refresh list - last updated: {tokenListDate?.toLocaleString()}
+            </Button>
+          )}
+        </div>
 
-      <div className="mt-auto">
         <div className="p-4 sm:p-6">
           {isAddingTokenManually && (
             <div className="flex flex-col mb-6 gap-0.5">
@@ -405,55 +405,53 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
             )
           )}
         </div>
+      </div>
 
-        <div className="my-0" />
-
-        <div>
-          <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2 pt-4">
-            {isAddingTokenManually ? (
-              <Button
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingTokenManually(false)
-                  setTokenManualAddress('')
-                  setTokenInfo(undefined)
-                  setTokenError('')
-                }}
-                className="w-full sm:w-auto"
-              >
-                Hide
-              </Button>
-            ) : (
-              <Button
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingTokenManually(true)
-                  setTokenError('')
-                }}
-                className="w-full sm:w-auto"
-              >
-                Manual Import
-              </Button>
-            )}
-
-            <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
-              Cancel
-            </Button>
-
+      <div className="sticky bottom-0 z-10 shrink-0 border-t border-border-normal bg-background-primary">
+        <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2 pt-4">
+          {isAddingTokenManually ? (
             <Button
-              variant="primary"
               shape="square"
-              disabled={(!tokenInfo && !selectedTokens.length) || isAddingToken}
+              disabled={!selectedNetwork}
               onClick={() => {
-                handleAdd()
+                setIsAddingTokenManually(false)
+                setTokenManualAddress('')
+                setTokenInfo(undefined)
+                setTokenError('')
               }}
               className="w-full sm:w-auto"
             >
-              Add
+              Hide
             </Button>
-          </div>
+          ) : (
+            <Button
+              shape="square"
+              disabled={!selectedNetwork}
+              onClick={() => {
+                setIsAddingTokenManually(true)
+                setTokenError('')
+              }}
+              className="w-full sm:w-auto"
+            >
+              Manual Import
+            </Button>
+          )}
+
+          <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
+            Cancel
+          </Button>
+
+          <Button
+            variant="primary"
+            shape="square"
+            disabled={(!tokenInfo && !selectedTokens.length) || isAddingToken}
+            onClick={() => {
+              handleAdd()
+            }}
+            className="w-full sm:w-auto"
+          >
+            Add
+          </Button>
         </div>
       </div>
 

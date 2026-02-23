@@ -113,6 +113,7 @@ export default function CollectibleList({
       {isImportCollectibleViewOpen && (
         <Modal
           size="lg"
+          scroll={false}
           onClose={() => setIsImportCollectibleViewOpen(false)}
           contentProps={{
             style: {

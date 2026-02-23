@@ -368,7 +368,8 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }
 
   return (
-    <div className="flex flex-col h-fit min-h-full w-full">
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto">
       {selectedCollection ? (
         <div className="flex flex-col h-full p-4 sm:p-6 gap-6">
           <div className="flex flex-row items-center gap-3 sm:gap-4">
@@ -477,7 +478,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             </Button>
           </div>
 
-          <div className="flex flex-col overflow-y-auto">
+          <div className="flex flex-col">
             {filteredCollectionList?.map((collection, i) => (
               <CollectionListItem
                 collection={collection}
@@ -508,7 +509,6 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           )}
         </div>
       )}
-      <div className="mt-auto">
         <div className="px-4 sm:px-6">
           {isAddingCollectibleManually && (
             <div className="flex flex-col gap-3">
@@ -599,58 +599,56 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             </div>
           )}
         </div>
+      </div>
 
-        <div className="h-0 bg-white" />
-
-        <div className="w-full">
-          <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2">
-            {isAddingCollectibleManually ? (
-              <Button
-                size="md"
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingCollectibleManually(false)
-                  setCollectibleManualAddress('')
-                  setManualCollectibleInfo(undefined)
-                  setCollectibleError('')
-                }}
-                className="w-full sm:w-auto"
-              >
-                Hide
-              </Button>
-            ) : (
-              <Button
-                size="md"
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingCollectibleManually(true)
-                  setCollectibleError('')
-                }}
-                className="w-full sm:w-auto"
-              >
-                Manual Import
-              </Button>
-            )}
-
-            <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
-              Cancel
-            </Button>
-
+      <div className="sticky bottom-0 z-10 shrink-0 border-t border-border-normal bg-background-primary">
+        <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2">
+          {isAddingCollectibleManually ? (
             <Button
               size="md"
-              variant="primary"
               shape="square"
-              disabled={(!manualCollectibleInfo && !selectedCollectibles.length) || isAddingCollection}
+              disabled={!selectedNetwork}
               onClick={() => {
-                handleAdd()
+                setIsAddingCollectibleManually(false)
+                setCollectibleManualAddress('')
+                setManualCollectibleInfo(undefined)
+                setCollectibleError('')
               }}
               className="w-full sm:w-auto"
             >
-              Add
+              Hide
             </Button>
-          </div>
+          ) : (
+            <Button
+              size="md"
+              shape="square"
+              disabled={!selectedNetwork}
+              onClick={() => {
+                setIsAddingCollectibleManually(true)
+                setCollectibleError('')
+              }}
+              className="w-full sm:w-auto"
+            >
+              Manual Import
+            </Button>
+          )}
+
+          <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
+            Cancel
+          </Button>
+
+          <Button
+            size="md"
+            variant="primary"
+            shape="square"
+            disabled={(!manualCollectibleInfo && !selectedCollectibles.length) || isAddingCollection}
+            onClick={() => {
+              handleAdd()
+            }}
+            className="w-full sm:w-auto"
+          >
+            Add
+          </Button>
         </div>
       </div>
 
