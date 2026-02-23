@@ -2,6 +2,7 @@ import {
   Button,
   ChevronDownIcon,
   CollapsiblePrimitive,
+  NetworkImage,
   Text,
   TextInput
 } from '@0xsequence/design-system'
@@ -54,83 +55,81 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
   }, [rpcUrl, blockExplorerUrl, disabled])
 
   return (
-    <div className='flex flex-col gap-4'>
-      <div className='flex flex-row gap-3'>
+    <CollapsiblePrimitive.Root className='rounded-lg border border-border-normal bg-background-secondary p-3'>
+      <div className='flex flex-row items-start justify-between gap-2'>
+        <CollapsiblePrimitive.Trigger asChild>
+          <button
+            type="button"
+            className='flex flex-1 cursor-pointer items-start justify-between gap-2 border-none bg-transparent p-0 text-left'
+          >
+            <div className='flex min-w-0 flex-row items-center gap-2'>
+              <NetworkImage chainId={network.chainId} size="sm" />
+
+              <div className='flex min-w-0 flex-col gap-0.5'>
+                <Text
+                  variant="normal"
+                  fontWeight="medium"
+                  color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
+                  className='truncate'
+                >
+                  {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
+                </Text>
+
+                {(hasPreviousEdit || isUserAddition) && (
+                  <Text variant="xsmall" fontWeight="medium" color="text50" className='truncate'>
+                    {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
+                  </Text>
+                )}
+              </div>
+            </div>
+
+            <ChevronDownIcon color={disabled ? 'text50' : 'text100'} />
+          </button>
+        </CollapsiblePrimitive.Trigger>
+
         <Button
           variant="text"
+          size="xs"
+          shape="square"
+          className='shrink-0'
           onClick={() => setDisabled(!disabled)}
         >
-          <div className='flex flex-row gap-2 items-center'>
-            <FilledCheckBox checked={!disabled} />
-
-            <Text
-              variant="normal"
-              fontWeight="medium"
-              color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
-            >
-              {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
-            </Text>
-
-            {(hasPreviousEdit || isUserAddition) && (
-              <Text variant="normal" fontWeight="medium" color="text50">
-                {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
-              </Text>
-            )}
-          </div>
+          <FilledCheckBox checked={!disabled} />
         </Button>
       </div>
 
-      <CollapsiblePrimitive.Root>
-        <CollapsiblePrimitive.Trigger
-          style={{
-            backgroundColor: 'inherit',
-            border: 'none',
-            cursor: 'pointer',
-            width: '100%'
-          }}
-        >
-          <div className='flex flex-row justify-between items-center'>
-            <Text variant="normal" fontWeight="bold" color={disabled ? 'text50' : 'text100'}>
-              Network Settings
+      <CollapsiblePrimitive.Content>
+        <div className='flex flex-col gap-3 pt-3'>
+          <div className='flex flex-col gap-1'>
+            <Text variant="normal" fontWeight="medium" color="text100">
+              RPC URL
             </Text>
 
-            <ChevronDownIcon color={disabled ? 'text50' : 'text100'} />
+            <TextInput
+              name="rpcUrl"
+              spellCheck={false}
+              value={rpcUrl ?? ''}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                setRpcUrl(ev.target.value)
+              }}
+            />
           </div>
-        </CollapsiblePrimitive.Trigger>
+          <div className='flex flex-col gap-1'>
+            <Text variant="normal" fontWeight="medium" color="text100">
+              Block Explorer URL
+            </Text>
 
-        <CollapsiblePrimitive.Content>
-          <div className='flex flex-col gap-3 p-4'>
-            <div className='flex flex-col gap-1'>
-              <Text variant="normal" fontWeight="medium" color="text100">
-                RPC URL
-              </Text>
-
-              <TextInput
-                name="rpcUrl"
-                spellCheck={false}
-                value={rpcUrl ?? ''}
-                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                  setRpcUrl(ev.target.value)
-                }}
-              />
-            </div>
-            <div className='flex flex-col gap-1'>
-              <Text variant="normal" fontWeight="medium" color="text100">
-                Block Explorer URL
-              </Text>
-
-              <TextInput
-                name="blockExplorerUrl"
-                spellCheck={false}
-                value={blockExplorerUrl ?? ''}
-                onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                  setBlockExplorerUrl(ev.target.value)
-                }}
-              />
-            </div>
+            <TextInput
+              name="blockExplorerUrl"
+              spellCheck={false}
+              value={blockExplorerUrl ?? ''}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                setBlockExplorerUrl(ev.target.value)
+              }}
+            />
           </div>
-        </CollapsiblePrimitive.Content>
-      </CollapsiblePrimitive.Root>
-    </div>
+        </div>
+      </CollapsiblePrimitive.Content>
+    </CollapsiblePrimitive.Root>
   )
 }
