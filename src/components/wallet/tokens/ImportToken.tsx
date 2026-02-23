@@ -3,6 +3,7 @@ import {
   Card,
   CheckmarkIcon,
   cn,
+  FolderIcon,
   Modal,
   RefreshIcon,
   SearchIcon,
@@ -276,10 +277,12 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           />
 
           <Button
-            variant="text"
+            variant="secondary"
+            shape="square"
             onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
-            className='text-left whitespace-normal'
+            className='mt-auto text-left whitespace-normal'
           >
+            <FolderIcon className='w-4 h-4' />
             {selectedNetwork
               ? `Import custom token list for ${' ' + selectedNetwork?.title}`
               : 'Select Network to import custom token list'}
