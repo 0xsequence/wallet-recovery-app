@@ -56,7 +56,7 @@ export default function RecoveryHeader() {
 
   return (
     <div style={{ paddingBottom: `${headerHeight}px` }} className="flex flex-col">
-      <div ref={headerRef} className="bg-background-primary fixed w-full z-50">
+      <div ref={headerRef} className="bg-background-primary fixed w-full z-10">
         <div
           style={{ minHeight: RECOVERY_HEADER_HEIGHT - 1 }}
           className="flex flex-row flex-wrap justify-between items-center gap-3 px-4 py-2 sm:px-6"
