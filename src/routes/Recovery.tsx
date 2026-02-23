@@ -318,7 +318,14 @@ function Recovery() {
             </div>
 
             {isNetworkModalOpen && (
-                <Modal onClose={() => walletStore.isNetworkModalOpen.set(false)}>
+                <Modal
+                    onClose={() => walletStore.isNetworkModalOpen.set(false)}
+                    rootProps={{
+                        style: {
+                            zIndex: 100
+                        }
+                    }}
+                >
                     <Networks />
                 </Modal>
             )}

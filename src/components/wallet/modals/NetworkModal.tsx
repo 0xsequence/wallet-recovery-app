@@ -14,7 +14,9 @@ interface NetworkModalProps {
  * Modal for managing network configurations
  */
 export function NetworkModal({ isOpen, onClose, networkStore, walletStore }: NetworkModalProps) {
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   const handleClose = () => {
     walletStore.isNetworkModalOpen.set(false)
@@ -26,6 +28,11 @@ export function NetworkModal({ isOpen, onClose, networkStore, walletStore }: Net
   return (
     <Modal
       onClose={handleClose}
+      rootProps={{
+        style: {
+          zIndex: 100
+        }
+      }}
       contentProps={{
         style: {
           scrollbarColor: 'gray black',
