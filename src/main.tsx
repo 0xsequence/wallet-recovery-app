@@ -2,13 +2,13 @@ import { ThemeProvider, ToastProvider } from '@0xsequence/design-system'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import '~/css/globals.css'
 import { StoreProvider, createStore } from '~/stores/index.tsx'
 
 import { AppRouter } from '~/routes/index.tsx'
 
-import '~/css/global.css'
+import '~/css/globals.css'
 import '~/css/reset.css'
+
 import { NAVIGATION_KEY } from './constants/storage'
 import { clearAllState } from './utils/clear-state'
 
