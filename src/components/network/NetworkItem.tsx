@@ -55,28 +55,39 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
   }, [rpcUrl, blockExplorerUrl, disabled])
 
   return (
-    <CollapsiblePrimitive.Root className='rounded-lg border border-border-normal bg-background-secondary p-3'>
-      <div className='flex flex-row items-start justify-between gap-2'>
+    <CollapsiblePrimitive.Root className="rounded-lg border border-border-normal bg-background-secondary ">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center aspect-square pl-3">
+          <Button
+            variant="text"
+            size="xs"
+            shape="square"
+            className="shrink-0"
+            onClick={() => setDisabled(!disabled)}
+          >
+            <FilledCheckBox checked={!disabled} />
+          </Button>
+        </div>
         <CollapsiblePrimitive.Trigger asChild>
           <button
             type="button"
-            className='flex flex-1 cursor-pointer items-start justify-between gap-2 border-none bg-transparent p-0 text-left'
+            className="flex flex-1 cursor-pointer items-start justify-between gap-2 border-none my-auto text-left p-4"
           >
-            <div className='flex min-w-0 flex-row items-center gap-2'>
+            <div className="flex min-w-0 flex-row items-center gap-2">
               <NetworkImage chainId={network.chainId} size="sm" />
 
-              <div className='flex min-w-0 flex-col gap-0.5'>
+              <div className="flex min-w-0 flex-col gap-0.5">
                 <Text
                   variant="normal"
                   fontWeight="medium"
                   color={validRpcUrl ? (isUnsaved ? 'warning' : 'text80') : 'negative'}
-                  className='truncate'
+                  className="truncate"
                 >
                   {network.title} {!validRpcUrl && '(Invalid RPC URL)'} {isUnsaved && '*'}
                 </Text>
 
                 {(hasPreviousEdit || isUserAddition) && (
-                  <Text variant="xsmall" fontWeight="medium" color="text50" className='truncate'>
+                  <Text variant="xsmall" fontWeight="medium" color="text50" className="truncate">
                     {isUserAddition ? `(Chain Id "${network.chainId}", added by you)` : '(edited)'}
                   </Text>
                 )}
@@ -86,21 +97,11 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
             <ChevronDownIcon color={disabled ? 'text50' : 'text100'} />
           </button>
         </CollapsiblePrimitive.Trigger>
-
-        <Button
-          variant="text"
-          size="xs"
-          shape="square"
-          className='shrink-0'
-          onClick={() => setDisabled(!disabled)}
-        >
-          <FilledCheckBox checked={!disabled} />
-        </Button>
       </div>
 
       <CollapsiblePrimitive.Content>
-        <div className='flex flex-col gap-3 pt-3'>
-          <div className='flex flex-col gap-1'>
+        <div className="flex flex-col gap-3 pt-3">
+          <div className="flex flex-col gap-1">
             <Text variant="normal" fontWeight="medium" color="text100">
               RPC URL
             </Text>
@@ -114,7 +115,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
               }}
             />
           </div>
-          <div className='flex flex-col gap-1'>
+          <div className="flex flex-col gap-1">
             <Text variant="normal" fontWeight="medium" color="text100">
               Block Explorer URL
             </Text>
