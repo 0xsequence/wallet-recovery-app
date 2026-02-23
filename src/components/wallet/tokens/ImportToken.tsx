@@ -16,7 +16,7 @@ import {
 } from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { isAddress } from 'viem'
 
 import { useObservable, useStore } from '~/stores'
@@ -52,7 +52,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const [selectedTokens, setSelectedTokens] = useState<any[]>([])
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputId = 'token-list-file-input'
 
   useEffect(() => {
     if (tokenManualAddress) {
@@ -232,7 +232,8 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   const handleImportCustomTokenList = () => {
-    fileInputRef.current?.click()
+    const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null
+    fileInput?.click()
   }
 
   const handleRefreshTokenList = async () => {
@@ -343,10 +344,10 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
         </div>
 
         <FileInput
+          id={fileInputId}
           name="tokenListFile"
           validExtensions={['json']}
           className="hidden"
-          ref={fileInputRef}
           onValueChange={handleFileChange}
         />
 

@@ -22,7 +22,7 @@ import {
 } from '@0xsequence/design-system'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { BigNumberish, ethers } from 'ethers'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { isAddress } from 'viem'
 
 import { useObservable, useStore } from '~/stores'
@@ -70,7 +70,7 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
   const [queryCollectibleTokenIdsMap, setQueryCollectibleTokenIdsMap] = useState<Record<string, string>>({})
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputId = 'collectible-list-file-input'
 
   useEffect(() => {
     const fetchCollectibleList = async () => {
@@ -299,7 +299,8 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }
 
   const handleImportCustomCollectibleList = () => {
-    fileInputRef.current?.click()
+    const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null
+    fileInput?.click()
   }
 
   const toggleSelectCollectible = async (collectible: any) => {
@@ -489,10 +490,10 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
           </div>
 
           <FileInput
+            id={fileInputId}
             name="collectibleListFile"
             validExtensions={['json']}
             className="hidden"
-            ref={fileInputRef}
             onValueChange={handleFileChange}
           />
 
