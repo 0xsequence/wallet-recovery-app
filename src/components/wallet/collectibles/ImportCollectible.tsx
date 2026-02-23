@@ -3,7 +3,6 @@ import {
   CheckmarkIcon,
   ChevronLeftIcon,
   CloseIcon,
-  cn,
   CollectionIcon,
   FolderIcon,
   IconButton,
@@ -12,7 +11,9 @@ import {
   SearchIcon,
   Select,
   Spinner,
-  TabsPrimitive,
+  Tabs,
+  TabsList,
+  TabsTrigger,
   Text,
   TextInput,
   useToast
@@ -430,39 +431,19 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             />
           </div>
 
-          <TabsPrimitive.Root
+          <Tabs
             value={contractType}
             onValueChange={(value) => setContractType(value as CollectibleContractType)}
           >
-            <TabsPrimitive.TabsList>
-              <TabsPrimitive.TabsTrigger value={CollectibleContractTypeValues.ERC721}     >
-                <Text
-                  variant="normal"
-                  fontWeight="semibold"
-                  color={contractType === CollectibleContractTypeValues.ERC721 ? 'text100' : 'text50'}
-                  className={cn('px-4 pb-2', contractType === CollectibleContractTypeValues.ERC721 ? 'border-b-2 border-primary' : '')}
-                >
-                  ERC721
-                </Text>
-                {contractType === CollectibleContractTypeValues.ERC721 && (
-                  <div className='h-0.5 bg-backgroundBackdrop relative top-1.5' />
-                )}
-              </TabsPrimitive.TabsTrigger>
-              <TabsPrimitive.TabsTrigger value={CollectibleContractTypeValues.ERC1155}>
-                <Text
-                  variant="normal"
-                  fontWeight="semibold"
-                  color={contractType === CollectibleContractTypeValues.ERC1155 ? 'text100' : 'text50'}
-                  className={cn('px-4 pb-2', contractType === CollectibleContractTypeValues.ERC1155 ? 'border-b-2 border-primary' : '')}
-                >
-                  ERC1155
-                </Text>
-                {contractType === CollectibleContractTypeValues.ERC1155 && (
-                  <div className='h-0.5 bg-backgroundBackdrop relative top-1.5' />
-                )}
-              </TabsPrimitive.TabsTrigger>
-            </TabsPrimitive.TabsList>
-          </TabsPrimitive.Root>
+            <TabsList className='h-8 w-fit justify-start'>
+              <TabsTrigger value={CollectibleContractTypeValues.ERC721} className='h-8 px-4'>
+                ERC721
+              </TabsTrigger>
+              <TabsTrigger value={CollectibleContractTypeValues.ERC1155} className='h-8 px-4'>
+                ERC1155
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <div className='flex flex-col gap-3'>
             <TextInput
