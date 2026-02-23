@@ -59,7 +59,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
           <Checkbox
             checked={!disabled}
             size="lg"
-            className='shrink-0'
+            className="shrink-0"
             aria-label={`${disabled ? 'Enable' : 'Disable'} ${network.title}`}
             onCheckedChange={checked => setDisabled(!(checked === true))}
           />
@@ -96,7 +96,7 @@ export default function NetworkItem({ network }: { network: NetworkConfig }) {
       </div>
 
       <CollapsiblePrimitive.Content>
-        <div className="flex flex-col gap-3 pt-3">
+        <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
             <Text variant="normal" fontWeight="medium" color="text100">
               RPC URL
