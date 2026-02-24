@@ -31,7 +31,7 @@ import { MnemonicInputGrid } from '~/components/mnemonic/MnemonicInputGrid'
 
 import { WALLET_WIDTH } from './WalletV3Recovery'
 import { useFindWalletViaSigner } from '~/hooks/use-find-wallet-via-signer'
-import { useValidateSigner } from '~/hooks/use-validate-signer'
+import { findRecoverySigner, useValidateSigner } from '~/hooks/use-validate-signer'
 
 const validateMnemonic = (mnemonic: string): boolean => {
     const wordCount = mnemonic.trim().split(/\s+/g).length
@@ -125,6 +125,7 @@ function Recovery() {
                     setFormState(prev => ({ ...prev, selectedWallet: wallets[0] }))
                 } else {
                     setErrorMessage('No wallet match found. Please double-check your recovery phrase.')
+                    setFormState(prev => ({ ...prev, selectedWallet: '' }))
                 }
             } else {
                 // V3 Logic
@@ -133,17 +134,31 @@ function Recovery() {
                 if (!recovery) {
                     setErrorMessage('No wallet match found. Please double-check your recovery phrase.')
                     setPossibleWallets([])
+                    setFormState(prev => ({ ...prev, selectedWallet: '' }))
                     return
                 }
 
-                const { walletAddress } = recovery
+                const { walletAddress, recoverySignerAddress } = recovery
+                await findRecoverySigner(walletAddress, recoverySignerAddress)
                 setPossibleWallets([walletAddress])
                 setFormState(prev => ({ ...prev, selectedWallet: walletAddress }))
             }
         } catch (error) {
             console.error('Error searching for wallets:', error)
-            setErrorMessage('Failed to search for wallets. Please try again.')
+
+            if (
+                error instanceof Error &&
+                (error.message === 'invalid_mnemonic' ||
+                    error.message === 'no_signers' ||
+                    error.message === 'signer_not_found')
+            ) {
+                setErrorMessage('No wallet match found. Please double-check your recovery phrase.')
+            } else {
+                setErrorMessage('Failed to search for wallets. Please try again.')
+            }
+
             setPossibleWallets([])
+            setFormState(prev => ({ ...prev, selectedWallet: '' }))
         } finally {
             setLoadingState(prev => ({ ...prev, isSearchingWallets: false }))
         }
@@ -159,7 +174,7 @@ function Recovery() {
         if (validateMnemonic(formState.mnemonic)) {
             searchForWalletsFromMnemonic(formState.mnemonic)
         }
-    }, [formState.mnemonic])
+    }, [formState.mnemonic, searchForWalletsFromMnemonic])
 
     const handleRecoverWallet = useCallback(async () => {
         if (!validation.isMnemonicValid || !validation.isWalletSelected) {
@@ -169,12 +184,13 @@ function Recovery() {
         setLoadingState(prev => ({ ...prev, isRecovering: true }))
         setErrorMessage(null)
 
-        const wordCount = formState.mnemonic.trim().split(/\s+/g).length
+        const trimmedMnemonic = formState.mnemonic.trim()
+        const wordCount = trimmedMnemonic.split(/\s+/g).length
 
         try {
             if (wordCount === 12) {
                 // V2 Logic
-                const recoverySigner = ethers.Wallet.fromPhrase(formState.mnemonic.trim())
+                const recoverySigner = ethers.Wallet.fromPhrase(trimmedMnemonic)
                 const orchestrator = new Orchestrator([recoverySigner])
                 const accountToCheck = new Account({
                     address: formState.selectedWallet,
@@ -198,13 +214,13 @@ function Recovery() {
 
                 await authStore.signInWithRecoveryMnemonic(
                     formState.selectedWallet,
-                    formState.mnemonic.trim(),
+                    trimmedMnemonic,
                 )
                 navigate('/wallet-v2-recovery')
 
             } else {
                 // V3 Logic
-                const recovery = await findWallets(formState.mnemonic)
+                const recovery = await findWallets(trimmedMnemonic)
 
                 if (!recovery) {
                     setErrorMessage('No wallet match found. Please double-check your recovery phrase and wallet address.')
@@ -213,15 +229,24 @@ function Recovery() {
 
                 const { walletAddress, recoverySignerAddress } = recovery
 
-                await validateSigner(walletAddress, recoverySignerAddress, formState.mnemonic.trim())
+                await validateSigner(walletAddress, recoverySignerAddress)
                 await authStore.signInWithRecoveryMnemonic(
                     walletAddress,
-                    formState.mnemonic.trim(),
+                    trimmedMnemonic,
                 )
                 navigate('/wallet-v3-recovery')
             }
         } catch (error) {
             console.error('Recovery error:', error)
+            if (
+                error instanceof Error &&
+                (error.message === 'invalid_mnemonic' ||
+                    error.message === 'no_signers' ||
+                    error.message === 'signer_not_found')
+            ) {
+                setErrorMessage('No wallet match found. Please double-check your recovery phrase and wallet address.')
+                return
+            }
             setErrorMessage('Failed to recover wallet. Please verify your recovery phrase and try again.')
         } finally {
             setLoadingState(prev => ({ ...prev, isRecovering: false }))
