@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Card,
   CheckmarkIcon,
@@ -8,9 +7,10 @@ import {
   Modal,
   SignoutIcon,
   Text,
-  truncateAddress
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from '@0xsequence/design-system'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -18,6 +18,7 @@ import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 
 import ConfirmSignOut from '~/components/wallet/ConfirmSignOut'
+import { truncateAddress } from '~/utils/truncateAddress'
 
 export default function SettingsDropdownMenu() {
   const authStore = useStore(AuthStore)
@@ -44,44 +45,61 @@ export default function SettingsDropdownMenu() {
   }
 
   return (
-    <PopoverPrimitive.Root open={isOpen} onOpenChange={toggleOpen}>
-      <PopoverPrimitive.Trigger asChild>
-        <Button
-          label={
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <GradientAvatar address={walletAddress} size="sm" />
-              <Text variant="normal" fontWeight="bold" color="text100">
-                {truncateAddress(walletAddress!, 2, 4)}
-              </Text>
-            </Box>
-          }
-          variant="text"
-        />
-      </PopoverPrimitive.Trigger>
+    <Popover open={isOpen} onOpenChange={toggleOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-transparent border-none cursor-pointer"
+          onClick={() => {
+            toggleOpen(true)
+          }}
+        >
+          <div className='flex flex-row items-center gap-2'>
+            <GradientAvatar address={walletAddress!} size="sm" />
+            <Text variant="normal" fontWeight="bold" color="text100">
+              {truncateAddress(walletAddress! as `0x${string}`, 4, 4)}
+            </Text>
+          </div>
+        </button>
+      </PopoverTrigger>
+
+
 
       {isOpen && (
-        <PopoverPrimitive.Portal forceMount>
-          <PopoverPrimitive.Content asChild side="bottom" sideOffset={8} align="center">
-            <Card flexDirection="column" backdropFilter="blur" gap="2">
+        <PopoverContent asChild side="bottom" sideOffset={8} align="center">
+          <div className='bg-background-raised rounded-xl'>
+            <Card className='flex flex-col gap-2  rounded-xl'>
               <Button
-                leftIcon={isCopied ? CheckmarkIcon : CopyIcon}
-                label="Copy wallet address"
                 shape="square"
                 size="sm"
-                width="full"
+                variant="secondary"
                 onClick={handleCopy}
-              />
+                className='w-full bg-background-raised hover:bg-background-raised/80 border-border-button hover:border-border-button/80 '
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  {isCopied ? <CheckmarkIcon /> : <CopyIcon />}
+                  <Text variant="normal" fontWeight="bold" color="text100">
+                    Copy wallet address
+                  </Text>
+                </div>
+              </Button>
+
               <Button
-                leftIcon={SignoutIcon}
-                label="Sign out"
                 shape="square"
                 size="sm"
-                width="full"
+                className='w-full bg-background-raised hover:bg-background-raised/80 border-border-button hover:border-border-button/80 '
                 onClick={() => setIsConfirmSignOutModalOpen(true)}
-              />
+              >
+                <div className='flex flex-row items-center gap-2'>
+                  <SignoutIcon />
+                  <Text variant="normal" fontWeight="bold" color="text100">
+                    Sign out
+                  </Text>
+                </div>
+              </Button>
             </Card>
-          </PopoverPrimitive.Content>
-        </PopoverPrimitive.Portal>
+          </div>
+        </PopoverContent>
       )}
 
       {isConfirmSignOutModalOpen && (
@@ -97,6 +115,6 @@ export default function SettingsDropdownMenu() {
           />
         </Modal>
       )}
-    </PopoverPrimitive.Root>
+    </Popover>
   )
 }

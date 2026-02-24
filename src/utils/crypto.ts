@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 
-export interface Encrypted {
+interface Encrypted {
   iv: BufferSource
   data: BufferSource
   salt?: Uint8Array

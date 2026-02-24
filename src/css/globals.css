@@ -1,0 +1,66 @@
+@layer theme, base, components, utilities;
+
+@import '@0xsequence/design-system/preset';
+@import 'tailwindcss';
+
+@layer base {
+       *,
+       ::after,
+       ::before,
+       ::backdrop,
+       ::file-selector-button {
+         border-color: var(--color-gray-200, currentColor);
+       }
+     
+       html {
+         background-color: var(--seq-color-background-primary);
+         /*  Do not support hsl() */
+         --scrollbar-color-thumb: #202020;
+         --scrollbar-color-track: var(--background);
+         --scrollbar-width: thin;
+         --scrollbar-width-legacy: 7px;
+     
+         --headerHeight: 60px;
+         --stickyCollectionHeaderHeight: 160px;
+     
+         --brandGradient: linear-gradient(270deg, #7537f9 0%, #5826ff 100%);
+         --brandGradientStart: #7537f9;
+         --brandGradientEnd: #5826ff;
+     
+         --input-active: 0 0% 53%;
+     
+         /* Modern browsers with `scrollbar-*` support 
+         @supports (scrollbar-width: auto) {
+           *scrollbar-color: var(--scrollbar-color-thumb)
+             var(--scrollbar-color-track);
+           *scrollbar-width: var(--scrollbar-width);
+         }
+         */
+     
+         /* Legacy browsers with `::-webkit-scrollbar-*` support */
+         @supports selector(::-webkit-scrollbar) {
+           *::-webkit-scrollbar-thumb {
+             border-radius: 10px;
+             background: var(--scrollbar-color-thumb);
+           }
+           *::-webkit-scrollbar-track {
+             background: var(--scrollbar-color-track);
+           }
+           *::-webkit-scrollbar {
+             max-width: var(--scrollbar-width-legacy);
+             max-height: var(--scrollbar-width-legacy);
+           }
+         }
+       }
+       body {
+         background-color: hsl(var(--background));
+         font-family: var(--font-main);
+     
+         /* google 3d model viewer */
+         model-viewer {
+           --poster-color: 'transparent';
+           --progress-mask: 'transparent';
+         }
+       }
+     }
+     

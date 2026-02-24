@@ -1,9 +1,7 @@
 import {
-  Box,
   Button,
   Card,
   Collapsible,
-  Divider,
   ExternalLinkIcon,
   IconButton,
   Text
@@ -45,20 +43,20 @@ export default function SignClientTransactionConfirm({
   }, [details])
 
   return (
-    <Box>
+    <div>
       {details && (
         <>
-          <Box flexDirection="column" gap="6" padding="6">
+          <div className='flex flex-col gap-6 p-6'>
             <Text variant="large" fontWeight="bold" color="text100">
               Would you like to approve this transaction?
             </Text>
 
-            <Box flexDirection="column" gap="3">
-              <Card flexDirection="row" justifyContent="space-between" alignItems="center">
+            <div className='flex flex-col gap-3'>
+              <Card className='flex flex-row justify-between items-center'>
                 <Text variant="normal" fontWeight="medium" color="text100">
                   Origin
                 </Text>
-                <Box flexDirection="row" alignItems="center" gap="2">
+                <div className='flex flex-row items-center gap-2'>
                   <Text variant="normal" fontWeight="medium" color="text100">
                     {details?.origin?.split('//')[1]}
                   </Text>
@@ -68,9 +66,9 @@ export default function SignClientTransactionConfirm({
                     onClick={() => window.open(details?.origin, '_blank')}
                     style={{ width: '24px', height: '24px' }}
                   />
-                </Box>
+                </div>
               </Card>
-              <Card flexDirection="row" justifyContent="space-between">
+              <Card className='flex flex-row justify-between'>
                 <Text variant="normal" fontWeight="medium" color="text100">
                   Network
                 </Text>
@@ -78,7 +76,7 @@ export default function SignClientTransactionConfirm({
                   {getNetworkTitle(Number(details.chainId))}
                 </Text>
               </Card>
-              <Card flexDirection="column" gap="4">
+              <Card className='flex flex-col gap-4'>
                 <Text variant="normal" fontWeight="medium" color="text100">
                   Signee
                 </Text>
@@ -107,30 +105,32 @@ export default function SignClientTransactionConfirm({
                   </Text>
                 </Card>
               </Collapsible>
-            </Box>
-          </Box>
-          <Divider marginY="0" />
+            </div>
+          </div>
+          <div className='h-0 my-0' />
 
-          <Box alignItems="center" justifyContent="flex-end" padding="6" gap="2">
+          <div className='flex flex-row items-center justify-end gap-2 p-6'>
             <Button
-              label="Cancel"
               size="md"
               shape="square"
               onClick={() => {
                 onClose()
               }}
-            />
+            >
+              Cancel
+            </Button>
 
             <Button
-              label="Send"
               variant="primary"
               size="md"
               shape="square"
               onClick={() => onClose(details)}
-            />
-          </Box>
+            >
+              Send
+            </Button>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   )
 }

@@ -2,6 +2,7 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,5 +12,5 @@ export default defineConfig({
       '~': path.resolve(__dirname, './src')
     }
   },
-  plugins: [react(), vanillaExtractPlugin()]
+  plugins: [react(), vanillaExtractPlugin(), tailwindcss()]
 })

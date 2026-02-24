@@ -1,29 +1,23 @@
-import { Box, Text } from '@0xsequence/design-system'
+import { NetworkImage, Text } from '@0xsequence/design-system'
 
 import { getNetworkTitle } from '~/utils/network'
 
 export default function NetworkTag({
   chainId,
-  paddingTop = '0',
-  paddingBottom = '1'
+  renderImage
 }: {
   chainId: number
-  paddingTop?: '0' | '1' | '2'
-  paddingBottom?: '0' | '1' | '2'
+  renderImage?: boolean
 }) {
   return (
-    <Box
-      background="backgroundMuted"
-      width="fit"
-      height="fit"
-      borderRadius="sm"
-      paddingTop={paddingTop}
-      paddingBottom={paddingBottom}
-      paddingX="2"
+    <div
+      className='bg-background-overlay w-fit h-fit rounded-sm px-2 py-1 flex flex-row items-center gap-1'
     >
+      {renderImage && <NetworkImage chainId={chainId} style={{ width: '16px', height: '16px' }} />}
+
       <Text
-        variant="xsmall"
-        color="text80"
+        variant="xsmall-bold"
+        className='text-primary/80'
         style={{
           whiteSpace: 'nowrap',
           maxWidth: '100px',
@@ -33,6 +27,6 @@ export default function NetworkTag({
       >
         {getNetworkTitle(chainId)}
       </Text>
-    </Box>
+    </div>
   )
 }

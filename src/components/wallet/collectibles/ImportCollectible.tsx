@@ -1,21 +1,29 @@
 import {
-  Box,
   Button,
-  Card,
+  Checkbox,
+  CheckmarkIcon,
   ChevronLeftIcon,
-  Divider,
-  Image,
+  CloseIcon,
+  CollectionIcon,
+  FileInput,
+  FolderIcon,
+  IconButton,
   Modal,
+  RefreshIcon,
   SearchIcon,
   Select,
   Spinner,
+  Tabs,
+  TabsList,
+  TabsTrigger,
   Text,
   TextInput,
   useToast
 } from '@0xsequence/design-system'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
 import { BigNumberish, ethers } from 'ethers'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
+import { isAddress } from 'viem'
 
 import { useObservable, useStore } from '~/stores'
 import {
@@ -25,8 +33,6 @@ import {
   CollectibleStore
 } from '~/stores/CollectibleStore'
 import { NetworkStore } from '~/stores/NetworkStore'
-
-import { FilledRoundCheckBox } from '~/components/misc'
 
 export default function ImportCollectible({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
@@ -60,22 +66,11 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
   const [isAddingCollectibleManually, setIsAddingCollectibleManually] = useState(false)
   const [manualCollectibleInfo, setManualCollectibleInfo] = useState<CollectibleInfoResponse | undefined>()
+  const [collectibleError, setCollectibleError] = useState<string>('')
 
   const [queryCollectibleTokenIdsMap, setQueryCollectibleTokenIdsMap] = useState<Record<string, string>>({})
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const selectOptions = mainnetNetworks
-    .filter(network => !network.disabled)
-    .map(network => ({
-      label: (
-        <Box flexDirection="row" alignItems="center" gap="2">
-          <Image src={network.logoURI} maxWidth="8" maxHeight="8" />
-          <Text>{network.title}</Text>
-        </Box>
-      ),
-      value: network.chainId.toString()
-    }))
+  const fileInputId = 'collectible-list-file-input'
 
   useEffect(() => {
     const fetchCollectibleList = async () => {
@@ -99,17 +94,33 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
 
     const fetchCollectibleInfo = async () => {
       if (selectedNetwork && contractType && collectibleManualAddress && collectibleManualTokenId) {
-        collectibleStore
-          .getCollectibleInfo({
+        setManualCollectibleInfo(undefined)
+        setCollectibleError('')
+
+        if (!isAddress(collectibleManualAddress)) {
+          setCollectibleError('Invalid address format')
+          return
+        }
+
+        try {
+          const response = await collectibleStore.getCollectibleInfo({
             chainId: selectedNetwork.chainId,
             address: collectibleManualAddress,
             tokenId: collectibleManualTokenId,
             contractType
           })
-          .then(response => {
-            console.log('response', response)
-            setManualCollectibleInfo(response)
-          })
+          setManualCollectibleInfo(response)
+          setCollectibleError('')
+        } catch (error: any) {
+          console.error('Error fetching collectible info:', error)
+          setManualCollectibleInfo(undefined)
+
+          const errorMessage = error.message || 'Unable to fetch collectible information'
+          setCollectibleError(errorMessage)
+        }
+      } else {
+        setManualCollectibleInfo(undefined)
+        setCollectibleError('')
       }
     }
 
@@ -120,7 +131,9 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   useEffect(() => {
     const fetchQueriedCollectibles = async () => {
       setQueriedCollectibles([])
-      if (!queryCollectibleTokenIdsMap[selectedCollection.address]) return
+      if (!queryCollectibleTokenIdsMap[selectedCollection.address]) {
+        return
+      }
 
       setIsFetchingQueriedCollectibles(true)
       const tokenIds = queryCollectibleTokenIdsMap[selectedCollection.address].split(',').map(Number)
@@ -178,7 +191,9 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!collectionListFilter) return setFilteredCollectionList(collectionList?.slice(0, 8))
+    if (!collectionListFilter) {
+      return setFilteredCollectionList(collectionList?.slice(0, 8))
+    }
     setFilteredCollectionList(
       collectionList
         ?.filter(
@@ -241,49 +256,51 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
     }
   }
 
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      try {
-        const text = await file.text()
-        const collectionList = JSON.parse(text)
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
+      return
+    }
 
-        if (Array.isArray(collectionList)) {
-          collectionList.map(collection => {
-            if (!collection.address || !collection.name) {
-              throw new Error('Invalid collection list')
-            }
-          })
+    try {
+      const text = await file.text()
+      const collectionList = JSON.parse(text)
 
-          if (selectedNetwork && contractType) {
-            if (contractType === CollectibleContractTypeValues.ERC721) {
-              await collectibleStore.addExternalERC721List(selectedNetwork.chainId, collectionList)
-            } else if (contractType === CollectibleContractTypeValues.ERC1155) {
-              await collectibleStore.addExternalERC1155List(selectedNetwork.chainId, collectionList)
-            }
+      if (Array.isArray(collectionList)) {
+        collectionList.map(collection => {
+          if (!collection.address || !collection.name) {
+            throw new Error('Invalid collection list')
           }
-
-          toast({
-            variant: 'success',
-            title: `Custom collection list imported successfully`
-          })
-          onClose()
-        } else {
-          throw new Error('Invalid file format')
-        }
-      } catch (error) {
-        console.error(error)
-        toast({
-          variant: 'error',
-          title: 'Failed to import token list',
-          description: 'Please ensure the file format is correct.'
         })
+
+        if (selectedNetwork && contractType) {
+          if (contractType === CollectibleContractTypeValues.ERC721) {
+            await collectibleStore.addExternalERC721List(selectedNetwork.chainId, collectionList)
+          } else if (contractType === CollectibleContractTypeValues.ERC1155) {
+            await collectibleStore.addExternalERC1155List(selectedNetwork.chainId, collectionList)
+          }
+        }
+
+        toast({
+          variant: 'success',
+          title: `Custom collection list imported successfully`
+        })
+        onClose()
+      } else {
+        throw new Error('Invalid file format')
       }
+    } catch (error) {
+      console.error(error)
+      toast({
+        variant: 'error',
+        title: 'Failed to import token list',
+        description: 'Please ensure the file format is correct.'
+      })
     }
   }
 
   const handleImportCustomCollectibleList = () => {
-    fileInputRef.current?.click()
+    const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null
+    fileInput?.click()
   }
 
   const toggleSelectCollectible = async (collectible: any) => {
@@ -302,28 +319,28 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }
 
   const showCollectible = (collectible: any, i: number) => {
+    const isSelected = selectedCollectibles.some(
+      c => c.address === collectible.address && c.tokenId === collectible.tokenId
+    )
+
     return (
-      <Box
+      <div
         key={i}
-        flexDirection="row"
-        alignItems="center"
-        background={{ base: 'backgroundPrimary', hover: 'backgroundSecondary' }}
+        className="flex flex-row items-center gap-3 sm:gap-4 bg-background-primary hover:bg-backgroundSecondary rounded-sm p-3"
         onClick={() => {
           toggleSelectCollectible(collectible)
         }}
-        borderRadius="sm"
-        padding="3"
-        gap="4"
       >
-        <Image src={collectible.collectibleInfo.image} maxHeight="10" maxWidth="10" />
+        <img src={collectible.collectibleInfo.image} className="w-10 h-10" />
         <Text variant="normal" fontWeight="semibold" color="text80">
           {collectible.collectibleInfo.name}
         </Text>
-        <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
+
+        <div className="flex flex-row items-center gap-2 ml-auto">
           <Text variant="normal" fontWeight="bold" color="text80">
             Balance:
           </Text>
-          <Text variant="normal" fontWeight="bold" color="text80" marginRight="1">
+          <Text variant="normal" fontWeight="bold" color="text80" className="mr-1">
             {collectible.contractType === CollectibleContractTypeValues.ERC721
               ? 1
               : ethers.formatUnits(
@@ -331,13 +348,9 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   collectible.collectibleInfo.decimals ?? 0
                 )}
           </Text>
-          <FilledRoundCheckBox
-            checked={
-              (selectedCollectibles?.filter(c => c.address.includes(collectible.address)).length || 0) > 0
-            }
-          />
-        </Box>
-      </Box>
+          <Checkbox checked={isSelected} />
+        </div>
+      </div>
     )
   }
 
@@ -356,18 +369,17 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
   }
 
   return (
-    <Box flexDirection="column" height="fit" minHeight="full">
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto">
       {selectedCollection ? (
-        <Box flexDirection="column" height="full" padding="6" gap="6">
-          <Box flexDirection="row" alignItems="center" gap="4">
-            <Button leftIcon={ChevronLeftIcon} onClick={() => setSelectedCollection(undefined)} />
-            <Image src={selectedCollection.logoURI} maxHeight="10" maxWidth="10" />
-            <Text variant="large" fontWeight="bold" color="text80">
-              {selectedCollection.name}
-            </Text>
-          </Box>
+        <div className="flex flex-col h-full p-4 sm:p-6 gap-6">
+          <div className="flex flex-row items-center gap-3 sm:gap-4">
+            <IconButton icon={ChevronLeftIcon} onClick={() => setSelectedCollection(undefined)} />
 
-          <Box flexDirection="column" gap="2">
+            <SelectedCollectionHeader collection={selectedCollection} />
+          </div>
+
+          <div className="flex flex-col gap-2">
             <TextInput
               leftIcon={SearchIcon}
               value={queryCollectibleTokenIdsMap[selectedCollection.address]}
@@ -379,14 +391,14 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                 })
               }
             />
-          </Box>
+          </div>
 
           {isFetchingQueriedCollectibles ? (
-            <Box alignItems="center" justifyContent="center">
+            <div className="flex flex-row items-center justify-center">
               <Spinner size="lg" />
-            </Box>
+            </div>
           ) : (
-            <Box flexDirection="column">
+            <div className="flex flex-col">
               {selectedCollectibles?.map((collectible, i) => {
                 if (collectible.address === selectedCollection.address) {
                   return showCollectible(collectible, i)
@@ -400,75 +412,52 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                   return showCollectible(collectible, i)
                 }
               })}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       ) : (
-        <Box flexDirection="column" height="full" padding="6" gap="6">
-          <Box flexDirection="row" alignItems="center" gap="4">
+        <div className="flex flex-col h-full p-4 sm:p-6 gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <Text variant="large" fontWeight="bold" color="text80">
-              Import NFT
+              Import Collectibles
             </Text>
 
-            <Select
+            <Select.Helper
               name="collectibleNetwork"
-              placeholder="Select Network"
+              options={mainnetNetworks.map(network => ({
+                label: (
+                  <div className="flex flex-row items-center gap-2">
+                    <img src={network.logoURI} className="w-4 h-4" />
+                    <Text variant="normal" className="text-primary/80">
+                      {network.title}
+                    </Text>
+                  </div>
+                ),
+                value: network.chainId.toString()
+              }))}
               value={selectedNetwork?.chainId.toString()}
-              options={selectOptions}
               onValueChange={value =>
                 setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
               }
+              className="h-7! rounded-lg! w-full sm:w-auto"
             />
-          </Box>
+          </div>
 
-          <Box flexDirection="column" style={{ gap: '5px' }}>
-            <Box gap="2">
-              <Box onClick={() => setContractType(CollectibleContractTypeValues.ERC721)}>
-                <Text
-                  variant="normal"
-                  fontWeight="semibold"
-                  color={contractType === CollectibleContractTypeValues.ERC721 ? 'text100' : 'text50'}
-                  paddingX="4"
-                  cursor="pointer"
-                >
-                  ERC721
-                </Text>
-                {contractType === CollectibleContractTypeValues.ERC721 && (
-                  <Divider
-                    color="white"
-                    height="0.5"
-                    position="relative"
-                    marginY="0"
-                    style={{ top: '6px' }}
-                  />
-                )}
-              </Box>
+          <Tabs
+            value={contractType}
+            onValueChange={value => setContractType(value as CollectibleContractType)}
+          >
+            <TabsList className="h-8 w-fit justify-start">
+              <TabsTrigger value={CollectibleContractTypeValues.ERC721} className="h-8 px-4">
+                ERC721
+              </TabsTrigger>
+              <TabsTrigger value={CollectibleContractTypeValues.ERC1155} className="h-8 px-4">
+                ERC1155
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-              <Box onClick={() => setContractType(CollectibleContractTypeValues.ERC1155)}>
-                <Text
-                  variant="normal"
-                  fontWeight="semibold"
-                  color={contractType === CollectibleContractTypeValues.ERC1155 ? 'text100' : 'text50'}
-                  paddingX="4"
-                  cursor="pointer"
-                >
-                  ERC1155
-                </Text>
-                {contractType === CollectibleContractTypeValues.ERC1155 && (
-                  <Divider
-                    color="white"
-                    height="0.5"
-                    position="relative"
-                    marginY="0"
-                    style={{ top: '6px' }}
-                  />
-                )}
-              </Box>
-            </Box>
-            <Divider marginY="0" />
-          </Box>
-
-          <Box flexDirection="column" gap="3">
+          <div className="flex flex-col gap-3">
             <TextInput
               leftIcon={SearchIcon}
               value={collectionListFilter}
@@ -477,86 +466,75 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
             />
 
             <Button
-              label={
-                selectedNetwork && contractType
-                  ? `Import custom token list for ${contractType === CollectibleContractTypeValues.ERC721 ? 'ERC721' + ' on ' + selectedNetwork?.title : 'ERC1155' + ' on ' + selectedNetwork?.title}`
-                  : 'Select Network and Type to import custom token list'
-              }
-              variant="text"
+              variant="secondary"
               shape="square"
-              marginTop="auto"
+              className="mt-auto text-left whitespace-normal"
               onClick={selectedNetwork && contractType ? handleImportCustomCollectibleList : undefined}
-            />
-          </Box>
+            >
+              <FolderIcon className="w-4 h-4" />
 
-          <Box flexDirection="column">
-            {filteredCollectionList?.map((collection, i) => {
-              return (
-                <Box
-                  key={i}
-                  flexDirection="row"
-                  alignItems="center"
-                  background={{ base: 'backgroundPrimary', hover: 'backgroundSecondary' }}
-                  onClick={() => {
-                    setSelectedCollection(collection)
-                  }}
-                  borderRadius="sm"
-                  padding="3"
-                  gap="4"
-                >
-                  <Image src={collection.logoURI} maxHeight="10" maxWidth="10" />
-                  <Text variant="normal" fontWeight="semibold" color="text80">
-                    {collection.name}
-                  </Text>
-                </Box>
-              )
-            })}
-          </Box>
+              {selectedNetwork && contractType
+                ? `Import custom token list for ${contractType === CollectibleContractTypeValues.ERC721 ? 'ERC721' + ' on ' + selectedNetwork?.title : 'ERC1155' + ' on ' + selectedNetwork?.title}`
+                : 'Select Network and Type to import custom token list'}
+            </Button>
+          </div>
 
-          <input
-            type="file"
-            accept=".json"
-            style={{ display: 'none' }}
-            ref={fileInputRef}
-            onChange={handleFileChange}
+          <div className="flex flex-col">
+            {filteredCollectionList?.map((collection, i) => (
+              <CollectionListItem
+                collection={collection}
+                key={i}
+                onClick={() => setSelectedCollection(collection)}
+              />
+            ))}
+          </div>
+
+          <FileInput
+            id={fileInputId}
+            name="collectibleListFile"
+            validExtensions={['json']}
+            className="hidden"
+            onValueChange={handleFileChange}
           />
 
           {collectionListDate && (
             <Button
-              label={`Refresh list - last updated: ${collectionListDate?.toLocaleString()}`}
               shape="square"
               size="xs"
-              color="text80"
               onClick={() => setConfirmRefreshList(true)}
-            />
+              className="w-full sm:w-auto"
+            >
+              <RefreshIcon className="w-4 h-4" />
+              Refresh list - last updated: {collectionListDate?.toLocaleString()}
+            </Button>
           )}
-        </Box>
+        </div>
       )}
-
-      <Box marginTop="auto">
-        <Box paddingX="6">
+        <div className="px-4 sm:px-6">
           {isAddingCollectibleManually && (
-            <Box flexDirection="column" gap="3">
-              <Box flexDirection="column" gap="0.5">
-                <Text variant="normal" fontWeight="medium" color="text80">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-0.5">
+                <Text variant="small" fontWeight="medium" color="text80">
                   Collectible Address
                 </Text>
 
                 <TextInput
                   name="collectibleAddress"
+                  className="h-10 rounded-md"
                   value={collectibleManualAddress ?? ''}
                   onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                     setCollectibleManualAddress(ev.target.value)
                   }}
                 />
-              </Box>
-              <Box flexDirection="column" marginBottom="6" gap="0.5">
-                <Text variant="normal" fontWeight="medium" color="text80">
+              </div>
+              <div className="flex flex-col mb-6 gap-0.5">
+                <Text variant="small" fontWeight="medium" color="text80">
                   Token ID
                 </Text>
 
                 <TextInput
                   name="collectibleTokenId"
+                  className="h-10 rounded-md"
                   value={collectibleManualTokenId ?? ''}
                   onChange={(ev: ChangeEvent<HTMLInputElement>) => {
                     if (ev.target.value === '') {
@@ -567,111 +545,184 @@ export default function ImportCollectible({ onClose }: { onClose: () => void }) 
                     setCollectibleManualTokenId(ev.target.value as unknown as number)
                   }}
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
 
           {isFetchingCollectibleInfo && collectibleManualAddress && collectibleManualTokenId && (
-            <Box alignItems="center" justifyContent="center" marginBottom="6">
+            <div className="flex flex-row items-center justify-center mb-6">
               <Spinner size="lg" />
-            </Box>
+            </div>
+          )}
+
+          {collectibleError && !isFetchingCollectibleInfo && (
+            <Text variant="normal" fontWeight="medium" color="negative">
+              {collectibleError}
+            </Text>
           )}
 
           {manualCollectibleInfo && !manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
-            <Box alignItems="center" justifyContent="center" marginBottom="6">
-              <Text variant="medium" color="warning">
-                You do not own this collectible
-              </Text>
-            </Box>
+            <div className="flex flex-row items-center mb-6">
+              <Text color="warning">You do not own this collectible</Text>
+            </div>
           )}
 
           {manualCollectibleInfo && manualCollectibleInfo.isOwner && !isFetchingCollectibleInfo && (
-            <Card flexDirection="row" gap="6">
-              <Image src={manualCollectibleInfo.image} style={{ width: '120px', height: 'auto' }} />
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center bg-background-secondary p-3 sm:p-4 sm:px-6">
+              <CheckmarkIcon className="w-4 h-4 text-positive" />
 
-              <Box flexDirection="column" gap="2">
-                <Text variant="medium" fontWeight="bold" color="text80">
+              <img src={manualCollectibleInfo.image} className="w-12 h-12" />
+
+              <div className="flex flex-col gap-2">
+                <Text variant="normal" fontWeight="bold" color="text80">
                   {manualCollectibleInfo.name ?? ''}
                 </Text>
-                <Text variant="small" color="text80">
-                  Your Balance:
-                </Text>
-                <Text variant="medium" fontWeight="bold" color="text80">
-                  {manualCollectibleInfo.balance
-                    ? Number(
-                        ethers.formatUnits(
-                          manualCollectibleInfo.balance as BigNumberish,
-                          manualCollectibleInfo.decimals ?? 0
-                        )
-                      )
-                    : 1}
-                </Text>
-              </Box>
-            </Card>
+                <div className="flex flex-row items-center gap-2">
+                  <Text variant="small" className="text-primary/80">
+                    You have this collectible
+                  </Text>
+
+                  <div className="flex flex-row items-center gap-2">
+                    <CloseIcon className="w-3 h-3" />
+                    <Text variant="small" fontWeight="bold" color="text80">
+                      {manualCollectibleInfo.balance
+                        ? Number(
+                            ethers.formatUnits(
+                              manualCollectibleInfo.balance as BigNumberish,
+                              manualCollectibleInfo.decimals ?? 0
+                            )
+                          )
+                        : 1}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-        </Box>
+        </div>
+      </div>
 
-        <Divider marginY="0" />
-
-        <Box width="full">
-          <Box flexDirection="row" padding="6" gap="2">
-            {isAddingCollectibleManually ? (
-              <Button
-                label="Hide"
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingCollectibleManually(false)
-                  setCollectibleManualAddress('')
-                  setManualCollectibleInfo(undefined)
-                }}
-              />
-            ) : (
-              <Button
-                label="Manual Import"
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingCollectibleManually(true)
-                }}
-              />
-            )}
-
-            <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
-
+      <div className="sticky bottom-0 z-10 shrink-0 border-t border-border-normal bg-background-primary">
+        <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2">
+          {isAddingCollectibleManually ? (
             <Button
-              label="Add"
-              variant="primary"
+              size="md"
               shape="square"
-              disabled={(!manualCollectibleInfo && !selectedCollectibles.length) || isAddingCollection}
+              disabled={!selectedNetwork}
               onClick={() => {
-                handleAdd()
+                setIsAddingCollectibleManually(false)
+                setCollectibleManualAddress('')
+                setManualCollectibleInfo(undefined)
+                setCollectibleError('')
               }}
-            />
-          </Box>
-        </Box>
-      </Box>
+              className="w-full sm:w-auto"
+            >
+              Hide
+            </Button>
+          ) : (
+            <Button
+              size="md"
+              shape="square"
+              disabled={!selectedNetwork}
+              onClick={() => {
+                setIsAddingCollectibleManually(true)
+                setCollectibleError('')
+              }}
+              className="w-full sm:w-auto"
+            >
+              Manual Import
+            </Button>
+          )}
+
+          <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
+            Cancel
+          </Button>
+
+          <Button
+            size="md"
+            variant="primary"
+            shape="square"
+            disabled={(!manualCollectibleInfo && !selectedCollectibles.length) || isAddingCollection}
+            onClick={() => {
+              handleAdd()
+            }}
+            className="w-full sm:w-auto"
+          >
+            Add
+          </Button>
+        </div>
+      </div>
 
       {confirmRefreshList && (
         <Modal size="sm">
-          <Box flexDirection="column" padding="6" gap="6">
+          <div className="flex flex-col p-4 sm:p-6 gap-6">
             <Text variant="normal" fontWeight="medium" color="text80">
               {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
             </Text>
 
-            <Box alignSelf="flex-end" flexDirection="row" gap="3">
-              <Button label="Cancel" size="md" shape="square" onClick={() => setConfirmRefreshList(false)} />
-              <Button
-                label="Confirm"
-                variant="danger"
-                size="md"
-                shape="square"
-                onClick={handleRefreshCollectibleList}
-              />
-            </Box>
-          </Box>
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <Button size="md" shape="square" onClick={() => setConfirmRefreshList(false)}>
+                Cancel
+              </Button>
+              <Button size="md" shape="square" onClick={handleRefreshCollectibleList}>
+                Confirm
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
-    </Box>
+    </div>
+  )
+}
+
+function CollectionListItem({ collection, onClick }: { collection: any; onClick: () => void }) {
+  const [imageError, setImageError] = useState(false)
+
+  return (
+    <Button
+      variant="secondary"
+      className="flex border-none flex-row items-center gap-3 sm:gap-4 bg-background-primary hover:bg-background-hover rounded-sm p-3 w-full text-left mb-2 last:mb-0"
+      onClick={onClick}
+    >
+      {imageError || !collection.logoURI ? (
+        <div className="w-10 h-10 rounded-full bg-background-secondary flex items-center justify-center">
+          <CollectionIcon className="w-4 h-4 text-secondary" />
+        </div>
+      ) : (
+        <img
+          src={collection.logoURI}
+          className="w-10 h-10 rounded-full"
+          onError={() => setImageError(true)}
+        />
+      )}
+
+      <Text variant="normal" fontWeight="semibold" color="text80">
+        {collection.name}
+      </Text>
+    </Button>
+  )
+}
+
+function SelectedCollectionHeader({ collection }: { collection: any }) {
+  const [imageError, setImageError] = useState(false)
+
+  return (
+    <div className="flex flex-row items-center gap-3 sm:gap-4">
+      {imageError || !collection.logoURI ? (
+        <div className="w-10 h-10 rounded-full bg-background-secondary flex items-center justify-center">
+          <CollectionIcon className="w-4 h-4 text-secondary" />
+        </div>
+      ) : (
+        <img
+          src={collection.logoURI}
+          className="w-10 h-10 rounded-full"
+          onError={() => setImageError(true)}
+        />
+      )}
+
+      <Text variant="large" fontWeight="semibold" color="text80">
+        {collection.name}
+      </Text>
+    </div>
   )
 }

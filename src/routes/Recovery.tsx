@@ -1,26 +1,28 @@
 import { Account } from '@0xsequence/account'
 import { universal } from '@0xsequence/core'
 import {
-  Box,
+  Alert,
   Button,
   ChevronLeftIcon,
-  Divider,
+  IconButton,
   Modal,
   Spinner,
   Text,
-  TextInput,
   useMediaQuery
 } from '@0xsequence/design-system'
 import { ChainId } from '@0xsequence/network'
 import { Orchestrator } from '@0xsequence/signhub'
 import { ethers } from 'ethers'
-import { ChangeEvent, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { TRACKER } from '~/utils/tracker'
 
 import { SEQUENCE_CONTEXT } from '~/constants/wallet-context'
 import { WALLETS } from '~/constants/wallets'
+
+import { useFindWalletViaSigner } from '~/hooks/use-find-wallet-via-signer'
+import { findRecoverySigner, useValidateSigner } from '~/hooks/use-validate-signer'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -28,329 +30,323 @@ import { NetworkStore } from '~/stores/NetworkStore'
 import { WalletStore } from '~/stores/WalletStore'
 
 import RecoveryHeader from '~/components/header/RecoveryHeader'
-import { FilledCheckBox } from '~/components/misc'
+import { MnemonicInputGrid } from '~/components/mnemonic/MnemonicInputGrid'
 import Networks from '~/components/network/Networks'
 import WalletList from '~/components/recovery/WalletList'
 
-import { WALLET_WIDTH } from './Wallet'
+import { WALLET_WIDTH } from './WalletV3Recovery'
+
+const validateMnemonic = (mnemonic: string): boolean => {
+  const wordCount = mnemonic.trim().split(/\s+/g).length
+  return wordCount === 12 || wordCount === 24
+}
+
+interface FormState {
+  mnemonic: string
+  selectedWallet: string
+}
+
+interface LoadingState {
+  isSearchingWallets: boolean
+  isRecovering: boolean
+}
 
 function Recovery() {
   const isMobile = useMediaQuery('isMobile')
 
   const authStore = useStore(AuthStore)
-  const networkStore = useStore(NetworkStore)
   const walletStore = useStore(WalletStore)
+  const networkStore = useStore(NetworkStore)
   const networks = networkStore.networks.get()
 
-  const [wallet, setWallet] = useState('')
+  const [formState, setFormState] = useState<FormState>({
+    mnemonic: '',
+    selectedWallet: ''
+  })
+
+  const navigate = useNavigate()
+
+  // Discovery state
   const [possibleWallets, setPossibleWallets] = useState<string[]>([])
-  const [mnemonic, setMnemonic] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [loadingState, setLoadingState] = useState<LoadingState>({
+    isSearchingWallets: false,
+    isRecovering: false
+  })
 
-  const [showMnemonic, setShowMnemonic] = useState(true)
-  const [showManualAddress, setShowManualAddress] = useState(false)
-  const [isNetworkModalOpen, setIsNetworkModalOpen] = useState(false)
+  const isNetworkModalOpen = useObservable(walletStore.isNetworkModalOpen)
+  const findWallets = useFindWalletViaSigner()
+  const validateSigner = useValidateSigner()
 
-  const [warningVisible, setWarningVisible] = useState(false)
-  const [isLoadingWallets, setIsLoadingWallets] = useState(false)
-  const [isCheckingWallet, setIsCheckingWallet] = useState(false)
-  const [isReadyToContinue, setIsReadyToContinue] = useState(false)
+  const validation = useMemo(() => {
+    const isMnemonicValid = validateMnemonic(formState.mnemonic)
+    const isWalletSelected = ethers.isAddress(formState.selectedWallet)
 
-  const isNetworkModalOpenObservable = useObservable(walletStore.isNetworkModalOpen)
+    return {
+      isMnemonicValid,
+      isWalletSelected,
+      showMnemonicError: formState.mnemonic && !isMnemonicValid
+    }
+  }, [formState])
+
+  const mnemonicWordCount = useMemo(() => {
+    const wordCount = formState.mnemonic
+      .trim()
+      .split(/\s+/g)
+      .filter(w => w).length
+    if (wordCount === 12) {
+      return 12
+    }
+    if (wordCount === 24) {
+      return 24
+    }
+    return 12 // default
+  }, [formState.mnemonic])
+
+  const updateFormField = useCallback(<K extends keyof FormState>(field: K, value: FormState[K]) => {
+    setFormState(prev => ({ ...prev, [field]: value }))
+    setErrorMessage(null)
+  }, [])
+
+  const searchForWalletsFromMnemonic = useCallback(
+    async (mnemonic: string) => {
+      const wordCount = mnemonic.trim().split(/\s+/g).length
+      if (wordCount !== 12 && wordCount !== 24) {
+        setPossibleWallets([])
+        return
+      }
+
+      setLoadingState(prev => ({ ...prev, isSearchingWallets: true }))
+      setErrorMessage(null)
+
+      try {
+        if (wordCount === 12) {
+          // V2 Logic
+          const signer = ethers.Wallet.fromPhrase(mnemonic.trim())
+          const wallets = [
+            ...(await TRACKER.walletsOfSigner({ signer: signer.address })).map(({ wallet }) => wallet),
+            ...(WALLETS[signer.address] ?? []).map(({ wallet }) => wallet)
+          ]
+
+          setPossibleWallets(wallets)
+          if (wallets.length > 0) {
+            setFormState(prev => ({ ...prev, selectedWallet: wallets[0] }))
+          } else {
+            setErrorMessage('No wallet match found. Please double-check your recovery phrase.')
+            setFormState(prev => ({ ...prev, selectedWallet: '' }))
+          }
+        } else {
+          // V3 Logic
+          const recovery = await findWallets(mnemonic)
+
+          if (!recovery) {
+            setErrorMessage('No wallet match found. Please double-check your recovery phrase.')
+            setPossibleWallets([])
+            setFormState(prev => ({ ...prev, selectedWallet: '' }))
+            return
+          }
+
+          const { walletAddress, recoverySignerAddress } = recovery
+          await findRecoverySigner(walletAddress, recoverySignerAddress)
+          setPossibleWallets([walletAddress])
+          setFormState(prev => ({ ...prev, selectedWallet: walletAddress }))
+        }
+      } catch (error) {
+        console.error('Error searching for wallets:', error)
+
+        if (
+          error instanceof Error &&
+          (error.message === 'invalid_mnemonic' ||
+            error.message === 'no_signers' ||
+            error.message === 'signer_not_found')
+        ) {
+          setErrorMessage('No wallet match found. Please double-check your recovery phrase.')
+        } else {
+          setErrorMessage('Failed to search for wallets. Please try again.')
+        }
+
+        setPossibleWallets([])
+        setFormState(prev => ({ ...prev, selectedWallet: '' }))
+      } finally {
+        setLoadingState(prev => ({ ...prev, isSearchingWallets: false }))
+      }
+    },
+    [findWallets]
+  )
+
+  const handleMnemonicChange = useCallback(
+    (value: string) => {
+      updateFormField('mnemonic', value)
+      setPossibleWallets([])
+      updateFormField('selectedWallet', '')
+    },
+    [updateFormField]
+  )
 
   useEffect(() => {
-    setWarningVisible(false)
-    if (!ethers.isAddress(wallet)) {
+    if (validateMnemonic(formState.mnemonic)) {
+      searchForWalletsFromMnemonic(formState.mnemonic)
+    }
+  }, [formState.mnemonic, searchForWalletsFromMnemonic])
+
+  const handleRecoverWallet = useCallback(async () => {
+    if (!validation.isMnemonicValid || !validation.isWalletSelected) {
       return
     }
 
-    setIsCheckingWallet(true)
-    const walletAddress = ethers.getAddress(wallet)
-    validateAddress(walletAddress)
-  }, [wallet])
+    setLoadingState(prev => ({ ...prev, isRecovering: true }))
+    setErrorMessage(null)
 
-  useEffect(() => {
-    setIsNetworkModalOpen(isNetworkModalOpenObservable)
-  }, [isNetworkModalOpenObservable])
-
-  const handleSignInWithRecoveryMnemonic = () => {
-    const walletAddress = ethers.getAddress(wallet)
-    authStore.signInWithRecoveryMnemonic(walletAddress, mnemonic.trim(), password)
-  }
-
-  const validMnemonic = (testMnemonic: string = mnemonic) => {
-    return testMnemonic.trim().split(/\s+/g).length == 12
-  }
-
-  const validPassword = () => {
-    return password?.length >= 8
-  }
-
-  const validAddress = () => {
-    return wallet ? ethers.isAddress(wallet) : true
-  }
-
-  const updateMnemonic = async (mnemonic: string) => {
-    setWallet('')
-    setPossibleWallets([])
-    setMnemonic(mnemonic)
-    setIsReadyToContinue(false)
-
-    if (!validMnemonic(mnemonic)) {
-      return
-    }
-
-    setIsLoadingWallets(true)
+    const trimmedMnemonic = formState.mnemonic.trim()
+    const wordCount = trimmedMnemonic.split(/\s+/g).length
 
     try {
-      const signer = ethers.Wallet.fromPhrase(mnemonic.trim())
+      if (wordCount === 12) {
+        // V2 Logic
+        const recoverySigner = ethers.Wallet.fromPhrase(trimmedMnemonic)
+        const orchestrator = new Orchestrator([recoverySigner])
+        const accountToCheck = new Account({
+          address: formState.selectedWallet,
+          tracker: TRACKER,
+          contexts: SEQUENCE_CONTEXT,
+          orchestrator: orchestrator,
+          networks: networks
+        })
 
-      const wallets = [
-        ...(await TRACKER.walletsOfSigner({ signer: signer.address })).map(({ wallet }) => wallet),
-        ...(WALLETS[signer.address] ?? []).map(({ wallet }) => wallet)
-      ]
+        const accountStatus = await accountToCheck.status(ChainId.MAINNET)
+        const accountConfig = accountStatus.config
+        const coder = universal.genericCoderFor(accountConfig.version)
+        const signers = coder.config.signersOf(accountConfig)
 
-      setPossibleWallets(wallets)
+        const match = signers.some(signer => signer.address === recoverySigner.address)
 
-      if (wallets) {
-        setWallet(wallets[0])
+        if (!match) {
+          setErrorMessage(
+            'No wallet match found. Please double-check your recovery phrase and wallet address.'
+          )
+          return
+        }
+
+        await authStore.signInWithRecoveryMnemonic(formState.selectedWallet, trimmedMnemonic)
+        navigate('/wallet-v2-recovery')
+      } else {
+        // V3 Logic
+        const recovery = await findWallets(trimmedMnemonic)
+
+        if (!recovery) {
+          setErrorMessage(
+            'No wallet match found. Please double-check your recovery phrase and wallet address.'
+          )
+          return
+        }
+
+        const { walletAddress, recoverySignerAddress } = recovery
+
+        await validateSigner(walletAddress, recoverySignerAddress)
+        await authStore.signInWithRecoveryMnemonic(walletAddress, trimmedMnemonic)
+        navigate('/wallet-v3-recovery')
       }
     } catch (error) {
-      console.error(error)
-    }
-
-    setIsLoadingWallets(false)
-  }
-
-  const updateWallet = async (selectedWallet: string) => {
-    if (wallet !== selectedWallet) {
-      setWallet(selectedWallet)
-      setIsReadyToContinue(false)
-    }
-  }
-
-  const validateAddress = async (wallet: string) => {
-    try {
-      const recoverySigner = ethers.Wallet.fromPhrase(mnemonic.trim())
-      const orchestrator = new Orchestrator([recoverySigner])
-      const accountToCheck = new Account({
-        address: wallet,
-        tracker: TRACKER,
-        contexts: SEQUENCE_CONTEXT,
-        orchestrator: orchestrator,
-        networks: networks
-      })
-
-      const accountStatus = await accountToCheck.status(ChainId.MAINNET)
-      const accountConfig = accountStatus.config
-      const coder = universal.genericCoderFor(accountConfig.version)
-      const signers = coder.config.signersOf(accountConfig)
-
-      const match = signers.some(signer => signer.address === recoverySigner.address)
-      setIsReadyToContinue(match)
-      if (!match) {
-        setWarningVisible(true)
+      console.error('Recovery error:', error)
+      if (
+        error instanceof Error &&
+        (error.message === 'invalid_mnemonic' ||
+          error.message === 'no_signers' ||
+          error.message === 'signer_not_found')
+      ) {
+        setErrorMessage('No wallet match found. Please double-check your recovery phrase and wallet address.')
+        return
       }
-    } catch (error) {
-      setWarningVisible(true)
-      console.error('failed to validate wallet address', error)
+      setErrorMessage('Failed to recover wallet. Please verify your recovery phrase and try again.')
+    } finally {
+      setLoadingState(prev => ({ ...prev, isRecovering: false }))
     }
+  }, [
+    validation.isMnemonicValid,
+    validation.isWalletSelected,
+    formState.mnemonic,
+    formState.selectedWallet,
+    findWallets,
+    validateSigner,
+    authStore,
+    networks
+  ])
 
-    setIsCheckingWallet(false)
-  }
+  const isAnyLoading = loadingState.isSearchingWallets || loadingState.isRecovering
 
   return (
-    <Box flexDirection="column" background="backgroundPrimary">
+    <div className="flex flex-col bg-background-primary pb-20">
       <RecoveryHeader />
 
-      <Box
-        alignSelf="center"
-        flexDirection="column"
-        marginY="10"
-        paddingX="4"
-        gap="4"
-        width="full"
-        style={{ maxWidth: WALLET_WIDTH }}
-      >
-        <Button leftIcon={ChevronLeftIcon} label="Back" size="sm" as={Link} to="/" />
+      <div className="self-center flex flex-col gap-6 p-4 sm:p-6 w-full" style={{ maxWidth: WALLET_WIDTH }}>
+        <div className="flex flex-col">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <IconButton size="sm" shape="circle" onClick={() => navigate('/')} icon={ChevronLeftIcon} />
 
-        <Box flexDirection="column">
-          <Text variant="xlarge" color="text80">
-            Recover your wallet
-          </Text>
+            <Text variant="xlarge" color="text80" className="leading-tight">
+              Recover your wallet
+            </Text>
+          </div>
 
-          <Divider marginY="6" />
+          <div className="h-0.5 w-full bg-backgroundMuted my-6" />
 
-          <Text variant="normal" fontWeight="medium" color="text80">
+          <Text variant="normal" fontWeight="medium" color="text80" className="mb-2">
             Recovery phrase
           </Text>
 
-          <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
-            Paste your 12-word mnemonic, with each word separated by a space.
+          <Text variant="normal" fontWeight="medium" color="text50" className="mb-3">
+            Enter your 12 or 24-word mnemonic phrase below.
           </Text>
 
-          <TextInput
-            name="mnemonic"
-            value={mnemonic}
-            type={showMnemonic ? 'text' : 'password'}
-            onChange={(ev: ChangeEvent<HTMLInputElement>) => updateMnemonic(ev.target.value)}
-          />
+          <MnemonicInputGrid wordCount={mnemonicWordCount} onMnemonicChange={handleMnemonicChange} />
 
-          {mnemonic && !validMnemonic() && (
-            <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-              Mnemonic must be 12 words
-            </Text>
+          {validation.showMnemonicError && (
+            <Alert.Helper title="Mnemonic must be 12 or 24 words" variant="info" className="mt-6" />
           )}
-        </Box>
+        </div>
 
-        <Button
-          variant="text"
-          label={
-            <Box flexDirection="row" alignItems="center" gap="1">
-              <FilledCheckBox checked={showMnemonic} />
-              <Text variant="normal" fontWeight="medium" color="text80">
-                Show secret recovery phrase
-              </Text>
-            </Box>
-          }
-          onClick={() => setShowMnemonic(!showMnemonic)}
-        />
-
-        <Box flexDirection="column">
-          <Text variant="normal" fontWeight="medium" color="text80">
-            Create password
-          </Text>
-          <Text variant="normal" fontWeight="medium" color="text50" marginBottom="1">
-            Encrypt your mnemonic with an 8+ character password.
-          </Text>
-
-          <TextInput
-            type="password"
-            name="password"
-            value={password}
-            onChange={(ev: ChangeEvent<HTMLInputElement>) => setPassword(ev.target.value)}
-          />
-
-          {password && !validPassword() && (
-            <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-              Password not long enough
-            </Text>
-          )}
-        </Box>
-
-        <Box flexDirection="column">
-          <Text variant="normal" fontWeight="medium" color="text80" marginBottom="1">
-            Confirm password
-          </Text>
-
-          <TextInput
-            type="password"
-            name="confirmPassword"
-            value={confirmPassword}
-            onChange={(ev: ChangeEvent<HTMLInputElement>) => setConfirmPassword(ev.target.value)}
-          />
-
-          {password && confirmPassword && password !== confirmPassword && (
-            <Text variant="small" color="negative" marginLeft="1" marginTop="2">
-              Passwords must match
-            </Text>
-          )}
-        </Box>
-
-        {isLoadingWallets && (
-          <Box alignSelf="center" alignItems="center" gap="1">
+        {loadingState.isSearchingWallets && (
+          <div className="self-center flex flex-row items-center gap-1">
             <Spinner size="md" />
             <Text variant="small" color="text80">
-              Looking for wallet address...
+              Searching for wallet address...
             </Text>
-          </Box>
+          </div>
         )}
 
-        {possibleWallets.length > 0 && (
-          <WalletList
-            possibleWallets={possibleWallets}
-            handleSelectWallet={selectedWallet => updateWallet(selectedWallet)}
-          />
+        {!loadingState.isSearchingWallets && possibleWallets.length > 0 && (
+          <WalletList possibleWallets={possibleWallets} />
         )}
 
-        {showManualAddress && (
-          <Box flexDirection="column" gap="1">
-            <Text variant="normal" fontWeight="bold" color="text80">
-              Enter wallet address manually
-            </Text>
-            <TextInput
-              name="wallet"
-              labelLocation="top"
-              value={wallet}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => updateWallet(ev.target.value)}
-            />
-          </Box>
-        )}
+        {errorMessage && <Alert.Helper title={errorMessage} variant="error" />}
 
-        {isCheckingWallet && !isLoadingWallets && (
-          <Box alignSelf="center" alignItems="center" gap="1">
-            <Spinner size="md" />
-            <Text variant="small" color="text80">
-              Checking wallet address...
-            </Text>
-          </Box>
-        )}
-
-        {(warningVisible || !validAddress()) && (
-          <>
-            {warningVisible ? (
-              <Text variant="small" color="negative">
-                No wallet match found. Please double-check your recovery phrase and wallet address, or try
-                again in 10 minutes.
-              </Text>
-            ) : (
-              <Text variant="small" color="negative">
-                Invalid wallet address
-              </Text>
-            )}
-          </>
-        )}
-
-        <Box flexDirection="row" gap="4">
-          {!showManualAddress && (
-            <Button
-              label="Enter wallet address manually"
-              size={isMobile ? 'lg' : 'md'}
-              shape="square"
-              onClick={() => setShowManualAddress(true)}
-              style={{ whiteSpace: 'normal' }}
-            />
-          )}
-
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button
             variant="primary"
             size={isMobile ? 'lg' : 'md'}
             shape="square"
-            label="Recover wallet"
-            marginLeft="auto"
-            disabled={
-              !mnemonic ||
-              !ethers.isAddress(wallet) ||
-              !password ||
-              password.length < 8 ||
-              password !== confirmPassword ||
-              isReadyToContinue === false
-            }
-            onClick={() => {
-              handleSignInWithRecoveryMnemonic()
-            }}
-            style={{ whiteSpace: 'normal' }}
-          />
-        </Box>
-      </Box>
+            className="w-full sm:w-auto sm:ml-auto"
+            disabled={!validation.isMnemonicValid || !validation.isWalletSelected || isAnyLoading}
+            onClick={handleRecoverWallet}
+          >
+            {loadingState.isRecovering ? 'Loading...' : 'Recover wallet'}
+          </Button>
+        </div>
+      </div>
 
       {isNetworkModalOpen && (
-        <Modal onClose={() => walletStore.isNetworkModalOpen.set(false)}>
+        <Modal
+          onClose={() => walletStore.isNetworkModalOpen.set(false)}
+          rootProps={{
+            style: {
+              zIndex: 100
+            }
+          }}
+        >
           <Networks />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }
 

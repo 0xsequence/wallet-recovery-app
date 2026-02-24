@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
 // Interface for provider information following EIP-6963.
-export interface EIP6963ProviderInfo {
+interface EIP6963ProviderInfo {
   walletId: string // Unique identifier for the wallet e.g io.metamask, io.metamask.flask
   uuid: string // Globally unique ID to differentiate between provider sessions for the lifetime of the page
   name: string // Human-readable name of the wallet
@@ -26,7 +26,7 @@ export interface EIP1193Provider {
 }
 
 // Interface detailing the structure of provider information and its Ethereum provider.
-export interface EIP6963ProviderDetail {
+interface EIP6963ProviderDetail {
   info: EIP6963ProviderInfo // The provider's info
   provider: EIP1193Provider // The EIP-1193 compatible provider
 }
@@ -55,7 +55,7 @@ const externalWalletStore = {
   subscribe: (callback: () => void) => {
     function onAnnouncement(event: EIP6963AnnounceProviderEvent) {
       // Prevent adding a provider if it already exists in the list based on its uuid.
-      if (providers.some(p => p.info.uuid === event.detail.info.uuid)) return
+      if (providers.some(p => p.info.uuid === event.detail.info.uuid)) {return}
 
       // Add the new provider to the list and call the provided callback function.
       providers = [...providers, event.detail]

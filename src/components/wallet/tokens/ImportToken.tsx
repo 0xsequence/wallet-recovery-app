@@ -1,26 +1,27 @@
 import {
-  Box,
   Button,
   Card,
-  Divider,
-  Image,
+  Checkbox,
+  FileInput,
+  FolderIcon,
   Modal,
+  RefreshIcon,
   SearchIcon,
   Select,
   Spinner,
   Text,
   TextInput,
+  cn,
   useToast
 } from '@0xsequence/design-system'
 import { ContractType } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType } from '@0xsequence/network'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
+import { isAddress } from 'viem'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore, UserAddedTokenInitialInfo } from '~/stores/TokenStore'
-
-import { FilledRoundCheckBox } from '~/components/misc'
 
 export default function ImportToken({ onClose }: { onClose: () => void }) {
   const networkStore = useStore(NetworkStore)
@@ -37,6 +38,7 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   const [tokenManualAddress, setTokenManualAddress] = useState<string>('')
 
   const [tokenInfo, setTokenInfo] = useState<UserAddedTokenInitialInfo>()
+  const [tokenError, setTokenError] = useState<string>('')
 
   const [isAddingToken, setIsAddingToken] = useState(false)
   const [confirmRefreshList, setConfirmRefreshList] = useState(false)
@@ -50,31 +52,50 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
 
   const [selectedTokens, setSelectedTokens] = useState<any[]>([])
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputId = 'token-list-file-input'
 
   useEffect(() => {
     if (tokenManualAddress) {
       const fetchTokenInfo = async () => {
         if (selectedNetwork) {
-          const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork.chainId, tokenManualAddress)
-          setTokenInfo(tokenInfo)
+          setTokenInfo(undefined)
+          setTokenError('')
+
+          if (!isAddress(tokenManualAddress)) {
+            setTokenError('Invalid address format')
+            return
+          }
+
+          try {
+            const tokenInfo = await tokenStore.getTokenInfo(selectedNetwork.chainId, tokenManualAddress)
+            setTokenInfo(tokenInfo)
+            setTokenError('')
+          } catch (error) {
+            console.error('Error fetching token info:', error)
+            setTokenInfo(undefined)
+            setTokenError(`There is no token with this address, check the selected chain above`)
+          }
         }
       }
       fetchTokenInfo()
+    } else {
+      setTokenInfo(undefined)
+      setTokenError('')
     }
   }, [selectedNetwork, tokenManualAddress])
 
-  const selectOptions = mainnetNetworks
-    .filter(network => !network.disabled)
-    .map(network => ({
-      label: (
-        <Box flexDirection="row" alignItems="center" gap="2">
-          <Image src={network.logoURI} maxWidth="8" maxHeight="8" />
-          <Text>{network.title}</Text>
-        </Box>
-      ),
-      value: network.chainId.toString()
-    }))
+  /* const selectOptions = mainnetNetworks
+     .filter(network => !network.disabled)
+     .map(network => ({
+       label: (
+         <div className='flex flex-row items-center gap-2'>
+           <img src={network.logoURI} className='w-8 h-8' />
+           <Text>{network.title}</Text>
+         </div>
+       ),
+       value: network.chainId.toString()
+     }))
+       */
 
   useEffect(() => {
     const fetchTokenList = async () => {
@@ -97,7 +118,9 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }, [selectedNetwork])
 
   useEffect(() => {
-    if (!tokenListFilter) return setFilteredTokenList(tokenList.slice(0, 8))
+    if (!tokenListFilter) {
+      return setFilteredTokenList(tokenList.slice(0, 8))
+    }
     setFilteredTokenList(
       tokenList
         .filter(token => token.symbol && token.symbol.toLowerCase().includes(tokenListFilter.toLowerCase()))
@@ -170,45 +193,47 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      try {
-        const text = await file.text()
-        const tokenList = JSON.parse(text)
+  const handleFileChange = async (file: File | null) => {
+    if (!file) {
+      return
+    }
 
-        if (Array.isArray(tokenList)) {
-          tokenList.map(token => {
-            if (!token.address || !token.symbol) {
-              throw new Error('Invalid token list')
-            }
-          })
+    try {
+      const text = await file.text()
+      const tokenList = JSON.parse(text)
 
-          if (selectedNetwork) {
-            await tokenStore.addExternalTokenList(selectedNetwork.chainId, tokenList)
+      if (Array.isArray(tokenList)) {
+        tokenList.map(token => {
+          if (!token.address || !token.symbol) {
+            throw new Error('Invalid token list')
           }
-
-          toast({
-            variant: 'success',
-            title: `Custom token list imported successfully`
-          })
-          onClose()
-        } else {
-          throw new Error('Invalid file format')
-        }
-      } catch (error) {
-        console.error(error)
-        toast({
-          variant: 'error',
-          title: 'Failed to import token list',
-          description: 'Please ensure the file format is correct.'
         })
+
+        if (selectedNetwork) {
+          await tokenStore.addExternalTokenList(selectedNetwork.chainId, tokenList)
+        }
+
+        toast({
+          variant: 'success',
+          title: `Custom token list imported successfully`
+        })
+        onClose()
+      } else {
+        throw new Error('Invalid file format')
       }
+    } catch (error) {
+      console.error(error)
+      toast({
+        variant: 'error',
+        title: 'Failed to import token list',
+        description: 'Please ensure the file format is correct.'
+      })
     }
   }
 
   const handleImportCustomTokenList = () => {
-    fileInputRef.current?.click()
+    const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null
+    fileInput?.click()
   }
 
   const handleRefreshTokenList = async () => {
@@ -222,25 +247,36 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Box flexDirection="column" height="fit" minHeight="full">
-      <Box flexDirection="column" height="full" padding="6" gap="6">
-        <Box flexDirection="row" alignItems="center" gap="4">
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col p-4 sm:p-6 gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <Text variant="large" fontWeight="bold" color="text80">
             Import Tokens
           </Text>
 
-          <Select
+          <Select.Helper
             name="tokenNetwork"
-            placeholder="Select Network"
-            options={selectOptions}
+            options={mainnetNetworks.map(network => ({
+              label: (
+                <div className="flex flex-row items-center gap-2">
+                  <img src={network.logoURI} className="w-4 h-4" />
+                  <Text variant="normal" className="text-primary/80">
+                    {network.title}
+                  </Text>
+                </div>
+              ),
+              value: network.chainId.toString()
+            }))}
             value={selectedNetwork?.chainId.toString()}
             onValueChange={value =>
               setSelectedNetwork(networks.find(n => n.chainId === Number(value)) || mainnetNetworks[0])
             }
+            className="h-7! rounded-lg! w-full sm:w-auto"
           />
-        </Box>
+        </div>
 
-        <Box flexDirection="column" gap="3">
+        <div className="flex flex-col gap-3">
           <TextInput
             leftIcon={SearchIcon}
             value={tokenListFilter}
@@ -249,82 +285,89 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
           />
 
           <Button
-            label={
-              selectedNetwork
-                ? `Import custom token list for ${' ' + selectedNetwork?.title}`
-                : 'Select Network to import custom token list'
-            }
-            variant="text"
+            variant="secondary"
+            shape="square"
             onClick={selectedNetwork ? handleImportCustomTokenList : undefined}
-          />
-        </Box>
+            className="mt-auto text-left whitespace-normal"
+          >
+            <FolderIcon className="w-4 h-4" />
+            {selectedNetwork
+              ? `Import custom token list for ${' ' + selectedNetwork?.title}`
+              : 'Select Network to import custom token list'}
+          </Button>
+        </div>
 
-        <Box flexDirection="column">
+        <div className="flex flex-col">
           {filteredTokenList?.map((token, i) => {
+            const isSelected = selectedTokens.some(t => t.address === token.address)
+            const selectedToken = selectedTokens.find(t => t.address === token.address)
+
             return (
-              <Box
+              <div
                 key={i}
-                flexDirection="row"
-                alignItems="center"
-                background={{ base: 'backgroundPrimary', hover: 'backgroundSecondary' }}
+                className={cn(
+                  'flex flex-row items-center justify-between bg-background-primary hover:bg-background-secondary rounded-sm p-3',
+                  isSelected && 'bg-background-secondary'
+                )}
                 onClick={() => {
                   toggleSelectToken(token.address)
                 }}
-                borderRadius="sm"
-                padding="3"
-                gap="4"
               >
-                <Image src={token.logoURI} maxHeight="10" maxWidth="10" />
-                <Text variant="normal" fontWeight="semibold" color="text80">
-                  {token.symbol}
-                </Text>
-                <Box flexDirection="row" alignItems="center" marginLeft="auto" gap="2">
-                  {selectedTokens?.filter(t => t.address.includes(token.address)).length > 0 && (
+                <div className="flex flex-row items-center">
+                  <img src={token.logoURI} className="w-6 h-6 rounded-full mr-4" />
+
+                  <Text variant="normal" fontWeight="medium" color="text80">
+                    {token.symbol}
+                  </Text>
+                </div>
+
+                <div className="flex flex-row items-center justify-end gap-2">
+                  {isSelected && (
                     <>
                       <Text variant="normal" fontWeight="bold" color="text80">
                         Balance:
                       </Text>
-                      {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance ? (
+                      {selectedToken?.info?.balance ? (
                         <Text variant="normal" fontWeight="bold" color="text80">
-                          {selectedTokens?.filter(t => t.address.includes(token.address))[0].info?.balance}
+                          {selectedToken.info.balance}
                         </Text>
                       ) : (
-                        <Spinner size="md" marginRight="1" />
+                        <Spinner size="md" className="mr-1" />
                       )}
                     </>
                   )}
-                  <FilledRoundCheckBox
-                    checked={(selectedTokens?.filter(t => t.address.includes(token.address)).length || 0) > 0}
-                  />
-                </Box>
-              </Box>
+                  <Checkbox checked={isSelected} />
+                </div>
+              </div>
             )
           })}
-        </Box>
+        </div>
 
-        <input
-          type="file"
-          accept=".json"
-          style={{ display: 'none' }}
-          ref={fileInputRef}
-          onChange={handleFileChange}
+        <FileInput
+          id={fileInputId}
+          name="tokenListFile"
+          validExtensions={['json']}
+          className="hidden"
+          onValueChange={handleFileChange}
         />
 
-        {tokenListDate && (
-          <Button
-            label={`Refresh list - last updated: ${tokenListDate?.toLocaleString()}`}
-            shape="square"
-            size="xs"
-            color="text80"
-            onClick={() => setConfirmRefreshList(true)}
-          />
-        )}
-      </Box>
+          {tokenListDate && (
+            <Button
+              shape="square"
+              size="xs"
+              color="text80"
+              onClick={() => setConfirmRefreshList(true)}
+              className="w-full sm:w-auto"
+            >
+              <RefreshIcon size="xs" className="mr-1" />
+              Refresh list - last updated: {tokenListDate?.toLocaleString()}
+            </Button>
+          )}
+        </div>
 
-      <Box marginTop="auto">
-        <Box paddingX="6">
+        <div className="p-4 sm:p-6">
           {isAddingTokenManually && (
-            <Box flexDirection="column" marginBottom="6" gap="0.5">
+            <div className="flex flex-col mb-6 gap-0.5">
               <Text variant="normal" fontWeight="medium" color="text80">
                 Token Address
               </Text>
@@ -336,16 +379,20 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
                   setTokenManualAddress(ev.target.value)
                 }}
               />
-            </Box>
+            </div>
           )}
 
           {isFetchingTokenInfo && tokenManualAddress ? (
-            <Box alignItems="center" marginBottom="6" justifyContent="center">
+            <div className="flex items-center mb-6 justify-center">
               <Spinner size="lg" />
-            </Box>
+            </div>
+          ) : tokenError ? (
+            <Text variant="normal" fontWeight="medium" color="negative">
+              {tokenError}
+            </Text>
           ) : (
             tokenInfo && (
-              <Card flexDirection="column" marginBottom="6" gap="2">
+              <Card className="flex flex-col mb-6 gap-2">
                 <Text variant="medium" fontWeight="bold" color="text80">
                   {tokenInfo.symbol ?? ''}
                 </Text>
@@ -358,69 +405,75 @@ export default function ImportToken({ onClose }: { onClose: () => void }) {
               </Card>
             )
           )}
-        </Box>
+        </div>
+      </div>
 
-        <Divider marginY="0" />
-
-        <Box>
-          <Box flexDirection="row" padding="6" gap="2">
-            {isAddingTokenManually ? (
-              <Button
-                label="Hide"
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingTokenManually(false)
-                  setTokenManualAddress('')
-                  setTokenInfo(undefined)
-                }}
-              />
-            ) : (
-              <Button
-                label="Manual Import"
-                shape="square"
-                disabled={!selectedNetwork}
-                onClick={() => {
-                  setIsAddingTokenManually(true)
-                }}
-              />
-            )}
-
-            <Button label="Cancel" size="md" shape="square" marginLeft="auto" onClick={onClose} />
-
+      <div className="sticky bottom-0 z-10 shrink-0 border-t border-border-normal bg-background-primary">
+        <div className="flex flex-col sm:flex-row p-4 sm:p-6 gap-2 pt-4">
+          {isAddingTokenManually ? (
             <Button
-              label="Add"
-              variant="primary"
               shape="square"
-              disabled={(!tokenInfo && !selectedTokens.length) || isAddingToken}
+              disabled={!selectedNetwork}
               onClick={() => {
-                handleAdd()
+                setIsAddingTokenManually(false)
+                setTokenManualAddress('')
+                setTokenInfo(undefined)
+                setTokenError('')
               }}
-            />
-          </Box>
-        </Box>
-      </Box>
+              className="w-full sm:w-auto"
+            >
+              Hide
+            </Button>
+          ) : (
+            <Button
+              shape="square"
+              disabled={!selectedNetwork}
+              onClick={() => {
+                setIsAddingTokenManually(true)
+                setTokenError('')
+              }}
+              className="w-full sm:w-auto"
+            >
+              Manual Import
+            </Button>
+          )}
+
+          <Button size="md" shape="square" className="w-full sm:w-auto sm:ml-auto" onClick={onClose}>
+            Cancel
+          </Button>
+
+          <Button
+            variant="primary"
+            shape="square"
+            disabled={(!tokenInfo && !selectedTokens.length) || isAddingToken}
+            onClick={() => {
+              handleAdd()
+            }}
+            className="w-full sm:w-auto"
+          >
+            Add
+          </Button>
+        </div>
+      </div>
 
       {confirmRefreshList && (
         <Modal size="sm">
-          <Box flexDirection="column" padding="6" gap="6">
-            <Text variant="normal" fontWeight="medium" color="text80">
+          <div className="flex flex-col p-4 sm:p-6 gap-6">
+            <Text variant="normal" fontWeight="medium" color="text80" className="pr-4">
               {`Refreshing list will remove the manually imported list for ${selectedNetwork?.title}. Are you sure you want to continue?`}
             </Text>
 
-            <Box alignSelf="flex-end" flexDirection="row" gap="3">
-              <Button label="Cancel" size="md" shape="square" onClick={() => setConfirmRefreshList(false)} />
-              <Button
-                label="Confirm"
-                variant="danger"
-                size="md"
-                shape="square"
-                onClick={handleRefreshTokenList}
-              />
-            </Box>
-          </Box>
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <Button size="sm" shape="square" onClick={() => setConfirmRefreshList(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" size="sm" shape="square" onClick={handleRefreshTokenList}>
+                Confirm
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

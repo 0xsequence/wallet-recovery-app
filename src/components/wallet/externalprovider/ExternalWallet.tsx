@@ -1,16 +1,15 @@
 import {
   AddIcon,
-  Box,
   Button,
   Card,
   CheckmarkIcon,
   CloseIcon,
   CopyIcon,
-  Divider,
+  GradientAvatar,
+  IconButton,
   Modal,
   Text,
   WalletIcon,
-  truncateAddress
 } from '@0xsequence/design-system'
 import EthereumProvider from '@walletconnect/ethereum-provider'
 import { useObservable } from 'micro-observables'
@@ -20,8 +19,9 @@ import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
 import SelectProvider from '~/components/wallet/externalprovider/SelectProvider'
-import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
 import { ExternalIcon } from '~/components/misc/ExternalIcon'
+import { truncateAddress } from '~/utils/truncateAddress'
+import { Address } from 'viem'
 
 export default function ExternalWallet() {
   const walletStore = useStore(WalletStore)
@@ -61,65 +61,71 @@ export default function ExternalWallet() {
   }
 
   return (
-    <Box flexDirection="column" width="full">
-      <Box justifyContent="space-between" alignItems="center" gap="2">
-        <Box alignItems="center" gap="2">
+    <div className='flex flex-col w-full'>
+      <div className='flex flex-row justify-between items-center gap-2'>
+        <div className='flex flex-row items-center gap-2'>
           <WalletIcon color="text100" width="5" height="5" />
 
           <Text variant="normal" fontWeight="bold" color="text100">
             External Wallet
           </Text>
-        </Box>
+        </div>
 
         {!selectedExternalProvider && (
           <Button
             size="sm"
-            leftIcon={AddIcon}
-            label="Connect Wallet"
             variant="primary"
             shape="square"
             onClick={() => handleSelectProvider()}
-          />
+          >
+            <AddIcon />
+            Connect Wallet
+          </Button>
         )}
-      </Box>
+      </div>
 
-      <Divider marginY="2" />
+      <div className='h-0 my-2' />
 
-      <Card flexDirection="column">
+      <Card className='flex flex-col'>
         {selectedExternalProvider ? (
-          <Box justifyContent="space-between" alignItems="center">
-            <Box flexDirection="row" gap="4">
-              <ExternalIcon background="text80" src={selectedExternalProvider.info.icon} />
+          <div className='flex flex-row justify-between items-center'>
+            <div className='flex flex-row gap-4'>
+              <ExternalIcon src={selectedExternalProvider.info.icon} />
 
-              <Box flexDirection="column" gap="1">
+              <div className='flex flex-col gap-1'>
                 <Text variant="normal" fontWeight="bold" color="text80">
                   {selectedExternalProvider.info.name}
                 </Text>
 
-                <Box gap="1">
-                  <Text variant="normal" fontWeight="medium" color="text50" width="full">
-                    {truncateAddress(selectedExternalWalletAddress || '', 10, 4)}
+                <div className='flex flex-row items-center gap-1'>
+                  <GradientAvatar address={selectedExternalWalletAddress!} size="xs" />
+                  <Text variant="normal" fontWeight="medium" color="text50" className='w-full'>
+                    {truncateAddress(selectedExternalWalletAddress as Address, 10, 4)}
                   </Text>
 
                   {isCopied ? (
-                    <CheckmarkIcon color="borderNormal" cursor="pointer" onClick={() => handleCopy()} />
+                    <IconButton shape="square" size="xs" icon={CheckmarkIcon} onClick={() => handleCopy()} />
                   ) : (
-                    <CopyIcon color="borderNormal" cursor="pointer" onClick={() => handleCopy()} />
+                    <IconButton shape="square" size="xs" icon={CopyIcon} onClick={() => handleCopy()} />
                   )}
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
 
-            <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => handleDisconnect()} />
-          </Box>
+            <IconButton shape="square" size="xs" icon={CloseIcon} onClick={() => handleDisconnect()} />
+          </div>
         ) : (
-          <Text textAlign="center" variant="normal" color="text50" padding="4">
+          <Text variant="normal" color="text50" className='p-4'>
             Connect an external wallet to relay transactions
           </Text>
         )}
       </Card>
       {isSelectProviderModalOpen && (
-        <Modal size="sm" onClose={() => setIsSelectProviderModalOpen(false)}>
+        <Modal size="sm" contentProps={{
+          style: {
+            width: 400
+          }
+        }} onClose={() => setIsSelectProviderModalOpen(false)}>
           <SelectProvider
             onSelectProvider={async provider => {
               if (provider) {
@@ -136,6 +142,6 @@ export default function ExternalWallet() {
           />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

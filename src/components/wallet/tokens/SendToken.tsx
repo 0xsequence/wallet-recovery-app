@@ -1,141 +1,198 @@
-import { Box, Button, Divider, Text, TextInput, useMediaQuery } from '@0xsequence/design-system'
+import { Button, Checkbox, Text, useMediaQuery } from '@0xsequence/design-system'
 import { TokenBalance } from '@0xsequence/indexer'
-import { ethers } from 'ethers'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { useObservable } from 'micro-observables'
+import { useEffect, useMemo, useState } from 'react'
+import { isAddress } from 'viem'
 
 import { getNetworkTitle } from '~/utils/network'
+import { formatBalance, hasSufficientBalance } from '~/utils/balance'
+import { getTransactionExplorerUrl } from '~/utils/transaction'
 
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
 
-import { FilledCheckBox } from '~/components/misc'
+import { AmountInput } from '~/components/send/AmountInput'
+import { AddressInput } from '~/components/send/AddressInput'
+import { TransactionSuccess } from '~/components/send/TransactionSuccess'
+import { SendActions } from '~/components/send/SendActions'
+
+import { useSendForm } from '~/hooks/use-send-form'
+import { useTransactionStatus } from '~/hooks/use-transaction-status'
+import { useModalDismissibility } from '~/hooks/use-modal-dismissibility'
 
 export default function SendToken({
   tokenBalance,
-  onClose
+  onClose,
+  onRecover,
+  onDismissibleChange
 }: {
   tokenBalance?: TokenBalance
-  onClose: (to?: string, amount?: string) => void
+  onClose: () => void
+  onRecover: (props: { amount?: string; to?: string }) => Promise<string | undefined | void>
+  onDismissibleChange?: (isDismissible: boolean) => void
 }) {
   const isMobile = useMediaQuery('isMobile')
 
   const walletStore = useStore(WalletStore)
+  const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
 
-  const [amount, setAmount] = useState<string | undefined>(undefined)
-  const [address, setAddress] = useState<string | undefined>(undefined)
-  const [sendToExternalWallet, setSendToExternalWallet] = useState(false)
+  const [recoveryPayloadId, setRecoveryPayloadId] = useState<string | undefined>(undefined)
+  const [isWaitingForSignature, setIsWaitingForSignature] = useState(false)
 
-  useEffect(() => {
-    const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
+  const {
+    amount,
+    toAddress,
+    sendToExternalWallet,
+    isSendingToExternalWallet,
+    setAmount,
+    setToAddress,
+    setSendToExternalWallet
+  } = useSendForm()
 
-    if (sendToExternalWallet && externalWalletAddress) {
-      setAddress(walletStore.selectedExternalWalletAddress.get())
+  const { transaction, isSigned, isRejected } = useTransactionStatus(
+    recoveryPayloadId,
+    isWaitingForSignature,
+    setIsWaitingForSignature
+  )
+
+  useModalDismissibility(recoveryPayloadId, isWaitingForSignature, onDismissibleChange)
+
+  const insufficientBalance = useMemo(() => {
+    if (!amount || !tokenBalance) {
+      return false
     }
-  }, [sendToExternalWallet])
+    return !hasSufficientBalance(amount, tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
+  }, [amount, tokenBalance])
+
+  // Set default values: maximum balance and external wallet address
+  useEffect(() => {
+    if (tokenBalance) {
+      const maxBalance = formatBalance(tokenBalance.balance, tokenBalance.contractInfo?.decimals ?? 18)
+      setAmount(maxBalance)
+
+      const externalWalletAddress = walletStore.selectedExternalWalletAddress.get()
+      if (externalWalletAddress) {
+        setToAddress(externalWalletAddress)
+      }
+    }
+  }, [tokenBalance, setAmount, setToAddress, walletStore])
 
   if (!tokenBalance) {
     return null
   }
 
+  const decimals = tokenBalance.contractInfo?.decimals ?? 18
   const networkTitle = getNetworkTitle(tokenBalance.chainId)
+  const connectedWalletName = selectedExternalProvider?.info.name || 'wallet'
+  const currentBalance = formatBalance(tokenBalance.balance, decimals)
+
+  const explorerUrl = transaction?.hash && tokenBalance?.chainId
+    ? getTransactionExplorerUrl(transaction.hash, tokenBalance.chainId)
+    : undefined
+
+  const handleMaxClick = () => {
+    setAmount(formatBalance(tokenBalance.balance, decimals))
+  }
+
+  const handleRecover = async () => {
+    if (toAddress && amount) {
+      setRecoveryPayloadId(undefined)
+      setIsWaitingForSignature(true)
+
+      try {
+        const payloadId = await onRecover({ amount, to: toAddress })
+        if (payloadId) {
+          setRecoveryPayloadId(payloadId)
+        } else {
+          setIsWaitingForSignature(false)
+        }
+      } catch (error) {
+        setIsWaitingForSignature(false)
+      }
+    }
+  }
+
+  const handleClose = () => {
+    setRecoveryPayloadId(undefined)
+    setIsWaitingForSignature(false)
+    onClose()
+  }
 
   return (
-    <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
-      <Box flexDirection="column" gap="6" padding="6">
+    <div
+      className='w-full'
+      style={{ width: isMobile ? '100%' : '520px', maxWidth: '100%' }}
+    >
+      <div className='flex flex-col gap-6 p-4 sm:p-6'>
         <Text variant="large" fontWeight="bold" color="text100">
           Sending {tokenBalance?.contractInfo?.symbol} on {networkTitle}
         </Text>
 
-        <Box flexDirection="column" gap="3">
-          <Box flexDirection="column" gap="1">
-            <Box flexDirection="column" gap="0.5">
-              <Text variant="normal" fontWeight="medium" color="text80">
-                Amount
-              </Text>
+        <div className='flex flex-col gap-3'>
+          <AmountInput
+            label="Amount"
+            value={amount ?? ''}
+            currentBalance={currentBalance}
+            symbol={tokenBalance?.contractInfo?.symbol}
+            insufficientBalance={insufficientBalance}
+            onChange={setAmount}
+            onMaxClick={handleMaxClick}
+          />
 
-              <Text variant="normal" fontWeight="medium" color="text80">
-                Current Balance:{' '}
-                {ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)}
-              </Text>
-            </Box>
-
-            <TextInput
-              name="amount"
-              value={amount ?? ''}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                setAmount(ev.target.value)
-              }}
-              controls={
-                <Button
-                  label="Max"
-                  size="xs"
-                  shape="square"
-                  onClick={() => {
-                    setAmount(
-                      ethers.formatUnits(tokenBalance?.balance, tokenBalance?.contractInfo?.decimals ?? 18)
-                    )
-                  }}
-                />
-              }
-            />
-          </Box>
-
-          <Box flexDirection="column" gap="1">
-            <Text variant="normal" fontWeight="medium" color="text80">
-              To
-            </Text>
-
-            <TextInput
-              name="to"
-              value={address ?? ''}
-              placeholder="0x..."
-              disabled={sendToExternalWallet}
-              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-                setAddress(ev.target.value)
-              }}
-            />
-          </Box>
-        </Box>
+          <AddressInput
+            label="To"
+            value={toAddress ?? ''}
+            disabled={sendToExternalWallet}
+            helperText={
+              isSendingToExternalWallet && selectedExternalProvider
+                ? `You're sending to your ${selectedExternalProvider.info.name} wallet`
+                : undefined
+            }
+            onChange={setToAddress}
+          />
+        </div>
 
         <Button
           variant="text"
-          label={
-            <Box flexDirection="row" alignItems="center" gap="2">
-              <FilledCheckBox checked={sendToExternalWallet} size="md" />
-              <Text variant="small" color="text80">
-                Send to connected external wallet address
-              </Text>
-            </Box>
-          }
           onClick={() => setSendToExternalWallet(!sendToExternalWallet)}
-        />
-      </Box>
+        >
+          <div className='flex flex-row items-center gap-2'>
+            <Checkbox checked={sendToExternalWallet} />
+            <Text variant="small" color="text80">
+              Send to connected external wallet address
+            </Text>
+          </div>
+        </Button>
+      </div>
 
-      <Divider marginY="0" />
+      <div className='my-0' />
 
-      <Box alignItems="center" justifyContent="flex-end" padding="6" gap="2">
-        <Button
-          label="Cancel"
-          size="md"
-          shape="square"
-          onClick={() => {
-            onClose()
-          }}
+      {isSigned ? (
+        <TransactionSuccess
+          assetName={tokenBalance?.contractInfo?.symbol}
+          networkTitle={networkTitle}
+          chainId={tokenBalance.chainId}
+          transactionHash={transaction?.hash}
+          explorerUrl={explorerUrl}
+          onClose={handleClose}
         />
-
-        <Button
-          label="Send"
-          variant="primary"
-          size="md"
-          shape="square"
-          disabled={!address || !amount}
-          onClick={() => {
-            if (address && amount) {
-              onClose(address, amount)
-            }
-          }}
+      ) : (
+        <SendActions
+          isWaitingForSignature={isWaitingForSignature}
+          isRejected={isRejected}
+          insufficientBalance={insufficientBalance}
+          isDisabled={
+            isWaitingForSignature ||
+            !toAddress ||
+            !amount ||
+            insufficientBalance ||
+            !isAddress(toAddress)
+          }
+          connectedWalletName={connectedWalletName}
+          onCancel={handleClose}
+          onRecover={handleRecover}
         />
-      </Box>
-    </Box>
+      )}
+    </div>
   )
 }

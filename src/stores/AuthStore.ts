@@ -37,7 +37,7 @@ export class AuthStore {
     })
   }
 
-  isLoadingAccount = observable(false)
+  isLoadingAccount = observable(true)
 
   account: Account | undefined
 
@@ -83,7 +83,7 @@ export class AuthStore {
     if (encryptedMnemonic) {
       this.isLoadingAccount.set(true)
     }
-    var key = await db.get(IndexedDBKey.SECURITY, 'key')
+    const key = await db.get(IndexedDBKey.SECURITY, 'key')
 
     let mnemonic: { wallet: string; mnemonic: string } | undefined = undefined
 
@@ -154,6 +154,37 @@ export class AuthStore {
     const key = await createKeyFromPassword(password, salt!)
     const plaintext = await decrypt(key, encryptedMnemonic)
     return JSON.parse(plaintext)
+  }
+
+  /**
+   * Retrieves the recovery mnemonic from IndexedDB without signing in.
+   * Returns the mnemonic string if found, or undefined if not found or if password is required.
+   * @param password Optional password if the mnemonic was encrypted with a password
+   * @returns The mnemonic string or undefined
+   */
+  async getRecoveryMnemonic(password?: string): Promise<string | undefined> {
+    const db = await getIndexedDB(IndexedDBKey.SECURITY)
+    const encryptedMnemonic = await db.get(IndexedDBKey.SECURITY, 'mnemonic')
+    
+    if (!encryptedMnemonic) {
+      return undefined
+    }
+
+    const key = await db.get(IndexedDBKey.SECURITY, 'key')
+    let mnemonic: { wallet: string; mnemonic: string } | undefined = undefined
+
+    if (key) {
+      // Mnemonic encrypted without password
+      mnemonic = await this.decryptRecoveryMnemonic(encryptedMnemonic, key)
+    } else if (password) {
+      // Mnemonic encrypted with password
+      mnemonic = await this.decryptRecoveryMnemonicWithPassword(encryptedMnemonic, password)
+    } else {
+      // Password required but not provided
+      return undefined
+    }
+
+    return mnemonic?.mnemonic
   }
 
   logout() {

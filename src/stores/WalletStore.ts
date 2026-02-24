@@ -56,11 +56,11 @@ export class WalletStore {
   >(undefined)
   isSendingSignedTokenTransaction = observable<
     | {
-        txn: ethers.Transaction[] | ethers.TransactionRequest[]
-        chainId?: number
-        origin?: string
-        projectAccessKey?: string
-      }
+      txn: ethers.Transaction[] | ethers.TransactionRequest[]
+      chainId?: number
+      origin?: string
+      projectAccessKey?: string
+    }
     | undefined
   >(undefined)
 
@@ -74,11 +74,11 @@ export class WalletStore {
 
   toSignTxnDetails = observable<
     | {
-        txn: ethers.Transaction[] | ethers.TransactionRequest[]
-        chainId: number
-        origin?: string
-        projectAccessKey?: string
-      }
+      txn: ethers.Transaction[] | ethers.TransactionRequest[]
+      chainId: number
+      origin?: string
+      projectAccessKey?: string
+    }
     | undefined
   >(undefined)
   toSignMsgDetails = observable<{ message: MessageToSign; chainId: number; origin?: string } | undefined>(
@@ -135,10 +135,10 @@ export class WalletStore {
 
   sendToken = async (tokenBalance: TokenBalance, to: string, amount?: string): Promise<{ hash: string }> => {
     try {
-      const account = this.store.get(AuthStore).account
+      const sequenceAccount = this.store.get(AuthStore).account
       const chainId = tokenBalance.chainId
 
-      if (!account) {
+      if (!sequenceAccount) {
         throw new Error('No account found')
       }
 
@@ -189,7 +189,7 @@ export class WalletStore {
 
       try {
         const response = await this.sendTransaction(
-          account,
+          sequenceAccount,
           externalProvider,
           externalProviderAddress,
           txn,
@@ -209,6 +209,7 @@ export class WalletStore {
         title: 'External wallet error',
         description: (error as any).message
       })
+      console.error(error)
       throw new Error('Could not create transaction')
     }
   }
@@ -219,10 +220,10 @@ export class WalletStore {
     amount?: string
   ): Promise<{ hash: string }> => {
     try {
-      const account = this.store.get(AuthStore).account
+      const sequenceAccount = this.store.get(AuthStore).account
       const chainId = collectibleInfo.collectibleInfoParams.chainId
 
-      if (!account) {
+      if (!sequenceAccount) {
         throw new Error('No account found')
       }
 
@@ -257,7 +258,7 @@ export class WalletStore {
         )
 
         txn = await erc721.safeTransferFrom.populateTransaction(
-          account,
+          sequenceAccount,
           to,
           collectibleInfo.collectibleInfoParams.tokenId
         )
@@ -279,7 +280,7 @@ export class WalletStore {
         }
 
         txn = await erc1155.safeTransferFrom.populateTransaction(
-          account,
+          sequenceAccount,
           to,
           collectibleInfo.collectibleInfoParams.tokenId,
           ethers.parseUnits(amount, collectibleInfo?.collectibleInfoResponse?.decimals ?? 18),
@@ -295,8 +296,10 @@ export class WalletStore {
       let hash: string | undefined
 
       try {
+        console.log('Sending collectible transaction directly through external wallet:', txn)
+
         const response = await this.sendTransaction(
-          account,
+          sequenceAccount,
           externalProvider,
           externalProviderAddress,
           txn,
@@ -450,7 +453,7 @@ export class WalletStore {
 
 // dependency injected into walletRequestHandler, do not directly access
 class Prompter implements WalletUserPrompter {
-  constructor(private store: Store) {}
+  constructor(private store: Store) { }
 
   getDefaultChainId(): number {
     return this.store.get(WalletStore).defaultNetwork.get() ?? 1

@@ -17,7 +17,7 @@ import { LocalStore } from './LocalStore'
 // Etherscan link: https://rinkeby.etherscan.io/address/0x9e7fFFfA6bdD755e4dE6659677145782D9dF1a4e
 const THROWAWAY_RELAYER_PK = '0xa9e1f06cb24d160e02bd6ea84d6ffd0b3457b53d1177382eee85f4d8013419b8'
 
-export const createDebugLocalRelayer = (provider: string | ethers.JsonRpcProvider) => {
+const createDebugLocalRelayer = (provider: string | ethers.JsonRpcProvider) => {
   const signer = new ethers.Wallet(THROWAWAY_RELAYER_PK)
   if (typeof provider === 'string') {
     return new LocalRelayer(signer.connect(new ethers.JsonRpcProvider(provider)))
@@ -83,7 +83,7 @@ export class NetworkStore {
   private async prepareNetworks() {
     const updatedNetworkConfigs: NetworkConfig[] = []
 
-    var userEdits = this.local.networksUserEdits.get()
+    let userEdits = this.local.networksUserEdits.get()
 
     for (const [key, value] of Object.entries(networks)) {
       if (IGNORED_CHAIN_IDS.has(Number(key))) {

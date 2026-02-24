@@ -1,5 +1,6 @@
 import { ContractType } from '@0xsequence/indexer'
 import { ethers } from 'ethers'
+import { isAddress } from 'viem'
 
 import { IPFSGatewayHelper } from '~/utils/gateways'
 import { getIndexedDB } from '~/utils/indexeddb'
@@ -21,7 +22,7 @@ export const CollectibleContractTypeValues = {
 
 export type CollectibleContractType = keyof typeof CollectibleContractTypeValues
 
-export type CollectibleInfoParams = {
+type CollectibleInfoParams = {
   chainId: number
   address: string
   tokenId: number
@@ -99,6 +100,11 @@ export class CollectibleStore {
   }
 
   async getCollectibleInfo(params: CollectibleInfoParams): Promise<CollectibleInfoResponse> {
+    // Validate address format first
+    if (!isAddress(params.address)) {
+      throw new Error(`Invalid collectible address format: ${params.address}`)
+    }
+
     const accountAddress = this.store.get(AuthStore).accountAddress.get()
 
     if (!accountAddress) {
@@ -109,74 +115,120 @@ export class CollectibleStore {
 
     this.isFetchingCollectibleInfo.set(true)
 
-    let uri: string | undefined
-    let image: string | undefined
-    let name: string | undefined
-    let balance: bigint | undefined
-    let decimals: number | undefined
-
-    if (params.contractType === ContractType.ERC721) {
-      const contract = new ethers.Contract(params.address, ERC721_ABI, provider)
-      const owner = await contract.ownerOf(params.tokenId)
-      const isOwner = owner.toLowerCase() === accountAddress.toLowerCase()
-
-      if (!isOwner) {
-        this.isFetchingCollectibleInfo.set(false)
-        return { isOwner, uri: '' }
-      }
-
-      uri = await contract.tokenURI(params.tokenId)
-    } else if (params.contractType === ContractType.ERC1155) {
-      const contract = new ethers.Contract(params.address, ERC1155_ABI, provider)
-      balance = await contract.balanceOf(accountAddress, params.tokenId)
-
-      if (!balance) {
-        this.isFetchingCollectibleInfo.set(false)
-        return { isOwner: false, uri: '' }
-      }
-
-      balance = balance ?? BigInt(1)
-
-      uri = await contract.uri(params.tokenId)
-    }
-
-    if (!uri) {
-      throw new Error('Could not get collectible URI')
-    }
-
-    if (uri.includes('{id}')) {
-      uri = uri.replace('{id}', params.tokenId.toString())
-    }
-
-    let metadata
-
     try {
-      if (uri.startsWith('ipfs://')) {
-        metadata = await this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
-      } else {
-        metadata = await fetch(uri).then(res => res.json())
+      let uri: string | undefined
+      let image: string | undefined
+      let name: string | undefined
+      let balance: bigint | undefined
+      let decimals: number | undefined
+
+      if (params.contractType === ContractType.ERC721) {
+        try {
+          const contract = new ethers.Contract(params.address, ERC721_ABI, provider)
+          
+          // First check if the contract has code (is a valid contract)
+          const code = await provider.getCode(params.address)
+          if (code === '0x') {
+            throw new Error('NOT_A_CONTRACT')
+          }
+          
+          const owner = await contract.ownerOf(params.tokenId)
+          const isOwner = owner.toLowerCase() === accountAddress.toLowerCase()
+
+          if (!isOwner) {
+            return { isOwner, uri: '' }
+          }
+
+          uri = await contract.tokenURI(params.tokenId)
+        } catch (err: any) {
+          // Not a contract at this address
+          if (err.message === 'NOT_A_CONTRACT') {
+            throw new Error('No contract found at this address on the selected chain')
+          }
+          // Token doesn't exist or other contract errors
+          if (err.code === 'BAD_DATA' || err.code === 'CALL_EXCEPTION') {
+            throw new Error('Token ID does not exist in this contract')
+          }
+          throw err
+        }
+      } else if (params.contractType === ContractType.ERC1155) {
+        try {
+          const contract = new ethers.Contract(params.address, ERC1155_ABI, provider)
+          
+          // First check if the contract has code (is a valid contract)
+          const code = await provider.getCode(params.address)
+          if (code === '0x') {
+            throw new Error('NOT_A_CONTRACT')
+          }
+          
+          balance = await contract.balanceOf(accountAddress, params.tokenId)
+
+          if (!balance) {
+            return { isOwner: false, uri: '' }
+          }
+
+          balance = balance ?? BigInt(1)
+
+          uri = await contract.uri(params.tokenId)
+        } catch (err: any) {
+          // Not a contract at this address
+          if (err.message === 'NOT_A_CONTRACT') {
+            throw new Error('No contract found at this address on the selected chain')
+          }
+          // Token doesn't exist or other contract errors
+          if (err.code === 'BAD_DATA' || err.code === 'CALL_EXCEPTION') {
+            throw new Error('Token ID does not exist in this contract')
+          }
+          throw err
+        }
       }
 
-      if (metadata) {
-        decimals = metadata.decimals
-        image = metadata.image
-        name = metadata.name
+      if (!uri) {
+        throw new Error('Could not get collectible URI')
       }
 
-      if (image?.startsWith('ipfs://')) {
-        image = await this.ipfsGatewayHelper.getGatewayURL(image)
+      if (uri.includes('{id}')) {
+        uri = uri.replace('{id}', params.tokenId.toString())
       }
-    } catch {
-      if (!name) {
-        name = `No Metadata Found Address: ${params.address} TokenId: ${params.tokenId}`
+
+      let metadata
+
+      try {
+        if (uri.startsWith('ipfs://')) {
+          metadata = await this.ipfsGatewayHelper.fetch(uri).then(res => res.json())
+        } else {
+          metadata = await fetch(uri).then(res => res.json())
+        }
+
+        if (metadata) {
+          decimals = metadata.decimals
+          image = metadata.image
+          name = metadata.name
+        }
+
+        if (image?.startsWith('ipfs://')) {
+          image = await this.ipfsGatewayHelper.getGatewayURL(image)
+        }
+      } catch {
+        if (!name) {
+          name = `No Metadata Found Address: ${params.address} TokenId: ${params.tokenId}`
+        }
       }
+
+      decimals = decimals ?? 0
+
+      return { isOwner: true, uri, image, name, balance, decimals }
+    } catch (err: any) {
+      console.error(err)
+      // Pass through specific error messages
+      if (err.message === 'No contract found at this address on the selected chain' || 
+          err.message === 'Token ID does not exist in this contract') {
+        throw err
+      }
+      throw new Error(`Error getting collectible info: ${err.message || 'Unknown error'}`)
+    } finally {
+      this.isFetchingCollectibleInfo.set(false)
     }
-
-    decimals = decimals ?? 0
-
-    this.isFetchingCollectibleInfo.set(false)
-
-    return { isOwner: true, uri, image, name, balance, decimals }
   }
 
   async addCollectible(collectibleInfo: CollectibleInfo) {
