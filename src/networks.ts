@@ -44,7 +44,7 @@ export const networks = [
   Network.ChainId.IMMUTABLE_ZKEVM,
   Network.ChainId.IMMUTABLE_ZKEVM_TESTNET,
   Network.ChainId.ETHERLINK,
-  Network.ChainId.ETHERLINK_TESTNET,
+  // Network.ChainId.ETHERLINK_TESTNET,
   Network.ChainId.MOONBEAM,
   Network.ChainId.MOONBASE_ALPHA,
   Network.ChainId.MONAD_TESTNET,
@@ -59,7 +59,7 @@ export const networks = [
   Network.ChainId.SANDBOX_TESTNET,
   Network.ChainId.SOMNIA,
   Network.ChainId.MONAD,
-  Network.ChainId.ARC_TESTNET,
+  Network.ChainId.ARC_TESTNET
 ].map(chainId => {
   const network = Network.getNetworkFromChainId(chainId)
 
