@@ -1,10 +1,7 @@
 import {
   AddIcon,
-  Box,
   Button,
   Card,
-  Divider,
-  Image,
   Modal,
   Spinner,
   Text,
@@ -21,6 +18,7 @@ import CollectionIcon from '~/assets/icons/collection.svg'
 
 import CollectibleBalanceItem from './CollectibleBalanceItem'
 import ImportCollectible from './ImportCollectible'
+import { WalletStore } from '~/stores/WalletStore'
 
 export default function CollectibleList({
   onSendClick
@@ -31,9 +29,11 @@ export default function CollectibleList({
 
   const collectibleStore = useStore(CollectibleStore)
   const networkStore = useStore(NetworkStore)
+  const walletStore = useStore(WalletStore)
 
   const isFetchingBalances = useObservable(collectibleStore.isFetchingBalances)
   const userCollectibles = useObservable(collectibleStore.userCollectibles)
+  
 
   const collectibles = useMemo(() => userCollectibles, [userCollectibles])
   const filteredCollectibles = useMemo(() => {
@@ -43,42 +43,45 @@ export default function CollectibleList({
         .find(network => network.chainId === collectibleInfo.collectibleInfoParams.chainId)?.disabled
     })
   }, [collectibles, networkStore])
+  const isConnected = useObservable(walletStore.selectedExternalProvider) !== undefined
 
   const [isImportCollectibleViewOpen, setIsImportCollectibleViewOpen] = useState(false)
 
   return (
-    <Box width="full">
-      <Box justifyContent="space-between" alignItems="center">
-        <Box alignItems="center" gap="2">
-          <Image src={CollectionIcon} width="5" height="5" />
+    <div className='w-full mb-5'>
+      <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3'>
+        <div className='flex flex-row items-center gap-2'>
+          <img src={CollectionIcon} alt="Collectibles" className='w-4 h-4' />
 
           <Text variant="normal" fontWeight="bold" color="text100">
             Collectibles
           </Text>
-        </Box>
+        </div>
         <Button
           size="sm"
-          leftIcon={AddIcon}
-          label="Import"
           shape="square"
           onClick={() => setIsImportCollectibleViewOpen(true)}
-        />
-      </Box>
+          className='w-full sm:w-auto'
+        >
+          <AddIcon />
+          Import
+        </Button>
+      </div>
 
-      <Divider marginY="2" />
+      <div className='h-0 my-2' />
 
-      <Box width="full" flexDirection="column" gap="4" marginBottom="8">
+      <div className='flex flex-col gap-2'>
         {isFetchingBalances ? (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
+          <div className='flex flex-row items-center justify-center mt-4'>
             <Spinner size="lg" />
-          </Box>
+          </div>
         ) : (
           <>
             {filteredCollectibles.length > 0 ? (
               <>
                 {collectibles.map(collectibleInfo => {
                   return (
-                    <Box
+                    <div
                       key={
                         collectibleInfo.collectibleInfoParams.chainId +
                         collectibleInfo.collectibleInfoParams.address +
@@ -86,40 +89,40 @@ export default function CollectibleList({
                       }
                     >
                       <CollectibleBalanceItem
+                        disabled={!isConnected}
                         collectibleInfo={collectibleInfo}
                         onSendClick={() => {
                           onSendClick(collectibleInfo)
                         }}
-                        onRemoveClick={() => {
-                          collectibleStore.removeCollectible(collectibleInfo)
-                        }}
                       />
-                    </Box>
+                    </div>
                   )
                 })}
               </>
             ) : (
-              <Card flexDirection="column">
-                <Text textAlign="center" variant="normal" color="text50" padding="4">
+              <Card className='flex flex-col'>
+                <Text variant="normal" color="text50" className='text-center p-4'>
                   Import ERC721 or ERC1155 Collectibles
                 </Text>
               </Card>
             )}
           </>
         )}
-      </Box>
+      </div>
 
       {isImportCollectibleViewOpen && (
         <Modal
           size="lg"
+          scroll={false}
           onClose={() => setIsImportCollectibleViewOpen(false)}
           contentProps={{
             style: {
               scrollbarColor: 'gray black',
               scrollbarWidth: 'thin',
-              width: !isMobile ? '800px' : '100%',
+              width: '100%',
+              maxWidth: !isMobile ? '800px' : '100%',
               minHeight: 'auto',
-              maxHeight: '80%',
+              maxHeight: !isMobile ? '80%' : '90%',
               overflow: 'hidden'
             }
           }}
@@ -127,6 +130,6 @@ export default function CollectibleList({
           <ImportCollectible onClose={() => setIsImportCollectibleViewOpen(false)} />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

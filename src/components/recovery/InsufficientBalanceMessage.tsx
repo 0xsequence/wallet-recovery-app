@@ -1,4 +1,5 @@
-import { Box, Text } from "@0xsequence/design-system"
+import { Alert } from "@0xsequence/design-system"
+import { ethers } from "ethers"
 import { ParsedCall } from "~/utils/transaction-parser"
 import { formatPrettyBalance } from "~/utils/format-pretty-balance"
 
@@ -21,7 +22,7 @@ export function InsufficientBalanceMessage({
 }: InsufficientBalanceMessageProps) {
   const getMessage = () => {
     if (firstCall.type === 'erc721') {
-      return `Insufficient balance. You don't own this NFT (Token ID: ${firstCall.tokenId?.toString()})`
+      return `You don't own this NFT (Token ID: ${firstCall.tokenId?.toString()}).`
     }
 
     if (firstCall.type === 'erc1155') {
@@ -31,23 +32,28 @@ export function InsufficientBalanceMessage({
           c.collectibleInfoParams.chainId === chainId
       )
       const userBalance = collectible?.collectibleInfoResponse.balance?.toString() ?? '0'
-      return `Insufficient balance. You have ${userBalance} but need ${transactionAmount?.toString() ?? '0'} of Token ID: ${firstCall.tokenId?.toString()}.`
+      return `You have ${userBalance} but need ${transactionAmount?.toString() ?? '0'} of Token ID: ${firstCall.tokenId?.toString()}.`
     }
 
     // For ERC20 and native tokens
-    const balanceOfToken = balances.find(balance => balance.contractAddress === firstCall.contractAddress)
+    const contractAddress = firstCall.contractAddress || ethers.ZeroAddress
+    const balanceOfToken = balances.find(
+      balance => balance.contractAddress.toLowerCase() === contractAddress.toLowerCase() &&
+        balance.chainId === chainId
+    )
     const metadata = tokenMetadata.get(firstCall.contractAddress!)
     const decimals = metadata?.decimals ?? 18
     const symbol = metadata?.symbol ?? 'tokens'
 
-    return `Insufficient balance. You have ${formatPrettyBalance(balanceOfToken?.balance ?? '0', decimals)} ${symbol} but need ${formatPrettyBalance(transactionAmount?.toString() ?? '0', decimals)} ${symbol}.`
+    return `You have ${formatPrettyBalance(balanceOfToken?.balance ?? '0', decimals)} ${symbol} but need ${formatPrettyBalance(transactionAmount?.toString() ?? '0', decimals)} ${symbol}.`
   }
 
   return (
-    <Box flexDirection="column" gap="1">
-      <Text variant="small" fontWeight="medium" color="negative">
-        {getMessage()}
-      </Text>
-    </Box>
+    <Alert.Helper
+      variant="error"
+      title="Insufficient balance"
+      description={getMessage()}
+      className='[&_[data-slot=alert-description]]:break-words'
+    />
   )
 }

@@ -1,4 +1,4 @@
-import { Box, Button, Text, CheckmarkIcon } from "@0xsequence/design-system"
+import { Button, Text, CheckmarkIcon, Spinner } from "@0xsequence/design-system"
 import { Network } from "@0xsequence/wallet-primitives"
 
 interface PayloadActionButtonProps {
@@ -29,25 +29,30 @@ export function PayloadActionButton({
   onExecute
 }: PayloadActionButtonProps) {
   const explorerUrl = hash ? getTransactionExplorerUrl(hash, chainId) : null
+  const externalProviderName = selectedExternalProvider?.info.name
 
   // Show success state
   if (status === 'final' && opStatus === 'confirmed' && explorerUrl) {
     return (
-      <Box flexDirection="column" gap="1" alignItems="center">
-        <Text variant="small" fontWeight="bold" color="text80" flexDirection="row" gap="1" alignItems="center">
-          <CheckmarkIcon width="14" height="14" color="positive" /> Recovery completed
+      <div className='flex flex-col gap-1 items-start sm:items-center'>
+        <Text variant="small" fontWeight="bold" color="text80" className='flex flex-row gap-1 items-center'>
+          <CheckmarkIcon className='w-4 h-4 text-positive' /> Recovery completed
         </Text>
         {explorerUrl && (
-          <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
+          <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
             <Button
               variant="primary"
               size="sm"
               shape="square"
-              label="View on explorer"
-            />
+              className="w-full justify-center"
+            >
+              <Text variant="small" fontWeight="bold" color="text100">
+                View on explorer
+              </Text>
+            </Button>
           </a>
         )}
-      </Box>
+      </div>
     )
   }
 
@@ -58,9 +63,15 @@ export function PayloadActionButton({
         variant="primary"
         size="sm"
         shape="square"
-        label="Executing..."
         disabled={true}
-      />
+        className="w-full sm:w-auto justify-center"
+      >
+        <Spinner size="xs" className="text-white mr-1" />
+
+        <Text variant="small" fontWeight="bold" color="text100">
+          Continue with {externalProviderName}
+        </Text>
+      </Button>
     )
   }
 
@@ -72,17 +83,13 @@ export function PayloadActionButton({
         size="sm"
         shape="square"
         onClick={onExecute}
-        label={
-          isExecuted 
-            ? "Executed" 
-            : isLocked 
-              ? "Locked" 
-              : selectedExternalProvider 
-                ? "Execute" 
-                : "Connect wallet"
-        }
         disabled={!readyToExecute || isExecuted || !hasEnoughBalance}
-      />
+        className="w-full sm:w-auto justify-center"
+      >
+        <Text variant="small" fontWeight="bold" color="text100">
+          {isExecuted ? "Executed" : isLocked ? "Locked" : selectedExternalProvider ? "Execute" : "Connect wallet"}
+        </Text>
+      </Button>
     )
   }
 

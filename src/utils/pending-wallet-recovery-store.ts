@@ -1,4 +1,4 @@
-import { compareAddress } from '@0xsequence/design-system'
+import compareAddress from '~/utils/compareAddress'
 import { Sequence } from '@0xsequence/wallet-wdk'
 import { useAtom } from 'jotai'
 import { atomWithStorage, createJSONStorage } from 'jotai/utils'
@@ -93,8 +93,8 @@ export function usePendingWalletRecoveryStore() {
 
     const payloads = walletAddress
       ? values.payloads.filter(payload =>
-          compareAddress(payload.wallet, walletAddress)
-        )
+        compareAddress(payload.wallet, walletAddress)
+      )
       : values.payloads
 
     const unique = payloads.filter(obj => {

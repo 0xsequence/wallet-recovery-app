@@ -1,5 +1,5 @@
 import { Sequence } from "@0xsequence/wallet-wdk"
-import { Box, Card } from "@0xsequence/design-system"
+import { Card } from "@0xsequence/design-system"
 import { useObservable, useStore } from "~/stores"
 import { WalletStore } from "~/stores/WalletStore"
 import PayloadDetailsCollapsible from "./PayloadDetailsCollapsible"
@@ -15,7 +15,7 @@ import { InsufficientBalanceMessage } from "./InsufficientBalanceMessage"
 export function QueuePayloadItem({ payload, executedHidden = false }: { payload: Sequence.QueuedRecoveryPayload; executedHidden?: boolean }) {
 	const walletStore = useStore(WalletStore)
 	const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
-	
+
 	const startDate = new Date(Number(payload.startTimestamp) * 1000)
 	const endDate = new Date(Number(payload.endTimestamp) * 1000)
 	const isLocked = endDate > new Date()
@@ -58,17 +58,10 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	}
 
 	return (
-		<Box flexDirection="column" gap="2" background="backgroundMuted" borderRadius="md" padding="2">
+		<div className='flex flex-col gap-2 bg-background-muted border border-border-normal rounded-xl p-2'>
 			<Card
-				flexDirection="row"
-				gap="3"
-				padding="4"
-				background="backgroundSecondary"
-				borderRadius="md"
-				style={{
-					opacity: isExecuted ? 0.5 : 1,
-					pointerEvents: isExecuted ? 'none' : 'auto'
-				}}
+				className='flex flex-col gap-3 p-4 bg-background-secondary rounded-md border-none sm:flex-row sm:items-center'
+				style={{ opacity: isExecuted ? 0.5 : 1, pointerEvents: isExecuted ? 'none' : 'auto' }}
 			>
 				<PayloadStatusBadge
 					payloadId={payload.id}
@@ -80,7 +73,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 					readyToExecute={readyToExecute}
 				/>
 
-				<Box marginLeft="auto">
+				<div className='w-full sm:w-auto sm:ml-auto'>
 					<PayloadActionButton
 						isPending={isPending}
 						hash={hash}
@@ -94,7 +87,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 						chainId={payload.chainId}
 						onExecute={handleExecuteRecovery}
 					/>
-				</Box>
+				</div>
 			</Card>
 
 			{!hasEnoughBalance && !isExecuted && (
@@ -118,6 +111,6 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 				<ExecutionDetails parsedCalls={parsedCalls} tokenMetadata={tokenMetadata} />
 			)}
 
-		</Box>
+		</div>
 	)
 }

@@ -1,8 +1,6 @@
 import {
-  Box,
   Button,
   Card,
-  Divider,
   ExternalLinkIcon,
   IconButton,
   Text,
@@ -52,18 +50,18 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
     onClose()
   }
   return (
-    <Box style={{ minWidth: isMobile ? '100vw' : '500px' }}>
-      <Box flexDirection="column" gap="6" padding="6">
+    <div className='min-w-[500px] w-full' style={{ minWidth: isMobile ? '100vw' : '500px' }}>
+      <div className='flex flex-col gap-6 p-6'>
         <Text variant="large" fontWeight="bold" color="text80">
           Would you like to connect to this dapp?
         </Text>
 
-        <Box flexDirection="column" gap="3">
-          <Card flexDirection="row" justifyContent="space-between" alignItems="center">
+        <div className='flex flex-col gap-3'>
+          <Card className='flex flex-row justify-between items-center'>
             <Text variant="normal" fontWeight="medium" color="text100">
               Origin
             </Text>
-            <Box flexDirection="row" alignItems="center" gap="2">
+            <div className='flex flex-row items-center gap-2'>
               <Text variant="normal" fontWeight="medium" color="text100">
                 {connectOptions?.origin?.split('//')[1]}
               </Text>
@@ -71,11 +69,10 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
                 size="xs"
                 icon={ExternalLinkIcon}
                 onClick={() => window.open(connectOptions?.origin, '_blank')}
-                style={{ width: '24px', height: '24px' }}
               />
-            </Box>
+            </div>
           </Card>
-          <Card flexDirection="row" justifyContent="space-between">
+          <Card className='flex flex-row justify-between'>
             <Text variant="normal" fontWeight="medium" color="text100">
               Network
             </Text>
@@ -83,23 +80,26 @@ export default function ConnectDapp({ onClose }: { onClose: () => void }) {
               {getNetworkTitle(Number(connectOptions?.networkId))}
             </Text>
           </Card>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Divider marginY="0" />
+      <div className='h-0 my-0' />
 
-      <Box alignItems="center" justifyContent="flex-end" padding="6" gap="2">
-        <Button label="Cancel" size="md" shape="square" onClick={() => handleCancel()} />
+      <div className='flex flex-row items-center justify-end gap-2 p-6'>
+        <Button size="md" shape="square" onClick={() => handleCancel()}>
+          Cancel
+        </Button>
 
         <Button
-          label={isPending ? `Authorizing…` : `Connect`}
           variant="primary"
           size="md"
           shape="square"
           disabled={isPending}
           onClick={() => handleConnect()}
-        />
-      </Box>
-    </Box>
+        >
+          {isPending ? `Authorizing…` : `Connect`}
+        </Button>
+      </div>
+    </div>
   )
 }

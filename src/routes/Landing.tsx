@@ -1,11 +1,11 @@
-import { Box, Button, Card, Image, Text, useMediaQuery } from '@0xsequence/design-system'
-import { Link } from 'react-router-dom'
+import { Button, Card, Text, cn, useMediaQuery } from '@0xsequence/design-system'
+import { useNavigate } from 'react-router-dom'
 
 import contractsIcon from '~/assets/icons/contracts.svg'
 import walletIcon from '~/assets/icons/wallet.svg'
 import bgImageMobile from '~/assets/images/recovery-wallet-bg-mobile.jpg'
 import bgImage from '~/assets/images/recovery-wallet-bg.jpg'
-import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
+import SequenceRecoveryLogo from '~/assets/images/sequence.svg'
 
 const desktopBg = {
   backgroundImage: `url(${bgImage})`,
@@ -15,79 +15,78 @@ const desktopBg = {
 
 export default function Landing() {
   const isMobile = useMediaQuery('isMobile')
+  const navigate = useNavigate()
 
   return (
-    <Box
-      height={isMobile ? undefined : 'vh'}
-      justifyContent={isMobile ? 'center' : 'flex-start'}
-      style={isMobile ? { paddingTop: '40px' } : desktopBg}
-      padding={isMobile ? '4' : '20'}
-      paddingBottom={isMobile ? '14' : '0'}
+    <div
+      className="h-dvh flex justify-center lg:justify-start p-4 pb-0 pt-10 sm:pt-16 lg:pt-0"
+      style={isMobile ? undefined : desktopBg}
     >
-      <Box
-        flexDirection="column"
-        justifyContent={isMobile ? 'flex-start' : 'center'}
-        alignItems={isMobile ? 'center' : 'flex-start'}
-        style={{ maxWidth: '800px' }}
-        gap="10"
-        zIndex="20"
-      >
-        <Box
-          flexDirection="column"
-          justifyContent="center"
-          alignItems={isMobile ? 'center' : 'flex-start'}
-          gap={isMobile ? undefined : '6'}
-        >
-          <Image src={SequenceRecoveryLogo} height="8" />
+      <div className="flex flex-col justify-start lg:justify-center items-center lg:items-start w-full max-w-800px gap-8 sm:gap-10 z-20 px-4 sm:px-8 lg:px-20 py-10 sm:py-16 lg:py-20">
+        <div className="flex flex-col justify-center items-center lg:items-start gap-6 w-full">
+          <div className="flex flex-row items-center gap-2">
+            <img src={SequenceRecoveryLogo} className="h-8 sm:h-9 mr-2" />
+            <div className="flex items-center gap-1 ">
+              <Text variant="xlarge" fontWeight="bold" className="text-primary">
+                Sequence
+              </Text>
+              <Text variant="xlarge" fontWeight="bold" className="text-primary/70">
+                Wallet Recovery
+              </Text>
+            </div>
+          </div>
 
-          {isMobile && <Image src={bgImageMobile} style={{ maxWidth: 'calc(100% + 32px)' }} />}
+          {isMobile && <img src={bgImageMobile} className="w-full max-w-none rounded-lg" />}
 
           <Text
-            textAlign={isMobile ? 'center' : 'left'}
-            variant="xlarge"
             color="text100"
-            style={
-              isMobile ? { fontSize: '28px', lineHeight: '32px' } : { fontSize: '40px', lineHeight: '44px' }
-            }
+            className={cn(
+              'w-full lg:w-3/5 text-2xl sm:text-3xl lg:text-4xl leading-tight',
+              isMobile ? 'text-center' : 'text-left'
+            )}
           >
             A fully open source and forever accessible way to recover your Sequence Wallet
           </Text>
-        </Box>
+        </div>
 
-        <Box gap="2">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           {/* TODO: Change link */}
-          <Button
-            label="Learn more"
-            size="md"
-            onClick={() => window.open('https://github.com/0xsequence/wallet-recovery-app')}
-          />
-          <Button as={Link} to="/recovery" label="Start Recovery" variant="primary" size="md" />
-        </Box>
-        <Box flexDirection={isMobile ? 'column' : 'row'} gap="2" width={isMobile ? 'full' : '2/3'}>
-          <Card flexDirection="column" gap="2">
-            <Box flexDirection="row" gap="2">
-              <Image src={contractsIcon} />
-              <Text variant="normal" fontWeight="bold" color="text100">
+          <Button size="md" onClick={() => window.open('https://github.com/0xsequence/wallet-recovery-app')}>
+            Learn more
+          </Button>
+
+          <Button variant="primary" onClick={() => navigate('/recovery')}>
+            Start Recovery
+          </Button>
+        </div>
+        <div className="flex flex-col lg:flex-row gap-4 w-full lg:w-2/3 select-none">
+          <Card className="flex flex-col gap-2 w-full">
+            <div className="flex flex-row gap-2">
+              <img src={contractsIcon} className="w-4 h-4" />
+
+              <Text variant="normal" fontWeight="bold" className="text-primary">
                 Connect to apps
               </Text>
-            </Box>
-            <Text variant="normal" fontWeight="medium" color="text50">
+            </div>
+            <Text variant="normal" fontWeight="medium" className="text-primary/50">
               Connect your wallet to any web3 application via WalletConnect
             </Text>
           </Card>
-          <Card flexDirection="column" gap="2">
-            <Box flexDirection="row" gap="2">
-              <Image src={walletIcon} />
-              <Text variant="normal" fontWeight="bold" color="text100">
+          <Card className="flex flex-col gap-2 w-full">
+            <div className="flex flex-row gap-2">
+              <img src={walletIcon} className="w-4 h-4" />
+
+              <Text variant="normal" fontWeight="bold" className="text-primary">
                 Move assets anywhere
               </Text>
-            </Box>
-            <Text variant="normal" fontWeight="medium" color="text50">
+            </div>
+
+            <Text variant="normal" fontWeight="medium" className="text-primary/50">
               Transfer your assets securely to any wallet, fully decentralized
             </Text>
           </Card>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

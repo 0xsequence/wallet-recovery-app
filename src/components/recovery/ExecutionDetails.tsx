@@ -1,9 +1,12 @@
-import { Box, Text, Image, Card, Divider, Tooltip, truncateAddress } from "@0xsequence/design-system"
+import { Card, GradientAvatar, Text, Tooltip } from "@0xsequence/design-system"
 import SendIcon from '~/assets/icons/send.svg'
 import CoinIcon from '~/assets/icons/coin.svg'
 import CollectionIcon from '~/assets/icons/collection.svg'
 import { ethers } from 'ethers'
 import { Address } from "viem"
+import { truncateAddress } from "~/utils/truncateAddress"
+
+
 
 type ParsedCall = {
        type: 'native' | 'erc20' | 'erc721' | 'erc1155' | 'unknown'
@@ -51,76 +54,63 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
        }
 
        return (
-              <Box flexDirection="column" gap="1.5" marginTop="2">
-                     <Box flexDirection="row" gap="1" alignItems="center">
-                            <Image src={SendIcon} style={{ width: '16px', height: '16px' }} />
-                            <Text variant="small" fontWeight="bold" color="text80">
+              <div className='flex flex-col gap-1.5 mt-2'>
+                     <div className='flex flex-row flex-wrap gap-1 items-center'>
+                            <img src={SendIcon} style={{ width: '16px', height: '16px' }} />
+                            <Text variant="small" fontWeight="medium" className='text-primary/80'>
                                    Transfers ({parsedCalls.length})
                             </Text>
-                     </Box>
+                     </div>
                      {parsedCalls.map((parsedCall, idx) => (
                             <Card
                                    key={idx}
-                                   flexDirection="column"
-                                   gap="1"
-                                   padding="2"
-                                   background="backgroundMuted"
-                                   borderRadius="sm"
-                                   style={{
-                                          border: '1px solid rgba(255, 255, 255, 0.1)'
-                                   }}
+                                   className='flex flex-col gap-1 border border-border-normal rounded-sm p-2 bg-background-muted'
                             >
-                                   <Box flexDirection="row" gap="2" alignItems="center">
+                                   <div className='flex flex-row flex-wrap gap-2 items-center'>
                                           {getTransferIcon(parsedCall.type) && (
-                                                 <Box
-                                                        padding="1.5"
-                                                        background="backgroundSecondary"
-                                                        borderRadius="sm"
-                                                        style={{
-                                                               display: 'flex',
-                                                               alignItems: 'center',
-                                                               justifyContent: 'center'
-                                                        }}
-                                                 >
-                                                        <Image src={getTransferIcon(parsedCall.type)!} style={{ width: '20px', height: '20px' }} />
-                                                 </Box>
+                                                 <div className='p-1.5 bg-background-secondary rounded-sm flex items-center justify-center'>
+                                                        <img src={getTransferIcon(parsedCall.type)!} style={{ width: '20px', height: '20px' }} />
+                                                 </div>
                                           )}
-                                          <Box flexDirection="column" gap="0.25" style={{ flex: 1 }}>
-                                                 <Text variant="small" fontWeight="bold" color="text100">
+                                          <div className='flex flex-col gap-0.25 flex-1'>
+                                                 <Text variant="small" fontWeight="medium" className='text-primary/80'>
                                                         {getTransferTypeLabel(parsedCall)}
                                                  </Text>
-                                                 <Text variant="xsmall" color="text50">
+                                                 <Text variant="xsmall" className='text-primary/50'>
                                                         {parsedCall.description}
                                                  </Text>
-                                          </Box>
-                                   </Box>
+                                          </div>
+                                   </div>
 
-                                   <Divider marginY={"1"} />
+                                   <div className='h-0.5 bg-background-active' />
 
-                                   <Box flexDirection="column" gap="1">
+                                   <div className='flex flex-col gap-1'>
                                           {parsedCall.recipient && (
-                                                 <Box flexDirection="row" gap="2" alignItems="center">
-                                                        <Box style={{ minWidth: '80px' }}>
-                                                               <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                 <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                        <div className='sm:min-w-20'>
+                                                               <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                       Recipient:
                                                                </Text>
-                                                        </Box>
+                                                        </div>
                                                         <Tooltip message={parsedCall.recipient}>
-                                                               <Text
-                                                                      variant="xsmall"
-                                                                      style={{
-                                                                             fontFamily: 'monospace',
-                                                                             backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                                                             padding: '4px 8px',
-                                                                             borderRadius: '4px',
-                                                                             cursor: 'pointer'
-                                                                      }}
-                                                                      color="text80"
-                                                               >
-                                                                      {truncateAddress(parsedCall.recipient, 6, 4)}
-                                                               </Text>
+                                                               <div className='inline-flex items-center gap-1'>
+                                                                      <GradientAvatar address={parsedCall.recipient} size="xs" />
+                                                                      <Text
+                                                                             variant="xsmall"
+                                                                             style={{
+                                                                                    fontFamily: 'monospace',
+                                                                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                                                    padding: '4px 8px',
+                                                                                    borderRadius: '4px',
+                                                                                    cursor: 'pointer'
+                                                                             }}
+                                                                             className='text-primary/80'
+                                                                      >
+                                                                             {truncateAddress(parsedCall.recipient, 6, 4)}
+                                                                      </Text>
+                                                               </div>
                                                         </Tooltip>
-                                                 </Box>
+                                                 </div>
                                           )}
 
                                           {(parsedCall.type === 'native' || parsedCall.type === 'erc20') && parsedCall.amount !== undefined && (() => {
@@ -131,62 +121,62 @@ function ExecutionDetails({ parsedCalls, tokenMetadata }: ExecutionDetailsProps)
                                                  const formattedAmount = ethers.formatUnits(amountStr, decimals)
 
                                                  return (
-                                                        <Box flexDirection="row" gap="2" alignItems="center">
-                                                               <Box style={{ minWidth: '80px' }}>
-                                                                      <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                        <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                               <div className='sm:min-w-20'>
+                                                                      <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                              Amount:
                                                                       </Text>
-                                                               </Box>
-                                                               <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                               </div>
+                                                               <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                       {formattedAmount} {symbol}
                                                                </Text>
-                                                        </Box>
+                                                        </div>
                                                  )
                                           })()}
 
                                           {parsedCall.type === 'erc721' && parsedCall.tokenId !== undefined && (
-                                                 <Box flexDirection="row" gap="2" alignItems="center">
-                                                        <Box style={{ minWidth: '80px' }}>
-                                                               <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                 <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                        <div className='sm:min-w-20'>
+                                                               <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                       Token ID:
                                                                </Text>
-                                                        </Box>
-                                                        <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                        </div>
+                                                        <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                #{parsedCall.tokenId.toString()}
                                                         </Text>
-                                                 </Box>
+                                                 </div>
                                           )}
 
                                           {parsedCall.type === 'erc1155' && parsedCall.tokenId !== undefined && (
-                                                 <Box flexDirection="column" gap="0.5">
-                                                        <Box flexDirection="row" gap="2" alignItems="center">
-                                                               <Box style={{ minWidth: '80px' }}>
-                                                                      <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                 <div className='flex flex-col gap-0.5'>
+                                                        <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                               <div className='sm:min-w-20'>
+                                                                      <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                              Token ID:
                                                                       </Text>
-                                                               </Box>
-                                                               <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                               </div>
+                                                               <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                       #{parsedCall.tokenId.toString()}
                                                                </Text>
-                                                        </Box>
+                                                        </div>
                                                         {parsedCall.amount !== undefined && (
-                                                               <Box flexDirection="row" gap="2" alignItems="center">
-                                                                      <Box style={{ minWidth: '80px' }}>
-                                                                             <Text variant="xsmall" fontWeight="medium" color="text50">
+                                                               <div className='flex flex-col gap-1 sm:flex-row sm:items-center'>
+                                                                      <div className='sm:min-w-20'>
+                                                                             <Text variant="xsmall" fontWeight="medium" className='text-primary/50'>
                                                                                     Quantity:
                                                                              </Text>
-                                                                      </Box>
-                                                                      <Text variant="xsmall" fontWeight="semibold" color="text100">
+                                                                      </div>
+                                                                      <Text variant="xsmall" fontWeight="semibold" className='text-primary/80'>
                                                                              {parsedCall.amount.toString()}
                                                                       </Text>
-                                                               </Box>
+                                                               </div>
                                                         )}
-                                                 </Box>
+                                                 </div>
                                           )}
-                                   </Box>
+                                   </div>
                             </Card>
                      ))}
-              </Box>
+              </div>
        )
 }
 

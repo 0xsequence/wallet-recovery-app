@@ -1,4 +1,4 @@
-import { compareAddress } from '@0xsequence/design-system'
+import compareAddress from '~/utils/compareAddress'
 import { Sequence } from '@0xsequence/wallet-wdk'
 import { NetworkType } from '@0xsequence/network'
 import { Address } from 'viem'

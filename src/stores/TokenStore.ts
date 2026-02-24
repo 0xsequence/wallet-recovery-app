@@ -1,6 +1,7 @@
 import { ContractType, ResourceStatus, TokenBalance } from '@0xsequence/indexer'
 import { NetworkConfig, NetworkType, getChainId } from '@0xsequence/network'
 import { ethers, isError } from 'ethers'
+import { isAddress } from 'viem'
 
 import { getIndexedDB } from '~/utils/indexeddb'
 import { getNativeTokenInfo } from '~/utils/network'
@@ -347,6 +348,11 @@ export class TokenStore {
   }
 
   async getTokenInfo(chainId: number, address: string): Promise<UserAddedTokenInitialInfo> {
+    // Validate address format first
+    if (!isAddress(address)) {
+      throw new Error(`Invalid token address format: ${address}`)
+    }
+
     const provider = this.store.get(NetworkStore).providerForChainId(chainId)
 
     this.isFetchingTokenInfo.set(true)
@@ -358,8 +364,6 @@ export class TokenStore {
       const decimals = await erc20.decimals()
       const symbol = await erc20.symbol()
       const balance = await erc20.balanceOf(accountAddress)
-
-      this.isFetchingTokenInfo.set(false)
 
       if (decimals && symbol) {
         return {
@@ -373,6 +377,8 @@ export class TokenStore {
     } catch (err) {
       console.error(err)
       throw new Error(`Error getting token info ${JSON.stringify(err)}`)
+    } finally {
+      this.isFetchingTokenInfo.set(false)
     }
   }
 

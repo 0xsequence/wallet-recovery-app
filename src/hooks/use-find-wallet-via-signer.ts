@@ -1,11 +1,12 @@
 import { State } from '@0xsequence/wallet-core'
+import { useCallback } from 'react'
 import { mnemonicToAccount } from 'viem/accounts'
 
 import { Address } from 'ox'
 
 
 export function useFindWalletViaSigner() {
-  return async function findWalletInfo(mnemonic: string) {
+  return useCallback(async function findWalletInfo(mnemonic: string) {
     try {
 
       if (!mnemonic) {
@@ -39,5 +40,5 @@ export function useFindWalletViaSigner() {
 
       throw new Error('invalid')
     }
-  }
+  }, [])
 }

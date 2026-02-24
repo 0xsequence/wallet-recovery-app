@@ -1,13 +1,11 @@
-import { AddIcon, Box, Button, Card, Divider, Image, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
-import { ContractType, TokenBalance } from '@0xsequence/indexer'
+import { AddIcon, Button, Card, Checkbox, Modal, Spinner, Text, useMediaQuery } from '@0xsequence/design-system'
+import { TokenBalance } from '@0xsequence/indexer'
 import { useMemo, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { NetworkStore } from '~/stores/NetworkStore'
 import { TokenStore } from '~/stores/TokenStore'
 import { WalletStore } from '~/stores/WalletStore'
-
-import { FilledCheckBox } from '~/components/misc'
 
 import CoinIcon from '~/assets/icons/coin.svg'
 
@@ -47,62 +45,53 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
     return Array.from(uniqueBalances.values())
   }, [balances, filterZeroBalances, isFetchingBalances])
 
-  const onRemoveClick = (balance: TokenBalance) =>
-    balance.contractType === ContractType.NATIVE
-      ? undefined
-      : () => {
-          tokenStore.removeToken({
-            chainId: balance.chainId,
-            address: balance.contractAddress,
-            contractType: balance.contractType,
-            decimals: balance.contractInfo?.decimals!,
-            symbol: balance.contractInfo?.symbol!
-          })
-        }
-
   return (
-    <Box>
-      <Box alignItems="center">
-        <Box alignItems="center" gap="2">
-          <Image src={CoinIcon} width="5" height="5" />
+    <div className='flex flex-col'>
+      <div className='flex flex-col sm:flex-row sm:items-center gap-3'>
+        <div className='flex flex-row items-center gap-2'>
+          <img src={CoinIcon} alt="Coins" className='w-4 h-4' />
 
           <Text variant="normal" fontWeight="bold" color="text100">
             Coins
           </Text>
-        </Box>
+        </div>
 
-        <Box gap="4" marginLeft="auto">
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            cursor="pointer"
-            gap="2"
-            onClick={() => setFilterZeroBalances(!filterZeroBalances)}
-          >
-            <FilledCheckBox checked={filterZeroBalances} size="md" />
+        <div className='flex flex-col sm:flex-row gap-3 sm:gap-4 sm:ml-auto'>
+          <div className='flex flex-row items-center gap-2'>
+            <Checkbox
+              checked={filterZeroBalances}
+              onCheckedChange={checked => setFilterZeroBalances(checked === true)}
+            />
 
-            <Text variant="small" color="text80">
+            <Text
+              variant="small"
+              color="text80"
+              className='cursor-pointer'
+              onClick={() => setFilterZeroBalances(!filterZeroBalances)}
+            >
               Filter zero balances
             </Text>
-          </Box>
+          </div>
 
           <Button
             size="sm"
-            leftIcon={AddIcon}
-            label="Import"
             shape="square"
             onClick={() => setIsImportTokenViewOpen(true)}
-          />
-        </Box>
-      </Box>
+            className='w-full sm:w-auto'
+          >
+            <AddIcon />
+            Import
+          </Button>
+        </div>
+      </div>
 
-      <Divider marginY="2" />
+      <div className='my-2' />
 
-      <Box width="full" flexDirection="column" gap="2">
+      <div className='flex flex-col gap-2'>
         {isFetchingBalances ? (
-          <Box marginTop="4" alignItems="center" justifyContent="center">
+          <div className='flex flex-row items-center justify-center mt-4'>
             <Spinner size="lg" />
-          </Box>
+          </div>
         ) : (
           <>
             {filteredBalance.length > 0 ? (
@@ -113,32 +102,33 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
                     tokenBalance={balance}
                     disabled={!isConnected}
                     onSendClick={() => onSendClick(balance)}
-                    onRemoveClick={onRemoveClick(balance)}
                   />
                 ))}
               </>
             ) : (
-              <Card flexDirection="column">
-                <Text textAlign="center" variant="normal" color="text50" padding="4">
+              <Card className='flex flex-col'>
+                <Text variant="normal" color="text50" className='text-center p-4'>
                   Import ERC 20 token address
                 </Text>
               </Card>
             )}
           </>
         )}
-      </Box>
+      </div>
 
       {isImportTokenViewOpen && (
         <Modal
           size="lg"
+          scroll={false}
           onClose={() => setIsImportTokenViewOpen(false)}
           contentProps={{
             style: {
               scrollbarColor: 'gray black',
               scrollbarWidth: 'thin',
-              width: !isMobile ? '800px' : '100%',
+              width: '100%',
+              maxWidth: !isMobile ? '800px' : '100%',
               minHeight: 'auto',
-              maxHeight: '80%',
+              maxHeight: !isMobile ? '80%' : '90%',
               overflow: 'hidden'
             }
           }}
@@ -146,6 +136,6 @@ export default function TokenList({ onSendClick }: { onSendClick: (tokenBalance:
           <ImportToken onClose={() => setIsImportTokenViewOpen(false)} />
         </Modal>
       )}
-    </Box>
+    </div>
   )
 }

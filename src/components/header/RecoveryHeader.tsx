@@ -1,5 +1,6 @@
-import { Box, Button, Divider, Image, MenuIcon, Text, useMediaQuery } from '@0xsequence/design-system'
+import { Button, IconButton, MenuIcon, Text, useMediaQuery } from '@0xsequence/design-system'
 import { AnimatePresence } from 'framer-motion'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
@@ -7,11 +8,9 @@ import { WalletStore } from '~/stores/WalletStore'
 
 import SettingsDropdownMenu from '~/components/header/WalletDropdownMenu'
 
-import networkIcon from '~/assets/icons/chain.svg'
-import externalArrowIcon from '~/assets/icons/external-link-arrow.svg'
-import SequenceRecoveryLogo from '~/assets/images/sequence-wallet-recovery.svg'
-import SequenceLogo from '~/assets/images/sequence.svg'
-
+import networkIcon from '../../assets/icons/chain.svg'
+import externalArrowIcon from '../../assets/icons/external-link-arrow.svg'
+import { default as SequenceLogo, default as SequenceRecoveryLogo } from '../../assets/images/sequence.svg'
 import { MobileDrawerContent } from './MobileDrawerContent'
 
 export const RECOVERY_HEADER_HEIGHT = 61
@@ -24,6 +23,28 @@ export default function RecoveryHeader() {
 
   const signedIn = useObservable(authStore.accountAddress)
   const isNavDrawerOpen = useObservable(walletStore.isNavDrawerOpen)
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const [headerHeight, setHeaderHeight] = useState(RECOVERY_HEADER_HEIGHT)
+
+  useLayoutEffect(() => {
+    const headerEl = headerRef.current
+    if (!headerEl) {
+      return
+    }
+
+    const updateHeaderHeight = () => {
+      setHeaderHeight(headerEl.offsetHeight || RECOVERY_HEADER_HEIGHT)
+    }
+
+    updateHeaderHeight()
+
+    const resizeObserver = new ResizeObserver(updateHeaderHeight)
+    resizeObserver.observe(headerEl)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   const openNetworkModal = () => {
     walletStore.isNetworkModalOpen.set(true)
@@ -34,69 +55,77 @@ export default function RecoveryHeader() {
   }
 
   return (
-    <Box flexDirection="column" style={{ paddingBottom: `${RECOVERY_HEADER_HEIGHT}px` }}>
-      <Box background="backgroundPrimary" position="fixed" width="full" zIndex="50">
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-          style={{ height: RECOVERY_HEADER_HEIGHT - 1 }}
+    <div style={{ paddingBottom: `${headerHeight}px` }} className="flex flex-col">
+      <div ref={headerRef} className="bg-background-primary fixed w-full z-10">
+        <div
+          style={{ minHeight: RECOVERY_HEADER_HEIGHT - 1 }}
+          className="flex flex-row flex-wrap justify-between items-center gap-3 px-4 py-2 sm:px-6"
         >
           {isMobile ? (
             <>
-              <Box paddingLeft="5" flexDirection="row">
-                <AnimatePresence>{isNavDrawerOpen && <MobileDrawerContent />}</AnimatePresence>
+              <div className="flex flex-row items-center gap-2 shrink-0">
+                <AnimatePresence>
+                  {isNavDrawerOpen && <MobileDrawerContent topOffset={headerHeight} />}
+                </AnimatePresence>
 
-                <Button
+                <IconButton
                   variant="text"
                   onClick={() => toggleNavDrawer(!isNavDrawerOpen)}
-                  leftIcon={MenuIcon}
+                  icon={MenuIcon}
                 />
 
-                <Image src={SequenceLogo} paddingLeft="5" />
-              </Box>
-              <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>
+                <img src={SequenceLogo} className="ml-2 h-5 w-auto" />
+              </div>
+              <div className="flex flex-row flex-wrap items-center gap-3">
                 {signedIn && <SettingsDropdownMenu />}
-              </Box>
+              </div>
             </>
           ) : (
             <>
-              <Image src={SequenceRecoveryLogo} paddingLeft="5" />
-              <Box flexDirection="row" alignItems="center" gap="5" style={{ marginRight: '80px' }}>
+              <div className="flex flex-row items-center gap-2">
+                <img src={SequenceRecoveryLogo} className="h-5 w-auto shrink-0" />
+                <div className="flex items-center gap-1">
+                  <Text variant="large" fontWeight="medium" className="text-primary">
+                    Sequence
+                  </Text>
+                  <Text variant="large" fontWeight="medium" className="text-primary/70">
+                    Wallet Recovery
+                  </Text>
+                </div>
+              </div>
+              <div className="flex flex-row flex-wrap items-center gap-4">
                 <Button
-                  label={
-                    <Box flexDirection="row" alignItems="center" gap="2">
-                      <Image src={externalArrowIcon} height="5" />
-                      <Text variant="normal" fontWeight="bold" color="text50">
-                        Docs
-                      </Text>
-                    </Box>
-                  }
                   variant="text"
                   // TODO: change link
                   onClick={() => window.open('https://docs.sequence.xyz/')}
-                />
+                >
+                  <div className="flex flex-row items-center gap-2">
+                    <img src={externalArrowIcon} height="5" />
+                    <Text variant="normal" fontWeight="bold" color="text50">
+                      Docs
+                    </Text>
+                  </div>
+                </Button>
                 <Button
-                  label={
-                    <Box flexDirection="row" alignItems="center" gap="2">
-                      <Image src={networkIcon} height="5" />
-                      <Text variant="normal" fontWeight="bold" color="text50">
-                        Networks
-                      </Text>
-                    </Box>
-                  }
                   variant="text"
                   onClick={() => {
                     openNetworkModal()
                   }}
-                />
+                >
+                  <div className="flex flex-row items-center gap-2">
+                    <img src={networkIcon} height="5" />
+                    <Text variant="normal" fontWeight="bold" color="text50">
+                      Networks
+                    </Text>
+                  </div>
+                </Button>
                 {signedIn && <SettingsDropdownMenu />}
-              </Box>
+              </div>
             </>
           )}
-        </Box>
-        <Divider marginY="0" />
-      </Box>
-    </Box>
+        </div>
+        <div className="h-0.5 bg-backgroundBackdrop" />
+      </div>
+    </div>
   )
 }

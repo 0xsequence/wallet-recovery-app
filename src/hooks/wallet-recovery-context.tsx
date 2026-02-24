@@ -19,7 +19,6 @@ export function useCreateWalletRecoveryContext() {
   const [destinationAddress, setDestinationAddress] = useState<
     Address | undefined
   >(undefined)
-  const [mnemonic, setMnemonic] = useState<string>("")
   const [chainId, setChainId] = useState(0)
   const [walletSigner, setWalletSigner] = useState<Sequence.RecoverySigner>()
   const {
@@ -37,7 +36,6 @@ export function useCreateWalletRecoveryContext() {
   const set = {
     walletAddress: setWalletAddress,
     walletSigner: setWalletSigner,
-    mnemonic: setMnemonic,
     chainId: setChainId,
     recoveryPayload: setRecoveryPayload,
     transactionId: setTransactionId,
@@ -48,7 +46,6 @@ export function useCreateWalletRecoveryContext() {
   const values = {
     walletAddress,
     walletSigner,
-    mnemonic,
     chainId,
     recoveryPayload,
     transactionId,
@@ -77,10 +74,11 @@ export function useCreateWalletRecoveryContext() {
 
 export function useWalletRecovery() {
   const context = useContext(WalletRecoveryContext)
-  if (!context)
+  if (!context) {
     throw new Error(
       'useWalletRecovery must be used inside a WalletRecoveryContext Provider'
     )
+  }
   return context
 }
 

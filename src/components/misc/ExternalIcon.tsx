@@ -1,15 +1,10 @@
-import { Box, BoxProps, Image } from '@0xsequence/design-system'
-
-export const ExternalIcon = ({ src, ...rest }: { src: string } & BoxProps) => {
+export const ExternalIcon = ({ src, ...rest }: { src: string }) => {
   return (
-    <Box
-      justifyContent="center"
-      alignItems="center"
-      borderRadius="sm"
-      style={{ height: '44px', width: '44px' }}
+    <div
+      className='flex flex-row justify-center items-center rounded-sm w-6 h-6'
       {...rest}
     >
-      <Image width="10" height="auto" src={src} borderRadius="xs" />
-    </Box>
+      <img height="auto" src={src} className='rounded-xs w-full h-full' alt="External Icon" />
+    </div>
   )
 }

@@ -1,63 +1,55 @@
-import { Box, Card, CloseIcon, Image, Text } from '@0xsequence/design-system'
+import { Card, IconButton, SendIcon, Text } from '@0xsequence/design-system'
 import { BigNumberish, ethers } from 'ethers'
 
 import { CollectibleInfo } from '~/stores/CollectibleStore'
 
-import { ButtonWithIcon } from '~/components/misc/ButtonWithIcon'
 import { ExternalIcon } from '~/components/misc/ExternalIcon'
 import NetworkTag from '~/components/network/NetworkTag'
 
-import SendIcon from '~/assets/icons/send.svg'
 
 export default function CollectibleBalanceItem({
+  disabled,
   collectibleInfo,
   onSendClick,
-  onRemoveClick
 }: {
+  disabled?: boolean
   collectibleInfo: CollectibleInfo
   onSendClick: () => void
-  onRemoveClick?: () => void
 }) {
   return (
-    <Card flexDirection="row" alignItems="center" gap="3">
+    <Card className='flex flex-row items-center gap-3'>
       {collectibleInfo.collectibleInfoResponse.image && (
-        <Box>
-          <ExternalIcon background="buttonGlass" src={collectibleInfo.collectibleInfoResponse.image} />
-        </Box>
+        <div>
+          <ExternalIcon src={collectibleInfo.collectibleInfoResponse.image} />
+        </div>
       )}
 
-      <Box flexDirection="column" justifyContent="center">
-        <Box gap="2" alignItems="center">
+      <div className='flex flex-col justify-center'>
+        <div className='flex flex-row items-center gap-2'>
           <Text variant="normal" fontWeight="bold" color="text80">
             {collectibleInfo.collectibleInfoResponse.name ?? 'Collectible'}
           </Text>
-          <Text variant="small" fontWeight="bold" color="text50">
+          <Text variant="small" fontWeight="bold" color="text50" className='text-xs'>
             #{collectibleInfo.collectibleInfoParams.tokenId}
           </Text>
           <NetworkTag chainId={collectibleInfo.collectibleInfoParams.chainId} />
-        </Box>
+        </div>
 
-        <Box>
-          <Text variant="normal" fontWeight="medium" color="text50">
-            {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
-              ? Number(
-                  ethers.formatUnits(
-                    collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
-                    collectibleInfo.collectibleInfoResponse.decimals ?? 0
-                  )
-                )
-              : 1}
-          </Text>
-        </Box>
-      </Box>
+        <Text variant="small" fontWeight="medium" color="text50" className='text-xs'>
+          {collectibleInfo.collectibleInfoParams.contractType === 'ERC1155'
+            ? Number(
+              ethers.formatUnits(
+                collectibleInfo.collectibleInfoResponse.balance as BigNumberish,
+                collectibleInfo.collectibleInfoResponse.decimals ?? 0
+              )
+            )
+            : 1}
+        </Text>
+      </div>
 
-      <Box marginLeft="auto" gap="3">
-        <ButtonWithIcon icon={<Image src={SendIcon} />} disabled={false} onClick={onSendClick} />
-
-        {onRemoveClick && (
-          <ButtonWithIcon icon={<CloseIcon color="text100" />} onClick={() => onRemoveClick?.()} />
-        )}
-      </Box>
+      <div className='flex flex-row items-center gap-3 ml-auto'>
+        <IconButton shape="square" icon={SendIcon} size="sm" disabled={disabled} onClick={onSendClick} />
+      </div>
     </Card>
   )
 }

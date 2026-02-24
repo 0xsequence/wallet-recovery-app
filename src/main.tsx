@@ -1,5 +1,4 @@
 import { ThemeProvider, ToastProvider } from '@0xsequence/design-system'
-import '@0xsequence/design-system/styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
@@ -7,15 +6,14 @@ import { StoreProvider, createStore } from '~/stores/index.tsx'
 
 import { AppRouter } from '~/routes/index.tsx'
 
-import '~/css/global.css'
+import '~/css/globals.css'
 import '~/css/reset.css'
-import { clearAllState } from '~/utils/clear-state'
-import { NAVIGATION_KEY } from '~/constants/storage'
 
+import { NAVIGATION_KEY } from './constants/storage'
+import { clearAllState } from './utils/clear-state'
 
 const initApp = async () => {
   const navigationState = sessionStorage.getItem(NAVIGATION_KEY)
-
   if (!navigationState) {
     try {
       await clearAllState()

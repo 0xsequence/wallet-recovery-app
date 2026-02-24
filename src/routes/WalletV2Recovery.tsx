@@ -1,4 +1,3 @@
-import { Box } from '@0xsequence/design-system'
 import { useEffect, useState } from 'react'
 
 import { useObservable, useStore } from '~/stores'
@@ -84,32 +83,27 @@ function WalletV2Recovery() {
         }
     }
 
+    // If no account and not loading, redirect would happen via route guard
     if (!hasAccount && !isLoadingAccount) {
         return null
     }
 
     return (
-        <Box>
+        <div>
             <RecoveryHeader />
 
-            <Box flexDirection="column" alignItems="center">
-                <Box
-                    flexDirection="column"
-                    padding="5"
-                    width="full"
-                    style={{ maxWidth: WALLET_WIDTH }}
-                    paddingBottom="20"
-                >
-                    <Box flexDirection="column">
+            <div className='flex flex-col items-center'>
+                <div className='flex flex-col p-5 w-full pb-20' style={{ maxWidth: WALLET_WIDTH }} >
+                    <div className='flex flex-col'>
                         <WalletConnectionsSection />
 
                         <WalletAssetsSection
                             onTokenSendClick={modals.sendTokenModal.open}
                             onCollectibleSendClick={modals.sendCollectibleModal.open}
                         />
-                    </Box>
-                </Box>
-            </Box>
+                    </div>
+                </div>
+            </div>
 
             <NetworkModal
                 isOpen={modals.networkModal.isOpen}
@@ -146,7 +140,7 @@ function WalletV2Recovery() {
                 onRecover={handleSendCollectibleWrapper}
                 onDismissibleChange={setIsSendCollectibleDismissible}
             />
-        </Box>
+        </div>
     )
 }
 

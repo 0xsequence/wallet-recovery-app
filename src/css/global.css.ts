@@ -1,5 +1,52 @@
-import { vars } from '@0xsequence/design-system'
-import { globalStyle } from '@vanilla-extract/css'
+/*
+export const vars = {
+  colors: {
+    backgroundPrimary: '#1A1A1A',
+    text50: '#999999',
+    borderFocus: '#000000'
+  },
+  borderWidths: {
+    thick: '2px'
+  },
+  borderFocus: '#000000',
+  fontWeights: {
+    bold: 700,
+    normal: 400
+  },
+  fontSizes: {
+    normal: '1rem'
+  },
+  lineHeights: {
+    '5': '1.25'
+  },
+  letterSpacings: {
+    wide: '0.05em'
+  },
+  space: {
+    '3': '0.75rem',
+    '4': '1rem'
+  },
+  fonts: {
+    body: 'Inter, sans-serif'
+  },
+  textSizes: {
+    normal: '1rem'
+  },
+  textWeights: {
+    bold: 700,
+    normal: 400
+  },
+  textLetterSpacings: {
+    wide: '0.05em'
+  },
+  textSpace: {
+    '3': '0.75rem',
+    '4': '1rem'
+  },
+  textColors: {
+    text50: '#999999'
+  }
+}
 
 globalStyle(':root', {
   vars: {
@@ -59,7 +106,7 @@ globalStyle('ol, ul', {
 
 globalStyle('ul', {
   listStyleType: 'disc',
-  padding: `0 ${vars.space[4]}`
+  padding: `0 ${vars.space['4']}`
 })
 
 globalStyle('ul li', {
@@ -101,3 +148,4 @@ globalStyle(`html:not(.is-apple) *::-webkit-scrollbar-thumb`, {
   backgroundClip: 'content-box',
   borderRadius: '7px'
 })
+*/
