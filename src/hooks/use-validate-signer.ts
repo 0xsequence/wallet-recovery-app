@@ -6,10 +6,17 @@ import compareAddress from '~/utils/compareAddress'
 
 import { useWalletRecovery } from './wallet-recovery-context'
 
+export type RecoverySignerMatch = {
+  leaf: Extensions.Recovery.RecoveryLeaf
+  extensionAddress: Address
+}
+
 /**
  * Resolves the wallet's latest config from Arweave, finds the recovery
  * sapient-signer leaf, and confirms the given signer address is present
- * as a RecoveryLeaf inside the recovery tree.
+ * as a RecoveryLeaf inside the recovery tree. Returns both the matched
+ * leaf and the recovery extension contract address (= the sapient leaf's
+ * `address`), which downstream on-chain calls need.
  *
  * Replaces `manager.recovery.getSigners(wallet)` with a direct read path
  * so recovery keeps working if Sequence's keymachine proxy is unavailable.
@@ -17,7 +24,7 @@ import { useWalletRecovery } from './wallet-recovery-context'
 export async function findRecoverySigner(
   walletAddress: Address,
   recoverySignerAddress: Address
-): Promise<Extensions.Recovery.RecoveryLeaf> {
+): Promise<RecoverySignerMatch> {
   const deploy = await arweaveReader.getDeploy(walletAddress)
   if (!deploy) {
     throw new Error('no_signers')
@@ -53,7 +60,7 @@ export async function findRecoverySigner(
     const { leaves } = Extensions.Recovery.getRecoveryLeaves(recoveryTree)
     const match = leaves.find(leaf => compareAddress(leaf.signer, recoverySignerAddress))
     if (match) {
-      return match
+      return { leaf: match, extensionAddress: sapient.address as Address }
     }
   }
 
@@ -67,11 +74,11 @@ export function useValidateSigner() {
     walletAddress: Address,
     recoverySignerAddress: Address
   ) {
-    const walletSigner = await findRecoverySigner(walletAddress, recoverySignerAddress)
+    const { leaf } = await findRecoverySigner(walletAddress, recoverySignerAddress)
 
-    set.walletSigner(walletSigner)
+    set.walletSigner(leaf)
     set.walletAddress(walletAddress)
 
-    return walletSigner
+    return leaf
   }
 }
