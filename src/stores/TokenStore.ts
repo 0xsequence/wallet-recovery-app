@@ -74,6 +74,8 @@ export class TokenStore {
             blockHash: ethers.ZeroHash,
             blockNumber: 0,
             contractInfo: getNativeTokenInfo(getChainId(network.chainId)),
+            balanceUSD: '0',
+            priceUSD: '0',
             uniqueCollectibles: '0',
             isSummary: true
           })
@@ -146,6 +148,8 @@ export class TokenStore {
           },
           updatedAt: '0'
         },
+        balanceUSD: '0',
+        priceUSD: '0',
         uniqueCollectibles: '0',
         isSummary: true
       }
@@ -239,6 +243,8 @@ export class TokenStore {
           blockHash: ethers.ZeroHash,
           blockNumber: 0,
           contractInfo: getNativeTokenInfo(getChainId(chainId)),
+          balanceUSD: '0',
+          priceUSD: '0',
           uniqueCollectibles: '0',
           isSummary: true
         }
@@ -294,6 +300,8 @@ export class TokenStore {
             },
             updatedAt: '0'
           },
+          balanceUSD: '0',
+          priceUSD: '0',
           uniqueCollectibles: '0',
           isSummary: true
         }

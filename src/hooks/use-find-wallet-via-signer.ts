@@ -1,8 +1,9 @@
-import { State } from '@0xsequence/wallet-core'
 import { useCallback } from 'react'
 import { mnemonicToAccount } from 'viem/accounts'
 
 import { Address } from 'ox'
+
+import { arweaveReader } from '~/arweave-reader'
 
 
 export function useFindWalletViaSigner() {
@@ -15,9 +16,7 @@ export function useFindWalletViaSigner() {
 
       const recoverySigner = mnemonicToAccount(mnemonic)
       if (recoverySigner) {
-        const stateProvider = new State.Sequence.Provider()
-
-        const records = await stateProvider.getWallets(recoverySigner.address)
+        const records = await arweaveReader.getWallets(recoverySigner.address)
         const walletAddress = Object.keys(records)[0] as Address.Address
 
         if (!walletAddress || !recoverySigner.address) {

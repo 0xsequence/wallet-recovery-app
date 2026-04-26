@@ -1,4 +1,4 @@
-import { Sequence } from '@0xsequence/wallet-wdk'
+import { Extensions } from '@0xsequence/wallet-primitives'
 import { createContext, useContext, useState } from 'react'
 import { Address } from 'viem'
 
@@ -20,7 +20,7 @@ export function useCreateWalletRecoveryContext() {
     Address | undefined
   >(undefined)
   const [chainId, setChainId] = useState(0)
-  const [walletSigner, setWalletSigner] = useState<Sequence.RecoverySigner>()
+  const [walletSigner, setWalletSigner] = useState<Extensions.Recovery.RecoveryLeaf>()
   const {
     providers,
     provider,
