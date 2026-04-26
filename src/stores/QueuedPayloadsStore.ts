@@ -6,7 +6,7 @@ import { Address, createPublicClient, http, parseAbi, type PublicClient } from '
 import { arweaveReader } from '~/arweave-reader'
 import { findRecoverySigner } from '~/hooks/use-validate-signer'
 import { networks } from '~/networks'
-import { resolveQueuedPayloadFromTransactionInput } from '~/recovery-queue'
+import { resolveQueuedPayloadsFromTransactionInputs } from '~/recovery-queue'
 import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 import { Store, observable } from '.'
@@ -141,46 +141,60 @@ export class QueuedPayloadsStore {
         return []
       }
 
-      const results: QueuedRecoveryPayload[] = []
+      const queuedPayloadMetadata = await Promise.all(
+        Array.from({ length: Number(total) }, async (_, numericIndex) => {
+          const index = BigInt(numericIndex)
 
-      for (let index = 0n; index < total; index++) {
-        const payloadHash = await client.readContract({
-          address: context.extension,
-          abi: RECOVERY_EXTENSION_ABI,
-          functionName: 'queuedPayloadHashes',
-          args: [context.wallet, context.signer, index],
+          const payloadHash = await client.readContract({
+            address: context.extension,
+            abi: RECOVERY_EXTENSION_ABI,
+            functionName: 'queuedPayloadHashes',
+            args: [context.wallet, context.signer, index],
+          })
+
+          const timestamp = await client.readContract({
+            address: context.extension,
+            abi: RECOVERY_EXTENSION_ABI,
+            functionName: 'timestampForQueuedPayload',
+            args: [context.wallet, context.signer, payloadHash],
+          })
+
+          return { index, payloadHash, timestamp }
         })
+      )
+      const arweavePayloads = await Promise.all(
+        queuedPayloadMetadata.map(({ payloadHash }) => this.resolveArweavePayload(payloadHash))
+      )
+      const unresolvedPayloads = queuedPayloadMetadata
+        .filter((_, index) => !arweavePayloads[index])
+        .map(({ payloadHash, timestamp }) => ({ payloadHash, queuedAt: timestamp }))
+      const decodedPayloads = await resolveQueuedPayloadsFromTransactionInputs({
+        client,
+        extension: context.extension,
+        wallet: context.wallet,
+        signer: context.signer,
+        chainId,
+        payloads: unresolvedPayloads,
+      })
 
-        const timestamp = await client.readContract({
-          address: context.extension,
-          abi: RECOVERY_EXTENSION_ABI,
-          functionName: 'timestampForQueuedPayload',
-          args: [context.wallet, context.signer, payloadHash],
-        })
+      const results: QueuedRecoveryPayload[] = queuedPayloadMetadata.map((metadata, metadataIndex) => {
+        const payload = arweavePayloads[metadataIndex]
+          ?? decodedPayloads.get(metadata.payloadHash.toLowerCase())
+        const id = `${metadata.index}-${context.signer}-${chainId}-${context.wallet}`
 
-        const payload = await this.resolvePayloadBody({
-          client,
-          context,
-          chainId,
-          payloadHash,
-          timestamp,
-        })
-
-        const id = `${index}-${context.signer}-${chainId}-${context.wallet}`
-
-        results.push({
+        return {
           id,
-          index,
+          index: metadata.index,
           recoveryModule: context.extension,
           wallet: context.wallet,
           signer: context.signer,
           chainId,
-          startTimestamp: timestamp,
-          endTimestamp: timestamp + context.requiredDeltaTime,
-          payloadHash,
+          startTimestamp: metadata.timestamp,
+          endTimestamp: metadata.timestamp + context.requiredDeltaTime,
+          payloadHash: metadata.payloadHash,
           payload,
-        })
-      }
+        }
+      })
 
       return results
     } catch (error) {
@@ -189,19 +203,7 @@ export class QueuedPayloadsStore {
     }
   }
 
-  private async resolvePayloadBody({
-    client,
-    context,
-    chainId,
-    payloadHash,
-    timestamp,
-  }: {
-    client: PublicClient
-    context: RecoveryContext
-    chainId: number
-    payloadHash: `0x${string}`
-    timestamp: bigint
-  }): Promise<Payload.Calls | undefined> {
+  private async resolveArweavePayload(payloadHash: `0x${string}`): Promise<Payload.Calls | undefined> {
     try {
       const payloadRecord = await arweaveReader.getPayload(payloadHash)
       if (payloadRecord && Payload.isCalls(payloadRecord.payload)) {
@@ -210,16 +212,6 @@ export class QueuedPayloadsStore {
     } catch (error) {
       console.warn('Unable to resolve queued payload from Arweave:', error)
     }
-
-    return resolveQueuedPayloadFromTransactionInput({
-      client,
-      extension: context.extension,
-      wallet: context.wallet,
-      signer: context.signer,
-      payloadHash,
-      chainId,
-      queuedAt: timestamp,
-    })
   }
 
   private clearPayloadsForAddress(address: Address) {

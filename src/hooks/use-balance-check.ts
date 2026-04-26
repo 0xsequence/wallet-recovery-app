@@ -6,7 +6,7 @@ import { ParsedCall } from "~/utils/transaction-parser"
 import { ethers } from "ethers"
 
 interface UseBalanceCheckParams {
-  firstCall: ParsedCall
+  firstCall?: ParsedCall
   transactionAmount?: bigint
   chainId: number
 }
@@ -21,7 +21,9 @@ export function useBalanceCheck({ firstCall, transactionAmount, chainId }: UseBa
   const fetchedCollectiblesRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    if (!firstCall) return
+    if (!firstCall) {
+      return
+    }
 
     if (firstCall.type === 'erc20' || firstCall.type === 'native') {
       const contractAddress = firstCall.contractAddress || ethers.ZeroAddress

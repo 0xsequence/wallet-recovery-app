@@ -23,15 +23,21 @@ type DecodeQueuedPayloadParams = {
   chainId: number
 }
 
-type QueuePayloadLogLookupParams = Omit<DecodeQueuedPayloadParams, 'input'> & {
+type QueuedPayloadLookup = {
+  payloadHash: Hex
+  queuedAt: bigint
+}
+
+type QueuePayloadLogLookupParams = Omit<DecodeQueuedPayloadParams, 'input' | 'payloadHash'> & {
   client: PublicClient
   extension: Address
-  queuedAt: bigint
+  payloads: QueuedPayloadLookup[]
 }
 
 type RpcTopic = Hex | null
 type RpcTopics = RpcTopic[]
 type RpcLog = {
+  data: Hex
   transactionHash: Hex | null
   logIndex: Hex
 }
@@ -87,20 +93,52 @@ export async function resolveQueuedPayloadFromTransactionInput({
   payloadHash,
   chainId,
   queuedAt,
-}: QueuePayloadLogLookupParams): Promise<Payload.Calls | undefined> {
+}: Omit<QueuePayloadLogLookupParams, 'payloads'> & QueuedPayloadLookup): Promise<Payload.Calls | undefined> {
+  const payloads = await resolveQueuedPayloadsFromTransactionInputs({
+    client,
+    extension,
+    wallet,
+    signer,
+    chainId,
+    payloads: [{ payloadHash, queuedAt }],
+  })
+
+  return payloads.get(payloadHash.toLowerCase())
+}
+
+export async function resolveQueuedPayloadsFromTransactionInputs({
+  client,
+  extension,
+  wallet,
+  signer,
+  chainId,
+  payloads,
+}: QueuePayloadLogLookupParams): Promise<Map<string, Payload.Calls>> {
+  if (payloads.length === 0) {
+    return new Map()
+  }
+
   const logs = await findCandidateQueueLogs({
     client,
     extension,
     wallet,
     signer,
-    payloadHash,
-    queuedAt,
+    payloads,
   })
+  const result = new Map<string, Payload.Calls>()
+  const seenTransactions = new Set<Hex>()
 
   for (const log of logs) {
     if (!log.transactionHash) {
       continue
     }
+
+    const payloadHash = payloadHashFromQueueLog(log)
+    if (!payloadHash || result.has(payloadHash.toLowerCase()) || seenTransactions.has(log.transactionHash)) {
+      continue
+    }
+
+    seenTransactions.add(log.transactionHash)
 
     const transaction = await client.getTransaction({ hash: log.transactionHash })
     const payload = decodeQueuedPayloadInput({
@@ -112,11 +150,11 @@ export async function resolveQueuedPayloadFromTransactionInput({
     })
 
     if (payload) {
-      return payload
+      result.set(payloadHash.toLowerCase(), payload)
     }
   }
 
-  return undefined
+  return result
 }
 
 async function findCandidateQueueLogs({
@@ -124,37 +162,52 @@ async function findCandidateQueueLogs({
   extension,
   wallet,
   signer,
-  payloadHash,
-  queuedAt,
+  payloads,
 }: Omit<QueuePayloadLogLookupParams, 'chainId'>): Promise<RpcLog[]> {
-  const fromTimestamp = queuedAt > QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
-    ? queuedAt - QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
+  const wantedHashes = new Set(payloads.map(payload => payload.payloadHash.toLowerCase()))
+  const logs = await getRawLogs(client, extension, {
+    fromBlock: 0n,
+    toBlock: 'latest',
+    topics: walletSignerTopicFilter(wallet, signer),
+  })
+
+  if (logs) {
+    return logs.filter(log => {
+      const payloadHash = payloadHashFromQueueLog(log)
+      return payloadHash ? wantedHashes.has(payloadHash.toLowerCase()) : false
+    })
+  }
+
+  const queuedAtValues = payloads.map(payload => payload.queuedAt)
+  const minQueuedAt = queuedAtValues.reduce((min, value) => value < min ? value : min)
+  const maxQueuedAt = queuedAtValues.reduce((max, value) => value > max ? value : max)
+  const fromTimestamp = minQueuedAt > QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
+    ? minQueuedAt - QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
     : 0n
-  const toTimestamp = queuedAt + QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
+  const toTimestamp = maxQueuedAt + QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
   const fromBlock = await findBlockAtOrAfterTimestamp(client, fromTimestamp)
   const toBlock = await findBlockAtOrAfterTimestamp(client, toTimestamp)
-  const seen = new Map<string, RpcLog>()
 
-  for (const topics of queueLogTopicFilters(wallet, signer, payloadHash)) {
-    const logs = await getRawLogs(client, extension, fromBlock, toBlock, topics)
-    addUniqueLogs(seen, logs)
-  }
-
-  if (seen.size === 0) {
-    const logs = await getRawLogs(client, extension, fromBlock, toBlock)
-    addUniqueLogs(seen, logs)
-  }
-
-  return [...seen.values()]
+  return await getRawLogs(client, extension, {
+    fromBlock,
+    toBlock,
+    topics: walletSignerTopicFilter(wallet, signer),
+  }) ?? []
 }
 
 async function getRawLogs(
   client: PublicClient,
   address: Address,
-  fromBlock: bigint,
-  toBlock: bigint,
-  topics?: RpcTopics
-): Promise<RpcLog[]> {
+  {
+    fromBlock,
+    toBlock,
+    topics,
+  }: {
+    fromBlock: bigint
+    toBlock: bigint | 'latest'
+    topics: RpcTopics
+  }
+): Promise<RpcLog[] | undefined> {
   try {
     return await client.request({
       method: 'eth_getLogs',
@@ -162,14 +215,14 @@ async function getRawLogs(
         {
           address,
           fromBlock: toHex(fromBlock),
-          toBlock: toHex(toBlock),
+          toBlock: toBlock === 'latest' ? 'latest' : toHex(toBlock),
           topics,
         },
       ],
     }) as RpcLog[]
   } catch (error) {
     console.warn('Unable to fetch recovery queue logs:', error)
-    return []
+    return undefined
   }
 }
 
@@ -206,35 +259,20 @@ async function findBlockAtOrAfterTimestamp(
   return result
 }
 
-function queueLogTopicFilters(wallet: Address, signer: Address, payloadHash: Hex): RpcTopics[] {
+function walletSignerTopicFilter(wallet: Address, signer: Address): RpcTopics {
   const walletTopic = addressTopic(wallet)
   const signerTopic = addressTopic(signer)
-  return [
-    [payloadHash],
-    [null, payloadHash],
-    [null, null, payloadHash],
-    [null, null, null, payloadHash],
-    [null, walletTopic, signerTopic],
-    [null, signerTopic, walletTopic],
-    [null, walletTopic],
-    [null, null, walletTopic],
-    [null, null, null, walletTopic],
-    [null, signerTopic],
-    [null, null, signerTopic],
-    [null, null, null, signerTopic],
-  ]
+  return [null, walletTopic, signerTopic]
 }
 
 function addressTopic(address: Address): Hex {
   return `0x${address.slice(2).toLowerCase().padStart(64, '0')}` as Hex
 }
 
-function addUniqueLogs(target: Map<string, RpcLog>, logs: RpcLog[]) {
-  for (const log of logs) {
-    if (!log.transactionHash) {
-      continue
-    }
-
-    target.set(`${log.transactionHash}:${log.logIndex}`, log)
+function payloadHashFromQueueLog(log: RpcLog): Hex | undefined {
+  if (log.data.length < 66) {
+    return undefined
   }
+
+  return log.data.slice(0, 66) as Hex
 }

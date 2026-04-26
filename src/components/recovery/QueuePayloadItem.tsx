@@ -25,6 +25,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	const parsedCalls = calls.map(parseCall)
 	const transactionAmount = parsedCalls[0]?.amount
 	const firstCall = parsedCalls[0]
+	const canCheckBalance = !!firstCall && firstCall.type !== 'unknown'
 
 	const tokenMetadata = useFetchTokenMetadata({
 		parsedCalls: parsedCalls,
@@ -89,7 +90,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 				</div>
 			</Card>
 
-			{!hasEnoughBalance && !isExecuted && (
+			{canCheckBalance && !hasEnoughBalance && !isExecuted && (
 				<InsufficientBalanceMessage
 					firstCall={firstCall}
 					transactionAmount={transactionAmount}

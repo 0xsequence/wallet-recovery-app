@@ -1,13 +1,15 @@
 import { Alert } from "@0xsequence/design-system"
+import type { TokenBalance } from "@0xsequence/indexer"
 import { ethers } from "ethers"
-import { ParsedCall } from "~/utils/transaction-parser"
+import type { CollectibleInfo } from "~/stores/CollectibleStore"
+import type { ParsedCall } from "~/utils/transaction-parser"
 import { formatPrettyBalance } from "~/utils/format-pretty-balance"
 
 interface InsufficientBalanceMessageProps {
-  firstCall: ParsedCall
+  firstCall?: ParsedCall
   transactionAmount?: bigint
-  balances: any[]
-  collectibles: any[]
+  balances: TokenBalance[]
+  collectibles: CollectibleInfo[]
   chainId: number
   tokenMetadata: Map<string, { decimals: number; symbol: string }>
 }
@@ -20,6 +22,10 @@ export function InsufficientBalanceMessage({
   chainId,
   tokenMetadata
 }: InsufficientBalanceMessageProps) {
+  if (!firstCall) {
+    return null
+  }
+
   const getMessage = () => {
     if (firstCall.type === 'erc721') {
       return `You don't own this NFT (Token ID: ${firstCall.tokenId?.toString()}).`
