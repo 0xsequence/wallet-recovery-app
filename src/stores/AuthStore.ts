@@ -43,6 +43,8 @@ export class AuthStore {
 
   accountAddress = observable<string | undefined>(undefined)
 
+  recoverySignerAddress = observable<string | undefined>(undefined)
+
   async signInWithRecoveryMnemonic(wallet: string, mnemonic: string, password?: string) {
     try {
       this.isLoadingAccount.set(true)
@@ -69,6 +71,7 @@ export class AuthStore {
       }
 
       this.account = account
+      this.recoverySignerAddress.set(recoverySigner.address)
       this.accountAddress.set(account.address)
     } catch (error) {
       console.warn(error)
@@ -190,6 +193,7 @@ export class AuthStore {
   logout() {
     this.account = undefined
     this.accountAddress.set(undefined)
+    this.recoverySignerAddress.set(undefined)
     clearIndexedDB(IndexedDBKey.SECURITY)
 
     const networkStore = this.store.get(NetworkStore)
