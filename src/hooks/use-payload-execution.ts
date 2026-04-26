@@ -1,37 +1,60 @@
-import { useState, useEffect } from "react"
-import { Sequence } from "@0xsequence/wallet-wdk"
-import { manager } from "~/manager"
-import { executeRecovery } from "./use-execute-recovery"
+import { useState, useEffect } from 'react'
+import { Sequence } from '@0xsequence/wallet-wdk'
+import { Constants } from '@0xsequence/wallet-primitives'
+import { AbiFunction } from 'ox'
+import { Address, createPublicClient, hexToBigInt, http, type PublicClient } from 'viem'
+
+import { networks } from '~/networks'
+import { useObservable, useStore } from '~/stores'
+import { AuthStore } from '~/stores/AuthStore'
+import { useWalletRecovery } from './wallet-recovery-context'
+import { executeRecovery } from './use-execute-recovery'
 
 interface UsePayloadExecutionParams {
   payload: Sequence.QueuedRecoveryPayload
   selectedExternalProvider: any
 }
 
-export function usePayloadExecution({ payload, selectedExternalProvider }: UsePayloadExecutionParams) {
-  const [isExecuted, setIsExecuted] = useState(false)
-  const [txId, setTxId] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const [transaction, setTransaction] = useState<Sequence.Transaction | null>(null)
+type ExecStatus = 'idle' | 'pending' | 'final'
+type OpStatus = null | 'confirmed' | 'failed'
 
-  // Check if payload has already been executed
+export function usePayloadExecution({ payload, selectedExternalProvider }: UsePayloadExecutionParams) {
+  const { handle: { sendRecoveryPayload } } = useWalletRecovery()
+  const authStore = useStore(AuthStore)
+  const recoverySignerAddress = useObservable(authStore.recoverySignerAddress)
+
+  const [isExecuted, setIsExecuted] = useState(false)
+  const [isPending, setIsPending] = useState(false)
+  const [hash, setHash] = useState<`0x${string}` | null>(null)
+  const [status, setStatus] = useState<ExecStatus>('idle')
+  const [opStatus, setOpStatus] = useState<OpStatus>(null)
+
+  const rpcUrl = networks.find(n => n.chainId === payload.chainId)?.rpcUrl
+
   useEffect(() => {
     async function checkIfExecuted() {
       try {
         // @ts-expect-error payload.payload.space and nonce exist at runtime
-        const space = payload.payload?.space
+        const space: bigint | undefined = payload.payload?.space
         // @ts-expect-error payload.payload.nonce exists at runtime
-        const payloadNonce = payload.payload?.nonce
+        const payloadNonce: bigint | undefined = payload.payload?.nonce
 
-        if (space !== undefined && payloadNonce !== undefined) {
-          const currentNonce = await manager.wallets.getNonce(
-            payload.chainId,
-            payload.wallet,
-            space
-          )
-          // If current nonce is greater than payload nonce, it has been executed
-          setIsExecuted(currentNonce > payloadNonce)
+        if (space === undefined || payloadNonce === undefined || !rpcUrl) {
+          return
         }
+
+        const client: PublicClient = createPublicClient({ transport: http(rpcUrl) })
+        const result = await client.call({
+          to: payload.wallet,
+          data: AbiFunction.encodeData(Constants.READ_NONCE, [space]) as `0x${string}`,
+        })
+
+        if (!result.data) {
+          return
+        }
+
+        const currentNonce = hexToBigInt(result.data)
+        setIsExecuted(currentNonce > payloadNonce)
       } catch (error) {
         console.error('Error checking if payload is executed:', error)
       }
@@ -39,71 +62,100 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
 
     checkIfExecuted()
     // @ts-expect-error payload.payload.space and nonce exist at runtime
-  }, [payload.chainId, payload.wallet, payload.payload?.space, payload.payload?.nonce])
+  }, [payload.chainId, payload.wallet, payload.payload?.space, payload.payload?.nonce, rpcUrl])
 
-  // Monitor transaction updates
   useEffect(() => {
-    if (txId) {
-      manager.transactions
-        .get(txId)
-        .then(tx => {
-          manager.transactions.onTransactionUpdate(
-            tx.id,
-            handleTransactionUpdate,
-            true
-          )
-        })
-        .catch(e => {
-          console.log('Error getting transaction:', e)
-        })
+    if (!hash || !rpcUrl) {
+      return
     }
-  }, [txId])
 
-  function handleTransactionUpdate(tx: Sequence.Transaction) {
-    if (tx) {
-      setTransaction(tx)
+    const client: PublicClient = createPublicClient({ transport: http(rpcUrl) })
+    let cancelled = false
+
+    client
+      .waitForTransactionReceipt({ hash })
+      .then(receipt => {
+        if (cancelled) {
+          return
+        }
+        setStatus('final')
+        setOpStatus(receipt.status === 'success' ? 'confirmed' : 'failed')
+        if (receipt.status === 'success') {
+          setIsExecuted(true)
+        }
+        setIsPending(false)
+      })
+      .catch(error => {
+        if (cancelled) {
+          return
+        }
+        console.error('Error waiting for tx receipt:', error)
+        setStatus('final')
+        setOpStatus('failed')
+        setIsPending(false)
+      })
+
+    return () => {
+      cancelled = true
     }
-  }
+  }, [hash, rpcUrl])
 
   const handleExecuteRecovery = async () => {
-    setIsPending(true)
-    
-    const txId = await executeRecovery(
-      payload.wallet,
-      // @ts-expect-error TODO fix this. payload.payload should have calls
-      payload.payload?.calls,
-      // @ts-expect-error TODO fix this. payload.payload should have space
-      payload.payload.space,
-      // @ts-expect-error TODO fix this. payload.payload should have nonce
-      payload.payload.nonce,
-      payload.chainId,
-      () => {
-        setIsPending(false)
-      },
-      selectedExternalProvider
-    )
+    if (!recoverySignerAddress || !sendRecoveryPayload) {
+      return
+    }
 
-    if (txId) {
-      setTxId(txId)
+    setIsPending(true)
+    setStatus('idle')
+    setOpStatus(null)
+    setHash(null)
+
+    try {
+      console.log('[use-payload-execution] queued payload from store', {
+        id: payload.id,
+        wallet: payload.wallet,
+        signer: payload.signer,
+        chainId: payload.chainId,
+        recoveryModule: payload.recoveryModule,
+        onChainPayloadHash: payload.payloadHash,
+        startTimestamp: String(payload.startTimestamp),
+        endTimestamp: String(payload.endTimestamp),
+        payloadRaw: payload.payload,
+      })
+
+      const result = await executeRecovery({
+        walletAddress: payload.wallet as Address,
+        recoverySignerAddress: recoverySignerAddress as Address,
+        // @ts-expect-error payload.payload is Payload.Calls at runtime
+        payload: payload.payload,
+        chainId: payload.chainId,
+        sendTx: sendRecoveryPayload,
+        recoveryPayloadId: payload.id,
+      })
+
+      if (result?.hash) {
+        setHash(result.hash)
+      } else {
+        setIsPending(false)
+      }
+    } catch (error) {
+      console.error('Error executing recovery:', error)
+      setIsPending(false)
     }
   }
 
-  const hash = transaction?.status === 'final' 
-    ? transaction?.opStatus.status === 'confirmed' 
-      ? transaction?.opStatus.transactionHash 
-      : null 
-    : null
-
-  const status = transaction?.status
-  const opStatus = status === 'final' ? transaction?.opStatus.status : null
+  // Keep `selectedExternalProvider` referenced — UI passes it in but the
+  // execution itself goes through `sendRecoveryPayload`, which already uses
+  // the same provider via WalletStore.
+  void selectedExternalProvider
 
   return {
     isExecuted,
     isPending,
-    transaction,
+    transaction: null,
     hash,
-    status,
+    status: status === 'idle' ? undefined : status,
     opStatus,
-    handleExecuteRecovery
+    handleExecuteRecovery,
   }
 }
