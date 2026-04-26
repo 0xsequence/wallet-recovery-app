@@ -1,4 +1,4 @@
-import { Config, Extensions } from '@0xsequence/wallet-primitives'
+import { Config, Context, Extensions, Signature } from '@0xsequence/wallet-primitives'
 import { Address } from 'viem'
 
 import { arweaveReader } from '~/arweave-reader'
@@ -9,6 +9,12 @@ import { useWalletRecovery } from './wallet-recovery-context'
 export type RecoverySignerMatch = {
   leaf: Extensions.Recovery.RecoveryLeaf
   extensionAddress: Address
+  sapientImageHash: `0x${string}`
+  deployImageHash: `0x${string}`
+  walletConfig: Config.Config
+  deployContext: Context.Context
+  /** Pending config updates in reverse chronological order (newest first). */
+  pendingUpdates: Array<{ imageHash: `0x${string}`; signature: Signature.RawSignature }>
 }
 
 /**
@@ -32,6 +38,10 @@ export async function findRecoverySigner(
 
   const updates = await arweaveReader.getConfigurationUpdates(walletAddress, deploy.imageHash)
   const latestImageHash = updates.length > 0 ? updates[updates.length - 1].imageHash : deploy.imageHash
+  const pendingUpdates = [...updates].reverse() as Array<{
+    imageHash: `0x${string}`
+    signature: typeof updates[number]['signature']
+  }>
 
   const config = await arweaveReader.getConfiguration(latestImageHash)
   if (!config) {
@@ -60,7 +70,15 @@ export async function findRecoverySigner(
     const { leaves } = Extensions.Recovery.getRecoveryLeaves(recoveryTree)
     const match = leaves.find(leaf => compareAddress(leaf.signer, recoverySignerAddress))
     if (match) {
-      return { leaf: match, extensionAddress: sapient.address as Address }
+      return {
+        leaf: match,
+        extensionAddress: sapient.address as Address,
+        sapientImageHash: sapient.imageHash as `0x${string}`,
+        deployImageHash: deploy.imageHash as `0x${string}`,
+        walletConfig: config,
+        deployContext: deploy.context,
+        pendingUpdates,
+      }
     }
   }
 
