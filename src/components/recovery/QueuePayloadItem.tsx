@@ -1,4 +1,3 @@
-import { Sequence } from "@0xsequence/wallet-wdk"
 import { Card } from "@0xsequence/design-system"
 import { useObservable, useStore } from "~/stores"
 import { WalletStore } from "~/stores/WalletStore"
@@ -11,8 +10,9 @@ import { usePayloadExecution } from "~/hooks/use-payload-execution"
 import { PayloadStatusBadge } from "./PayloadStatusBadge"
 import { PayloadActionButton } from "./PayloadActionButton"
 import { InsufficientBalanceMessage } from "./InsufficientBalanceMessage"
+import type { QueuedRecoveryPayload } from "~/types/recovery"
 
-export function QueuePayloadItem({ payload, executedHidden = false }: { payload: Sequence.QueuedRecoveryPayload; executedHidden?: boolean }) {
+export function QueuePayloadItem({ payload, executedHidden = false }: { payload: QueuedRecoveryPayload; executedHidden?: boolean }) {
 	const walletStore = useStore(WalletStore)
 	const selectedExternalProvider = useObservable(walletStore.selectedExternalProvider)
 
@@ -21,7 +21,6 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 	const isLocked = endDate > new Date()
 
 	// Parse calls to get transfer details
-	// @ts-expect-error TODO calls is not part of the payload type but available at runtime
 	const calls = payload.payload?.calls || []
 	const parsedCalls = calls.map(parseCall)
 	const transactionAmount = parsedCalls[0]?.amount
@@ -50,7 +49,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 		selectedExternalProvider
 	})
 
-	const readyToExecute = !isLocked && !!selectedExternalProvider && !isExecuted
+	const readyToExecute = !isLocked && !!selectedExternalProvider && !isExecuted && !!payload.payload
 
 	// Hide this item if executedHidden is true and the payload is executed
 	if (executedHidden && isExecuted) {

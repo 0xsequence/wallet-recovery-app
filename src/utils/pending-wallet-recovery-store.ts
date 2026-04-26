@@ -1,15 +1,15 @@
 import compareAddress from '~/utils/compareAddress'
-import { Sequence } from '@0xsequence/wallet-wdk'
 import { useAtom } from 'jotai'
 import { atomWithStorage, createJSONStorage } from 'jotai/utils'
 import { Address } from 'viem'
+import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 
 const STORAGE_KEY = 'walletRecovery'
 
 type PendingWalletRecoveryStoreProps = {
   isIgnored: string[]
-  payloads: Sequence.QueuedRecoveryPayload[]
+  payloads: QueuedRecoveryPayload[]
 }
 
 const initialState = {
@@ -17,7 +17,7 @@ const initialState = {
   payloads: [],
 }
 
-function replacer(_key: string, value: any) {
+function replacer(_key: string, value: unknown) {
   if (typeof value === 'bigint') {
     // encode bigint as string with marker
     return { __type: 'bigint', value: value.toString() }
@@ -25,12 +25,23 @@ function replacer(_key: string, value: any) {
   return value
 }
 
-function reviver(_key: string, value: any) {
-  if (value && typeof value === 'object' && value.__type === 'bigint') {
+function reviver(_key: string, value: unknown) {
+  if (isEncodedBigInt(value)) {
     // restore bigint
     return BigInt(value.value)
   }
   return value
+}
+
+function isEncodedBigInt(value: unknown): value is { __type: 'bigint'; value: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    '__type' in value &&
+    'value' in value &&
+    value.__type === 'bigint' &&
+    typeof value.value === 'string'
+  )
 }
 
 const storage = createJSONStorage<PendingWalletRecoveryStoreProps>(
@@ -64,7 +75,7 @@ export function usePendingWalletRecoveryStore() {
     })
   }
 
-  function addPayloads(payloads: Sequence.QueuedRecoveryPayload[]) {
+  function addPayloads(payloads: QueuedRecoveryPayload[]) {
     set(current => {
       const next = structuredClone(current)
 

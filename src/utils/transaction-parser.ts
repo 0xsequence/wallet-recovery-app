@@ -1,4 +1,4 @@
-import { Sequence } from "@0xsequence/wallet-wdk"
+import type { Payload } from "@0xsequence/wallet-primitives"
 import { decodeFunctionData, erc20Abi, erc721Abi, erc1155Abi, Address } from "viem"
 import { formatPrettyBalance } from "./format-pretty-balance"
 
@@ -13,7 +13,7 @@ export type ParsedCall = {
   description: string
 }
 
-export function parseCall(call: Sequence.TransactionRequest): ParsedCall {
+export function parseCall(call: Payload.Call): ParsedCall {
   // Native token transfer (ETH, etc.)
   if (call.value && call.value > 0n && (!call.data || call.data === '0x')) {
     return {

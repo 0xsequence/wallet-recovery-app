@@ -1,30 +1,46 @@
-import { Payload } from '@0xsequence/wallet-primitives'
+import {
+  Extensions,
+  Payload,
+  Signature as PrimitiveSignature,
+} from '@0xsequence/wallet-primitives'
 import { Address, Hex } from 'ox'
+import { hexToBigInt, parseSignature, type Hash } from 'viem'
+import { mnemonicToAccount, type HDAccount } from 'viem/accounts'
 
-import { RecoveryContextProps } from './wallet-recovery-context'
-import { manager } from '~/manager'
+import type { RecoveryContextProps } from './wallet-recovery-context'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import { useFindWalletViaSigner } from './use-find-wallet-via-signer'
 import { getMnemonic } from '~/utils/getMnemonic'
+import compareAddress from '~/utils/compareAddress'
+import { findRecoverySigner } from './use-validate-signer'
 
 export function useHandleQueuePayload({
-  awaitedMnemonic,
   sendRecoveryPayload,
 }: {
-  awaitedMnemonic: RecoveryContextProps['handle']['awaitedMnemonic']
   sendRecoveryPayload: RecoveryContextProps['handle']['sendRecoveryPayload']
 }) {
   const authStore = useStore(AuthStore);
   const walletAddress = useObservable(authStore.accountAddress)
   const findWallets = useFindWalletViaSigner();
 
-  return async function queuePayload(calls: any, chainId: number) {
+  return async function queuePayload(calls: Payload.Call[], chainId: number) {
     const mnemonic = await getMnemonic({ authStore })
+    const recoverySigner = mnemonicToAccount(mnemonic)
     const walletInfo = await findWallets(mnemonic)
 
-    if (!walletInfo || !walletInfo.recoverySignerAddress) {
+    const activeWalletAddress = (walletAddress ?? walletInfo?.walletAddress) as Address.Address | undefined
+
+    if (!walletInfo || !walletInfo.recoverySignerAddress || !activeWalletAddress) {
       throw new Error('No recovery signer address found')
+    }
+
+    if (!compareAddress(recoverySigner.address, walletInfo.recoverySignerAddress)) {
+      throw new Error('Recovery signer mismatch')
+    }
+
+    if (!sendRecoveryPayload) {
+      throw new Error('No external wallet sender found')
     }
 
     const payloadCall: Payload.Calls = {
@@ -34,62 +50,43 @@ export function useHandleQueuePayload({
       calls,
     }
 
-    const recoveryPayloadId = await manager.recovery.queuePayload(
-      walletAddress as Address.Address,
+    const match = await findRecoverySigner(activeWalletAddress, recoverySigner.address)
+    const payloadHash = Extensions.Recovery.hashRecoveryPayload(
+      payloadCall,
+      activeWalletAddress,
       chainId,
-      payloadCall
-    ).catch(err => {
-      console.log(err)
-    })
-
-    if (!recoveryPayloadId) {
-      return
-    }
-
-    manager.signatures.onSignatureRequestUpdate(
-      recoveryPayloadId,
-      async request => {
-        const actionSigner = request?.signers.find(
-          signer =>
-            signer.status === 'actionable' &&
-            signer.address.toLowerCase() ===
-            walletInfo.recoverySignerAddress.toLowerCase()
-        )
-
-        if (
-          actionSigner &&
-          actionSigner.status === 'actionable' &&
-          actionSigner?.handle
-        ) {
-          actionSigner
-            .handle()
-            .then(async () => {
-              const payload =
-                await manager.recovery.completePayload(recoveryPayloadId)
-              await sendRecoveryPayload(
-                payload.to,
-                payload.data,
-                chainId,
-                recoveryPayloadId
-              )
-            })
-            .catch(e => {
-              console.log(e)
-            })
-        }
-
-        awaitedMnemonic.resolve(mnemonic)
-      },
-      error => {
-        console.error(
-          'Error fetching signature request:',
-          recoveryPayloadId,
-          error
-        )
-      },
-      true
+      false
+    )
+    const signature = await signRecoveryPayload(recoverySigner, payloadHash as Hash)
+    const calldata = Extensions.Recovery.encodeCalldata(
+      activeWalletAddress,
+      Payload.toRecovery(payloadCall),
+      recoverySigner.address,
+      signature
     )
 
-    return recoveryPayloadId
+    const result = await sendRecoveryPayload(
+      match.extensionAddress,
+      calldata as `0x${string}`,
+      chainId,
+      payloadHash
+    )
+
+    return result?.id ?? payloadHash
+  }
+}
+
+async function signRecoveryPayload(
+  recoverySigner: HDAccount,
+  payloadHash: Hash
+): Promise<PrimitiveSignature.SignatureOfSignerLeaf> {
+  const signatureHex = await recoverySigner.sign({ hash: payloadHash })
+  const signature = parseSignature(signatureHex)
+
+  return {
+    type: 'hash',
+    r: hexToBigInt(signature.r),
+    s: hexToBigInt(signature.s),
+    yParity: signature.yParity,
   }
 }

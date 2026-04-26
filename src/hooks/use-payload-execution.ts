@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react'
-import { Sequence } from '@0xsequence/wallet-wdk'
 import { Constants } from '@0xsequence/wallet-primitives'
 import { AbiFunction } from 'ox'
 import { Address, createPublicClient, hexToBigInt, http, type PublicClient } from 'viem'
 
+import type { ProviderDetail } from '~/components/wallet/externalprovider/SelectProvider'
 import { networks } from '~/networks'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
+import type { QueuedRecoveryPayload } from '~/types/recovery'
 import { useWalletRecovery } from './wallet-recovery-context'
 import { executeRecovery } from './use-execute-recovery'
 
 interface UsePayloadExecutionParams {
-  payload: Sequence.QueuedRecoveryPayload
-  selectedExternalProvider: any
+  payload: QueuedRecoveryPayload
+  selectedExternalProvider: ProviderDetail | undefined
 }
 
 type ExecStatus = 'idle' | 'pending' | 'final'
@@ -34,9 +35,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
   useEffect(() => {
     async function checkIfExecuted() {
       try {
-        // @ts-expect-error payload.payload.space and nonce exist at runtime
         const space: bigint | undefined = payload.payload?.space
-        // @ts-expect-error payload.payload.nonce exists at runtime
         const payloadNonce: bigint | undefined = payload.payload?.nonce
 
         if (space === undefined || payloadNonce === undefined || !rpcUrl) {
@@ -61,7 +60,6 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
     }
 
     checkIfExecuted()
-    // @ts-expect-error payload.payload.space and nonce exist at runtime
   }, [payload.chainId, payload.wallet, payload.payload?.space, payload.payload?.nonce, rpcUrl])
 
   useEffect(() => {
@@ -101,7 +99,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
   }, [hash, rpcUrl])
 
   const handleExecuteRecovery = async () => {
-    if (!recoverySignerAddress || !sendRecoveryPayload) {
+    if (!recoverySignerAddress || !sendRecoveryPayload || !payload.payload) {
       return
     }
 
@@ -126,7 +124,6 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
       const result = await executeRecovery({
         walletAddress: payload.wallet as Address,
         recoverySignerAddress: recoverySignerAddress as Address,
-        // @ts-expect-error payload.payload is Payload.Calls at runtime
         payload: payload.payload,
         chainId: payload.chainId,
         sendTx: sendRecoveryPayload,

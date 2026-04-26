@@ -1,9 +1,9 @@
-import { Sequence } from '@0xsequence/wallet-wdk'
 import RecoveryQueue from '~/components/recovery/RecoveryQueue'
+import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 interface WalletRecoverySectionProps {
   isV2Wallet: boolean | undefined
-  queuedPayloads: Sequence.QueuedRecoveryPayload[]
+  queuedPayloads: QueuedRecoveryPayload[]
   isLoading: boolean
   refetch: () => void
 }
