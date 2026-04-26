@@ -1,5 +1,4 @@
 import compareAddress from '~/utils/compareAddress'
-import { Sequence } from '@0xsequence/wallet-wdk'
 import { Payload } from '@0xsequence/wallet-primitives'
 import { NetworkType } from '@0xsequence/network'
 import { Address, createPublicClient, http, parseAbi, type PublicClient } from 'viem'
@@ -7,6 +6,8 @@ import { Address, createPublicClient, http, parseAbi, type PublicClient } from '
 import { arweaveReader } from '~/arweave-reader'
 import { findRecoverySigner } from '~/hooks/use-validate-signer'
 import { networks } from '~/networks'
+import { resolveQueuedPayloadFromTransactionInput } from '~/recovery-queue'
+import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 import { Store, observable } from '.'
 import { AuthStore } from './AuthStore'
@@ -26,7 +27,7 @@ type RecoveryContext = {
 
 export class QueuedPayloadsStore {
   isLoading = observable(true)
-  payloads = observable<Sequence.QueuedRecoveryPayload[]>([])
+  payloads = observable<QueuedRecoveryPayload[]>([])
 
   private mainnetNetworks = networks.filter(network => network.type === NetworkType.MAINNET)
   private chains = this.mainnetNetworks
@@ -104,7 +105,7 @@ export class QueuedPayloadsStore {
       const results = await Promise.allSettled(fetchPromises)
 
       const allPayloads = results
-        .filter((result): result is PromiseFulfilledResult<Sequence.QueuedRecoveryPayload[]> =>
+        .filter((result): result is PromiseFulfilledResult<QueuedRecoveryPayload[]> =>
           result.status === 'fulfilled'
         )
         .flatMap(result => result.value)
@@ -121,7 +122,7 @@ export class QueuedPayloadsStore {
     context: RecoveryContext,
     chainId: number,
     rpcUrl: string
-  ): Promise<Sequence.QueuedRecoveryPayload[]> {
+  ): Promise<QueuedRecoveryPayload[]> {
     if (!rpcUrl) {
       return []
     }
@@ -140,7 +141,7 @@ export class QueuedPayloadsStore {
         return []
       }
 
-      const results: Sequence.QueuedRecoveryPayload[] = []
+      const results: QueuedRecoveryPayload[] = []
 
       for (let index = 0n; index < total; index++) {
         const payloadHash = await client.readContract({
@@ -157,7 +158,13 @@ export class QueuedPayloadsStore {
           args: [context.wallet, context.signer, payloadHash],
         })
 
-        const payloadRecord = await arweaveReader.getPayload(payloadHash)
+        const payload = await this.resolvePayloadBody({
+          client,
+          context,
+          chainId,
+          payloadHash,
+          timestamp,
+        })
 
         const id = `${index}-${context.signer}-${chainId}-${context.wallet}`
 
@@ -171,7 +178,7 @@ export class QueuedPayloadsStore {
           startTimestamp: timestamp,
           endTimestamp: timestamp + context.requiredDeltaTime,
           payloadHash,
-          payload: payloadRecord?.payload as Payload.Payload | undefined,
+          payload,
         })
       }
 
@@ -182,6 +189,39 @@ export class QueuedPayloadsStore {
     }
   }
 
+  private async resolvePayloadBody({
+    client,
+    context,
+    chainId,
+    payloadHash,
+    timestamp,
+  }: {
+    client: PublicClient
+    context: RecoveryContext
+    chainId: number
+    payloadHash: `0x${string}`
+    timestamp: bigint
+  }): Promise<Payload.Calls | undefined> {
+    try {
+      const payloadRecord = await arweaveReader.getPayload(payloadHash)
+      if (payloadRecord && Payload.isCalls(payloadRecord.payload)) {
+        return payloadRecord.payload
+      }
+    } catch (error) {
+      console.warn('Unable to resolve queued payload from Arweave:', error)
+    }
+
+    return resolveQueuedPayloadFromTransactionInput({
+      client,
+      extension: context.extension,
+      wallet: context.wallet,
+      signer: context.signer,
+      payloadHash,
+      chainId,
+      queuedAt: timestamp,
+    })
+  }
+
   private clearPayloadsForAddress(address: Address) {
     const current = this.payloads.get()
     const filtered = current.filter(
@@ -190,7 +230,7 @@ export class QueuedPayloadsStore {
     this.payloads.set(filtered)
   }
 
-  private addPayloads(newPayloads: Sequence.QueuedRecoveryPayload[]) {
+  private addPayloads(newPayloads: QueuedRecoveryPayload[]) {
     if (newPayloads.length === 0) {return}
 
     const current = this.payloads.get()

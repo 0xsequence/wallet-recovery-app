@@ -2,9 +2,7 @@ import { Extensions } from '@0xsequence/wallet-primitives'
 import { createContext, useContext, useState } from 'react'
 import { Address } from 'viem'
 
-import { useAwaitMnemonic } from './use-await-mnemonic'
 import { useExternalWallet } from './use-external-wallet'
-import { useFetchQueuedPayloads } from './use-fetch-queued-payloads'
 import { useHandleQueuePayload } from './use-handle-queue-payload'
 
 // const TEST_TARGET_CHAIN_ID = 137 //42161
@@ -30,8 +28,7 @@ export function useCreateWalletRecoveryContext() {
     sendRecoveryPayload,
     getWalletAddresses,
   } = useExternalWallet()
-  const [transactionId, setTransactionId] = useState<any>()
-  const payloads = useFetchQueuedPayloads(walletAddress)
+  const [transactionId, setTransactionId] = useState<string>()
 
   const set = {
     walletAddress: setWalletAddress,
@@ -50,20 +47,15 @@ export function useCreateWalletRecoveryContext() {
     recoveryPayload,
     transactionId,
     destinationAddress,
-    payloads,
     providers,
     provider,
   }
 
-  const awaitedMnemonic = useAwaitMnemonic()
-
   const queuePayload = useHandleQueuePayload({
-    awaitedMnemonic,
     sendRecoveryPayload,
   })
 
   const handle = {
-    awaitedMnemonic,
     queuePayload,
     sendRecoveryPayload,
     getWalletAddresses,

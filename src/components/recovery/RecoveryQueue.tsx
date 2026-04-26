@@ -9,15 +9,15 @@ import {
   Text,
   VisibleIcon
 } from '@0xsequence/design-system'
-import { Sequence } from '@0xsequence/wallet-wdk'
 import { useMemo, useState } from 'react'
 
+import type { QueuedRecoveryPayload } from '~/types/recovery'
 import { getNetworkTitle } from '~/utils/network'
 
 import { QueuePayloadItem } from './QueuePayloadItem'
 
 type RecoveryQueueProps = {
-  queuedPayloads: Sequence.QueuedRecoveryPayload[]
+  queuedPayloads: QueuedRecoveryPayload[]
   isLoading: boolean
   refetch: () => void
 }
@@ -35,7 +35,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
       acc[chainId].push(payload)
       return acc
     },
-    {} as Record<number, Sequence.QueuedRecoveryPayload[]>
+    {} as Record<number, QueuedRecoveryPayload[]>
   )
 
   const uniqueChains = Object.keys(payloadsByChain).map(Number)
@@ -86,7 +86,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
       acc[chainId].push(payload)
       return acc
     },
-    {} as Record<number, Sequence.QueuedRecoveryPayload[]>
+    {} as Record<number, QueuedRecoveryPayload[]>
   )
 
   const filteredUniqueChains = Object.keys(filteredPayloadsByChain).map(Number)

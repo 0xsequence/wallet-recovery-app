@@ -1,5 +1,5 @@
 import { ContractType } from '@0xsequence/indexer'
-import { Sequence } from '@0xsequence/wallet-wdk'
+import type { Payload } from '@0xsequence/wallet-primitives'
 import {
   Address,
   encodeFunctionData,
@@ -8,6 +8,8 @@ import {
   erc721Abi,
 } from 'viem'
 import { TokenRecord } from './types'
+
+export type RecoveryTransactionRequest = Pick<Payload.Call, 'to' | 'value' | 'data'>
 
 /**
  * Creates a transaction request for a coin or collectible token
@@ -22,7 +24,7 @@ export const createTransactionRequest = (
   from: Address,
   to: Address,
   amount: bigint
-): Sequence.TransactionRequest | undefined => {
+): RecoveryTransactionRequest | undefined => {
   if (token.type === 'COIN') {
     switch (token.contractType) {
       case ContractType.NATIVE: {

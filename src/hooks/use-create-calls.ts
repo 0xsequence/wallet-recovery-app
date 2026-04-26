@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { Payload } from '@0xsequence/wallet-primitives'
 
 import { TokenRecord } from '~/utils/types'
 import { createTransactionRequest } from '~/utils/transactions'
@@ -29,7 +30,7 @@ export function useCreateCalls() {
       throw new Error('No account address found')
     }
 
-    const calls = items.map(item => {
+    const calls: Payload.Call[] = items.flatMap(item => {
       // Use custom amount if provided, otherwise use the full balance
       const amount = customAmount
         ? BigInt(customAmount)
@@ -42,13 +43,17 @@ export function useCreateCalls() {
         amount
       )
 
-      return {
+      if (!result) {
+        return []
+      }
+
+      return [{
         ...result,
         gasLimit: 0n,
         delegateCall: false,
         onlyFallback: false,
         behaviorOnError: 'revert',
-      }
+      }]
     })
 
     if (calls.length) {
