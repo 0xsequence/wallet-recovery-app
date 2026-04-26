@@ -18,8 +18,8 @@ importers:
         specifier: ^3.2.2
         version: 3.2.2(@types/react-dom@18.3.1)(@types/react@18.3.12)(motion@12.29.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.71.1(react@18.3.1))(react@18.3.1)
       '@0xsequence/indexer':
-        specifier: 3.0.0-beta.18
-        version: 3.0.0-beta.18
+        specifier: 3.0.6
+        version: 3.0.6
       '@0xsequence/network':
         specifier: 2.3.41
         version: 2.3.41(ethers@6.13.4)
@@ -36,14 +36,14 @@ importers:
         specifier: 2.3.41
         version: 2.3.41(ethers@6.13.4)
       '@0xsequence/wallet-core':
-        specifier: 3.0.0-beta.18
-        version: 3.0.0-beta.18(typescript@5.7.2)
+        specifier: 3.0.6
+        version: 3.0.6(typescript@5.7.2)
       '@0xsequence/wallet-primitives':
-        specifier: 3.0.0-beta.18
-        version: 3.0.0-beta.18(typescript@5.7.2)
+        specifier: 3.0.6
+        version: 3.0.6(typescript@5.7.2)
       '@0xsequence/wallet-wdk':
-        specifier: 3.0.0-beta.18
-        version: 3.0.0-beta.18(typescript@5.7.2)
+        specifier: 3.0.6
+        version: 3.0.6(typescript@5.7.2)
       '@radix-ui/react-popover':
         specifier: 1.1.2
         version: 1.1.2(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -187,17 +187,17 @@ packages:
     peerDependencies:
       ethers: '>=6'
 
-  '@0xsequence/guard@3.0.0-beta.18':
-    resolution: {integrity: sha512-KFL08ScnNwDddVUSrXD+g0KTRLk2n0o3+m2RJy8vklzBe8miF8W3fQtlZ1SM8Nb//l07+ldFsaKYdHfgCKqeZA==}
+  '@0xsequence/guard@3.0.6':
+    resolution: {integrity: sha512-codsLEGSh+PACHlAJOk1mBlrmYwuuolmLo2pzBfu9ekzUbtGIYbbaUebbzcK7r3ZSjcvMG3R+Mzqx5041WVK1Q==}
 
-  '@0xsequence/identity-instrument@3.0.0-beta.18':
-    resolution: {integrity: sha512-CsdRhRAYP2C0ALTo88TiMWNl1r5jUXaejHDE6NutoE8op6f2afSY4gnAtGIgj0RzMuTVz69uuCg3y9H9zd9OKw==}
+  '@0xsequence/identity-instrument@3.0.6':
+    resolution: {integrity: sha512-4CWCXLGI3eceA6DutVIUKgrf1tJwfJ8RCHPx8OREGxNzd9dSyFEWwlj3CXWdS25cXWd7ork1ru3tfeKv6aBV4g==}
 
   '@0xsequence/indexer@2.3.41':
     resolution: {integrity: sha512-zAclbFgafj9O8+t4x7UmyNQu359SHY32aOGRQWsl5E7TvrfgPrAfDMW8Rfsu++fNwEhIgOt5gkL0kbyvUGKtLQ==}
 
-  '@0xsequence/indexer@3.0.0-beta.18':
-    resolution: {integrity: sha512-gyCgHjp581eba2Zr9FBuYjCUymVO6EJawOs/ZMdbs+BeTfITqTjVIzGOzcaqDYOQ/6HMcE/8pqsK6MBGyshE7A==}
+  '@0xsequence/indexer@3.0.6':
+    resolution: {integrity: sha512-x1D16JUP1wefNrd/IIMyeiejqa1UnJt3eWYLS60VN8+uRfT/UEiL9ree6bvJ5a4GWqXtd9LnJQYr4dZWlMUvig==}
 
   '@0xsequence/metadata@2.3.41':
     resolution: {integrity: sha512-1zt34zBlgw+0R8aEy5ibg8WFKMWAfKsHnTqTeDFpQxG/lReNDaC3GsC/xiWO6zjgKK8N88WuK1AjlnbAH/LaFQ==}
@@ -222,8 +222,8 @@ packages:
     peerDependencies:
       ethers: '>=6'
 
-  '@0xsequence/relayer@3.0.0-beta.18':
-    resolution: {integrity: sha512-E9/SMG0fTm/egE2WOWgCnRamw1BCGVHG+lJ6WdJLgLfRovItOOYXigT7XC3zyCmCMlw5VJw2vCNlgfZ2s3ldgQ==}
+  '@0xsequence/relayer@3.0.6':
+    resolution: {integrity: sha512-yRXYqxtr52p9RIN+1gZiBV/k1GlQHSU+Igcl/NSg6VsY/L9jN6uHMaoxUrpBmt4gbn59j1rJEcEotloyieN7lw==}
 
   '@0xsequence/replacer@2.3.41':
     resolution: {integrity: sha512-RHCkpDUy9yOgajm72+0LQqcWIOAkT8ar64GW1qH5qjLjijr7jMr7o5jDmBJKNSv0Ku5AVeml/YlzkADbYcqYBg==}
@@ -248,14 +248,14 @@ packages:
     peerDependencies:
       ethers: '>=6'
 
-  '@0xsequence/wallet-core@3.0.0-beta.18':
-    resolution: {integrity: sha512-Rc1q6SInB+iZj31GhBXtsYJ2sx87hEcX6ky5oxAsoO7ueG6xMxqB/d/Fa5EBW4GN5uGkGCnROTf4krVSTqGJcA==}
+  '@0xsequence/wallet-core@3.0.6':
+    resolution: {integrity: sha512-ivP/EM661BjA7ioTaKbH7PtRBm4xY39xTQ69AN+gorFEW8rNcSpHY/Q+8UL8fwszpkkNLE1yRyH5/jioZv+Lpg==}
 
-  '@0xsequence/wallet-primitives@3.0.0-beta.18':
-    resolution: {integrity: sha512-KzBrQrVhQDQB1PCcXQw3WzrVSojLtJnC8OI/gjehMjdJ8eLOqoaWru4a0cA418WTzHqID6oRr0im4hK88IABpQ==}
+  '@0xsequence/wallet-primitives@3.0.6':
+    resolution: {integrity: sha512-XHA5ZlGFuHwtVdo7WoXT/9OsWbWPkpDyHUxll+ok8ObuVRoIfoktn5l8ntzikHkKvgt0LzYV1t7CONGPsfdVxQ==}
 
-  '@0xsequence/wallet-wdk@3.0.0-beta.18':
-    resolution: {integrity: sha512-mt1w2WhnQp9RU6m0iEadfj6PphqKXHlCf6KPPuUh75o4YoUF7HUZX0v9AvX1m8h75OliHwOSKngRnlJ0pM1v0Q==}
+  '@0xsequence/wallet-wdk@3.0.6':
+    resolution: {integrity: sha512-JErOpkbePmY9bGXOXErM34iSCvfZQBZ8Loyq3DTrbXqK47EWNQZJJj4ctKvA7tG9kUNsXIEAfPOFFFQg12AXRw==}
 
   '@0xsequence/wallet@2.3.41':
     resolution: {integrity: sha512-GgC5FbHxSwsJBSdAxU42U/OUSLIc2cA63hNdVqojmdi05W6kxYdIrvvLKHToKTSiLOuBdXh1GvA4i6v69vUSxA==}
@@ -916,36 +916,42 @@ packages:
     engines: {node: '>= 10.0.0'}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@parcel/watcher-linux-arm-musl@2.5.0':
     resolution: {integrity: sha512-6uHywSIzz8+vi2lAzFeltnYbdHsDm3iIB57d4g5oaB9vKwjb6N6dRIgZMujw4nm5r6v9/BQH0noq6DzHrqr2pA==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@parcel/watcher-linux-arm64-glibc@2.5.0':
     resolution: {integrity: sha512-BfNjXwZKxBy4WibDb/LDCriWSKLz+jJRL3cM/DllnHH5QUyoiUNEp3GmL80ZqxeumoADfCCP19+qiYiC8gUBjA==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@parcel/watcher-linux-arm64-musl@2.5.0':
     resolution: {integrity: sha512-S1qARKOphxfiBEkwLUbHjCY9BWPdWnW9j7f7Hb2jPplu8UZ3nes7zpPOW9bkLbHRvWM0WDTsjdOTUgW0xLBN1Q==}
     engines: {node: '>= 10.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@parcel/watcher-linux-x64-glibc@2.5.0':
     resolution: {integrity: sha512-d9AOkusyXARkFD66S6zlGXyzx5RvY+chTP9Jp0ypSTC9d4lzyRs9ovGf/80VCxjKddcUvnsGwCHWuF2EoPgWjw==}
     engines: {node: '>= 10.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@parcel/watcher-linux-x64-musl@2.5.0':
     resolution: {integrity: sha512-iqOC+GoTDoFyk/VYSFHwjHhYrk8bljW6zOhPuhi5t9ulqiYq1togGJB5e3PwYVFFfeVgc6pbz3JdQyDoBszVaA==}
     engines: {node: '>= 10.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@parcel/watcher-wasm@2.5.0':
     resolution: {integrity: sha512-Z4ouuR8Pfggk1EYYbTaIoxc+Yv4o7cGQnH0Xy8+pQ+HbiW+ZnwhcD2LPf/prfq1nIWpAxjOkQ8uSMFWMtBLiVQ==}
@@ -1748,46 +1754,55 @@ packages:
     resolution: {integrity: sha512-9OwUnK/xKw6DyRlgx8UizeqRFOfi9mf5TYCw1uolDaJSbUmBxP85DE6T4ouCMoN6pXw8ZoTeZCSEfSaYo+/s1w==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.27.4':
     resolution: {integrity: sha512-Vgdo4fpuphS9V24WOV+KwkCVJ72u7idTgQaBoLRD0UxBAWTF9GWurJO9YD9yh00BzbkhpeXtm6na+MvJU7Z73A==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.27.4':
     resolution: {integrity: sha512-pleyNgyd1kkBkw2kOqlBx+0atfIIkkExOTiifoODo6qKDSpnc6WzUY5RhHdmTdIJXBdSnh6JknnYTtmQyobrVg==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.27.4':
     resolution: {integrity: sha512-caluiUXvUuVyCHr5DxL8ohaaFFzPGmgmMvwmqAITMpV/Q+tPoaHZ/PWa3t8B2WyoRcIIuu1hkaW5KkeTDNSnMA==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.27.4':
     resolution: {integrity: sha512-FScrpHrO60hARyHh7s1zHE97u0KlT/RECzCKAdmI+LEoC1eDh/RDji9JgFqyO+wPDb86Oa/sXkily1+oi4FzJQ==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.27.4':
     resolution: {integrity: sha512-qyyprhyGb7+RBfMPeww9FlHwKkCXdKHeGgSqmIXw9VSUtvyFZ6WZRtnxgbuz76FK7LyoN8t/eINRbPUcvXB5fw==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-s390x-gnu@4.27.4':
     resolution: {integrity: sha512-PFz+y2kb6tbh7m3A7nA9++eInGcDVZUACulf/KzDtovvdTizHpZaJty7Gp0lFwSQcrnebHOqxF1MaKZd7psVRg==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.27.4':
     resolution: {integrity: sha512-Ni8mMtfo+o/G7DVtweXXV/Ol2TFf63KYjTtoZ5f078AUgJTmaIJnj4JFU7TK/9SVWTaSJGxPi5zMDgK4w+Ez7Q==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.27.4':
     resolution: {integrity: sha512-5AeeAF1PB9TUzD+3cROzFTnAJAcVUGLuR8ng0E0WXGkYhp6RD6L+6szYVX+64Rs0r72019KHZS1ka1q+zU/wUw==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-win32-arm64-msvc@4.27.4':
     resolution: {integrity: sha512-yOpVsA4K5qVwu2CaS3hHxluWIK5HQTjNV4tWjQXluMiiiu4pJj4BN98CvxohNCpcjMeTXk/ZMJBRbgRg8HBB6A==}
@@ -1905,24 +1920,28 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@tailwindcss/oxide-linux-arm64-musl@4.1.18':
     resolution: {integrity: sha512-1px92582HkPQlaaCkdRcio71p8bc8i/ap5807tPRDK/uw953cauQBT8c5tVGkOwrHMfc2Yh6UuxaH4vtTjGvHg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@tailwindcss/oxide-linux-x64-gnu@4.1.18':
     resolution: {integrity: sha512-v3gyT0ivkfBLoZGF9LyHmts0Isc8jHZyVcbzio6Wpzifg/+5ZJpDiRiUhDLkcr7f/r38SWNe7ucxmGW3j3Kb/g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@tailwindcss/oxide-linux-x64-musl@4.1.18':
     resolution: {integrity: sha512-bhJ2y2OQNlcRwwgOAGMY0xTFStt4/wyU6pvI6LSuZpRgKQwxTec0/3Scu91O8ir7qCR3AuepQKLU/kX99FouqQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@tailwindcss/oxide-wasm32-wasi@4.1.18':
     resolution: {integrity: sha512-LffYTvPjODiP6PT16oNeUQJzNVyJl1cjIebq/rWWBF+3eDst5JGEFSc5cWxyRCJ0Mxl+KyIkqRxk1XPEs9x8TA==}
@@ -2954,24 +2973,28 @@ packages:
     engines: {node: '>= 12.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   lightningcss-linux-arm64-musl@1.30.2:
     resolution: {integrity: sha512-5Vh9dGeblpTxWHpOx8iauV02popZDsCYMPIgiuw97OJ5uaDsL86cnqSFs5LZkG3ghHoX5isLgWzMs+eD1YzrnA==}
     engines: {node: '>= 12.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   lightningcss-linux-x64-gnu@1.30.2:
     resolution: {integrity: sha512-Cfd46gdmj1vQ+lR6VRTTadNHu6ALuw2pKR9lYq4FnhvgBc4zWY1EtZcAc6EffShbb1MFrIPfLDXD6Xprbnni4w==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   lightningcss-linux-x64-musl@1.30.2:
     resolution: {integrity: sha512-XJaLUUFXb6/QG2lGIW6aIk6jKdtjtcffUT0NKvIqhSBY3hh9Ch+1LCeH80dR9q9LBjG3ewbDjnumefsLsP6aiA==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   lightningcss-win32-arm64-msvc@1.30.2:
     resolution: {integrity: sha512-FZn+vaj7zLv//D/192WFFVA0RgHawIcHqLX9xuWiQt7P0PtdFEVaxgF9rjM/IRYHQXNnk61/H/gb2Ei+kUQ4xQ==}
@@ -3992,14 +4015,14 @@ snapshots:
       ethers: 6.13.4
       js-base64: 3.7.7
 
-  '@0xsequence/guard@3.0.0-beta.18(typescript@5.7.2)':
+  '@0xsequence/guard@3.0.6(typescript@5.7.2)':
     dependencies:
       ox: 0.9.17(typescript@5.7.2)
     transitivePeerDependencies:
       - typescript
       - zod
 
-  '@0xsequence/identity-instrument@3.0.0-beta.18(typescript@5.7.2)':
+  '@0xsequence/identity-instrument@3.0.6(typescript@5.7.2)':
     dependencies:
       json-canonicalize: 2.0.0
       jwt-decode: 4.0.0
@@ -4010,7 +4033,7 @@ snapshots:
 
   '@0xsequence/indexer@2.3.41': {}
 
-  '@0xsequence/indexer@3.0.0-beta.18': {}
+  '@0xsequence/indexer@3.0.6': {}
 
   '@0xsequence/metadata@2.3.41': {}
 
@@ -4052,9 +4075,9 @@ snapshots:
       '@0xsequence/utils': 2.3.41(ethers@6.13.4)
       ethers: 6.13.4
 
-  '@0xsequence/relayer@3.0.0-beta.18(typescript@5.7.2)':
+  '@0xsequence/relayer@3.0.6(typescript@5.7.2)':
     dependencies:
-      '@0xsequence/wallet-primitives': 3.0.0-beta.18(typescript@5.7.2)
+      '@0xsequence/wallet-primitives': 3.0.6(typescript@5.7.2)
       mipd: 0.0.7(typescript@5.7.2)
       ox: 0.9.17(typescript@5.7.2)
       viem: 2.45.0(typescript@5.7.2)
@@ -4094,11 +4117,11 @@ snapshots:
       ethers: 6.13.4
       js-base64: 3.7.7
 
-  '@0xsequence/wallet-core@3.0.0-beta.18(typescript@5.7.2)':
+  '@0xsequence/wallet-core@3.0.6(typescript@5.7.2)':
     dependencies:
-      '@0xsequence/guard': 3.0.0-beta.18(typescript@5.7.2)
-      '@0xsequence/relayer': 3.0.0-beta.18(typescript@5.7.2)
-      '@0xsequence/wallet-primitives': 3.0.0-beta.18(typescript@5.7.2)
+      '@0xsequence/guard': 3.0.6(typescript@5.7.2)
+      '@0xsequence/relayer': 3.0.6(typescript@5.7.2)
+      '@0xsequence/wallet-primitives': 3.0.6(typescript@5.7.2)
       mipd: 0.0.7(typescript@5.7.2)
       ox: 0.9.17(typescript@5.7.2)
       viem: 2.45.0(typescript@5.7.2)
@@ -4108,21 +4131,21 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@0xsequence/wallet-primitives@3.0.0-beta.18(typescript@5.7.2)':
+  '@0xsequence/wallet-primitives@3.0.6(typescript@5.7.2)':
     dependencies:
       ox: 0.9.17(typescript@5.7.2)
     transitivePeerDependencies:
       - typescript
       - zod
 
-  '@0xsequence/wallet-wdk@3.0.0-beta.18(typescript@5.7.2)':
+  '@0xsequence/wallet-wdk@3.0.6(typescript@5.7.2)':
     dependencies:
-      '@0xsequence/guard': 3.0.0-beta.18(typescript@5.7.2)
-      '@0xsequence/identity-instrument': 3.0.0-beta.18(typescript@5.7.2)
-      '@0xsequence/relayer': 3.0.0-beta.18(typescript@5.7.2)
+      '@0xsequence/guard': 3.0.6(typescript@5.7.2)
+      '@0xsequence/identity-instrument': 3.0.6(typescript@5.7.2)
+      '@0xsequence/relayer': 3.0.6(typescript@5.7.2)
       '@0xsequence/tee-verifier': 0.1.2
-      '@0xsequence/wallet-core': 3.0.0-beta.18(typescript@5.7.2)
-      '@0xsequence/wallet-primitives': 3.0.0-beta.18(typescript@5.7.2)
+      '@0xsequence/wallet-core': 3.0.6(typescript@5.7.2)
+      '@0xsequence/wallet-primitives': 3.0.6(typescript@5.7.2)
       idb: 8.0.3
       jwt-decode: 4.0.0
       ox: 0.9.17(typescript@5.7.2)
