@@ -24,8 +24,8 @@ export type RecoverySignerMatch = {
  * leaf and the recovery extension contract address (= the sapient leaf's
  * `address`), which downstream on-chain calls need.
  *
- * Replaces `manager.recovery.getSigners(wallet)` with a direct read path
- * so recovery keeps working if Sequence's keymachine proxy is unavailable.
+ * Replaces hosted recovery signer lookup with a direct read path
+ * so recovery keeps working if the hosted lookup service is unavailable.
  */
 export async function findRecoverySigner(
   walletAddress: Address,
