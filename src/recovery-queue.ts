@@ -1,11 +1,14 @@
 import { Extensions, Payload } from '@0xsequence/wallet-primitives'
 import { AbiFunction } from 'ox'
 import type { Address, Hex, PublicClient } from 'viem'
-import { toHex } from 'viem'
+import { bytesToHex, toHex } from 'viem'
 
 import compareAddress from './utils/compareAddress'
 
 const QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS = 10n * 60n
+const GET_LOGS_CHUNK_SIZE = 1000n
+const BLOCK_TIME_SAMPLE_DISTANCE = 5_000n
+const BLOCK_ESTIMATE_BUFFER = 500n
 const QUEUE_PAYLOAD_SELECTOR = AbiFunction.getSelector(Extensions.Recovery.QUEUE_PAYLOAD)
 
 type QueuePayloadDecoded = [
@@ -34,10 +37,7 @@ type QueuePayloadLogLookupParams = Omit<DecodeQueuedPayloadParams, 'input' | 'pa
   payloads: QueuedPayloadLookup[]
 }
 
-type RpcTopic = Hex | null
-type RpcTopics = RpcTopic[]
 type RpcLog = {
-  data: Hex
   transactionHash: Hex | null
   logIndex: Hex
 }
@@ -68,11 +68,8 @@ export function decodeQueuedPayloadInput({
       return undefined
     }
 
-    const decodedPayloadHash = Extensions.Recovery.hashRecoveryPayload(
-      payload,
-      decodedWallet,
-      chainId,
-      decodedPayload.noChainId
+    const decodedPayloadHash = bytesToHex(
+      Payload.hash(decodedWallet, decodedPayload.noChainId ? 0 : chainId, payload)
     )
 
     if (decodedPayloadHash.toLowerCase() !== payloadHash.toLowerCase()) {
@@ -118,81 +115,57 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
     return new Map()
   }
 
-  const logs = await findCandidateQueueLogs({
-    client,
-    extension,
-    wallet,
-    signer,
-    payloads,
-  })
+  const timestampWindows = mergeTimestampWindows(
+    payloads.map(payload => payload.queuedAt),
+    QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
+  )
+
+  const estimator = await createBlockEstimator(client)
+  const blockRanges = timestampWindows.map(([from, to]) => estimator.rangeFor(from, to))
+
+  const ranges: { fromBlock: bigint; toBlock: bigint }[] = []
+  for (const { fromBlock, toBlock } of blockRanges) {
+    for (let cursor = fromBlock; cursor <= toBlock; cursor += GET_LOGS_CHUNK_SIZE) {
+      const chunkEnd = cursor + GET_LOGS_CHUNK_SIZE - 1n > toBlock ? toBlock : cursor + GET_LOGS_CHUNK_SIZE - 1n
+      ranges.push({ fromBlock: cursor, toBlock: chunkEnd })
+    }
+  }
+
+  const chunks = await Promise.all(ranges.map(range => getRawLogs(client, extension, range)))
+  const allLogs = chunks.flatMap(chunk => chunk ?? [])
+
   const result = new Map<string, Payload.Calls>()
   const seenTransactions = new Set<Hex>()
+  const unresolvedPayloads = new Map(
+    payloads.map(payload => [payload.payloadHash.toLowerCase(), payload.payloadHash])
+  )
 
-  for (const log of logs) {
-    if (!log.transactionHash) {
-      continue
-    }
-
-    const payloadHash = payloadHashFromQueueLog(log)
-    if (!payloadHash || result.has(payloadHash.toLowerCase()) || seenTransactions.has(log.transactionHash)) {
+  for (const log of allLogs) {
+    if (!log.transactionHash || seenTransactions.has(log.transactionHash) || unresolvedPayloads.size === 0) {
       continue
     }
 
     seenTransactions.add(log.transactionHash)
 
     const transaction = await client.getTransaction({ hash: log.transactionHash })
-    const payload = decodeQueuedPayloadInput({
-      input: transaction.input,
-      wallet,
-      signer,
-      payloadHash,
-      chainId,
-    })
+    for (const candidatePayloadHash of [...unresolvedPayloads.values()]) {
+      const payload = decodeQueuedPayloadInput({
+        input: transaction.input,
+        wallet,
+        signer,
+        payloadHash: candidatePayloadHash,
+        chainId,
+      })
 
-    if (payload) {
-      result.set(payloadHash.toLowerCase(), payload)
+      if (payload) {
+        result.set(candidatePayloadHash.toLowerCase(), payload)
+        unresolvedPayloads.delete(candidatePayloadHash.toLowerCase())
+        break
+      }
     }
   }
 
   return result
-}
-
-async function findCandidateQueueLogs({
-  client,
-  extension,
-  wallet,
-  signer,
-  payloads,
-}: Omit<QueuePayloadLogLookupParams, 'chainId'>): Promise<RpcLog[]> {
-  const wantedHashes = new Set(payloads.map(payload => payload.payloadHash.toLowerCase()))
-  const logs = await getRawLogs(client, extension, {
-    fromBlock: 0n,
-    toBlock: 'latest',
-    topics: walletSignerTopicFilter(wallet, signer),
-  })
-
-  if (logs) {
-    return logs.filter(log => {
-      const payloadHash = payloadHashFromQueueLog(log)
-      return payloadHash ? wantedHashes.has(payloadHash.toLowerCase()) : false
-    })
-  }
-
-  const queuedAtValues = payloads.map(payload => payload.queuedAt)
-  const minQueuedAt = queuedAtValues.reduce((min, value) => value < min ? value : min)
-  const maxQueuedAt = queuedAtValues.reduce((max, value) => value > max ? value : max)
-  const fromTimestamp = minQueuedAt > QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
-    ? minQueuedAt - QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
-    : 0n
-  const toTimestamp = maxQueuedAt + QUEUE_LOG_TIMESTAMP_WINDOW_SECONDS
-  const fromBlock = await findBlockAtOrAfterTimestamp(client, fromTimestamp)
-  const toBlock = await findBlockAtOrAfterTimestamp(client, toTimestamp)
-
-  return await getRawLogs(client, extension, {
-    fromBlock,
-    toBlock,
-    topics: walletSignerTopicFilter(wallet, signer),
-  }) ?? []
 }
 
 async function getRawLogs(
@@ -201,11 +174,9 @@ async function getRawLogs(
   {
     fromBlock,
     toBlock,
-    topics,
   }: {
     fromBlock: bigint
-    toBlock: bigint | 'latest'
-    topics: RpcTopics
+    toBlock: bigint
   }
 ): Promise<RpcLog[] | undefined> {
   try {
@@ -215,8 +186,7 @@ async function getRawLogs(
         {
           address,
           fromBlock: toHex(fromBlock),
-          toBlock: toBlock === 'latest' ? 'latest' : toHex(toBlock),
-          topics,
+          toBlock: toHex(toBlock),
         },
       ],
     }) as RpcLog[]
@@ -226,53 +196,74 @@ async function getRawLogs(
   }
 }
 
-async function findBlockAtOrAfterTimestamp(
-  client: PublicClient,
-  timestamp: bigint
-): Promise<bigint> {
-  const latestBlockNumber = await client.getBlockNumber()
-  const latestBlock = await client.getBlock({ blockNumber: latestBlockNumber })
+function mergeTimestampWindows(
+  queuedAtValues: bigint[],
+  windowSeconds: bigint,
+): Array<[bigint, bigint]> {
+  const windows = queuedAtValues
+    .map<[bigint, bigint]>(queuedAt => [
+      queuedAt > windowSeconds ? queuedAt - windowSeconds : 0n,
+      queuedAt + windowSeconds,
+    ])
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
 
-  if (latestBlock.timestamp <= timestamp) {
-    return latestBlockNumber
-  }
-
-  let low = 0n
-  let high = latestBlockNumber
-  let result = latestBlockNumber
-
-  while (low <= high) {
-    const mid = (low + high) / 2n
-    const block = await client.getBlock({ blockNumber: mid })
-
-    if (block.timestamp >= timestamp) {
-      result = mid
-      if (mid === 0n) {
-        break
+  const merged: Array<[bigint, bigint]> = []
+  for (const [from, to] of windows) {
+    const last = merged[merged.length - 1]
+    if (last && from <= last[1]) {
+      if (to > last[1]) {
+        last[1] = to
       }
-      high = mid - 1n
     } else {
-      low = mid + 1n
+      merged.push([from, to])
     }
   }
-
-  return result
+  return merged
 }
 
-function walletSignerTopicFilter(wallet: Address, signer: Address): RpcTopics {
-  const walletTopic = addressTopic(wallet)
-  const signerTopic = addressTopic(signer)
-  return [null, walletTopic, signerTopic]
+type BlockEstimator = {
+  latestNumber: bigint
+  rangeFor: (fromTimestamp: bigint, toTimestamp: bigint) => { fromBlock: bigint; toBlock: bigint }
 }
 
-function addressTopic(address: Address): Hex {
-  return `0x${address.slice(2).toLowerCase().padStart(64, '0')}` as Hex
-}
+async function createBlockEstimator(client: PublicClient): Promise<BlockEstimator> {
+  const latestNumber = await client.getBlockNumber()
+  const latest = await client.getBlock({ blockNumber: latestNumber })
 
-function payloadHashFromQueueLog(log: RpcLog): Hex | undefined {
-  if (log.data.length < 66) {
-    return undefined
+  const sampleDistance = latestNumber > BLOCK_TIME_SAMPLE_DISTANCE
+    ? BLOCK_TIME_SAMPLE_DISTANCE
+    : latestNumber
+  const sampleNumber = latestNumber - sampleDistance
+  const sample = sampleDistance === 0n
+    ? latest
+    : await client.getBlock({ blockNumber: sampleNumber })
+
+  const blockSpan = latestNumber - sampleNumber
+  const timeSpan = latest.timestamp > sample.timestamp ? latest.timestamp - sample.timestamp : 1n
+  const secondsPerBlock = blockSpan > 0n ? timeSpan / blockSpan : 1n
+  const divisor = secondsPerBlock > 0n ? secondsPerBlock : 1n
+
+  const estimate = (timestamp: bigint): bigint => {
+    if (timestamp >= latest.timestamp) {
+      return latestNumber
+    }
+    const blocksBack = (latest.timestamp - timestamp) / divisor
+    return blocksBack >= latestNumber ? 0n : latestNumber - blocksBack
   }
 
-  return log.data.slice(0, 66) as Hex
+  return {
+    latestNumber,
+    rangeFor: (fromTimestamp, toTimestamp) => {
+      if (latest.timestamp <= fromTimestamp) {
+        return { fromBlock: latestNumber, toBlock: latestNumber }
+      }
+      const fromEstimate = estimate(fromTimestamp)
+      const toEstimate = estimate(toTimestamp)
+      const fromBlock = fromEstimate > BLOCK_ESTIMATE_BUFFER ? fromEstimate - BLOCK_ESTIMATE_BUFFER : 0n
+      const toBlock = toEstimate + BLOCK_ESTIMATE_BUFFER > latestNumber
+        ? latestNumber
+        : toEstimate + BLOCK_ESTIMATE_BUFFER
+      return { fromBlock, toBlock }
+    },
+  }
 }

@@ -1,11 +1,13 @@
-// Picked from https://chainlist.org/
+// Chain names are token-directory folders when available.
 export const DEFAULT_PUBLIC_RPC_LIST: Map<number, [string | undefined, string]> = new Map([
   [1, ['mainnet', 'https://ethereum-rpc.publicnode.com']],
   [11155111, ['sepolia', 'https://ethereum-sepolia-rpc.publicnode.com']],
   [137, ['polygon', 'https://polygon-bor-rpc.publicnode.com']],
-  [143, ['monad', "https://monad-mainnet.drpc.org"]],
-  [1868, ['sonium', "https://rpc.soneium.org"]],
-  [80002, ['polygon-amoy', 'https://rpc-amoy.polygon.technology']], // not on sequence directory repo
+  [143, ['monad', 'https://monad-mainnet.drpc.org']],
+  [146, ['sonic', 'https://rpc.soniclabs.com']],
+  [999, ['hyperevm', 'https://rpc.hyperliquid.xyz/evm']],
+  [1868, ['soneium', 'https://rpc.soneium.org']],
+  [80002, ['amoy', 'https://rpc-amoy.polygon.technology']],
   [1101, ['polygon-zkevm', 'https://zkevm-rpc.com']],
   [56, ['bnb', 'https://bsc-rpc.publicnode.com']],
   [97, ['bnb-testnet', 'https://bsc-testnet-rpc.publicnode.com']],
@@ -13,46 +15,42 @@ export const DEFAULT_PUBLIC_RPC_LIST: Map<number, [string | undefined, string]> 
   [11155420, ['optimism-sepolia', 'https://sepolia.optimism.io']],
   [42161, ['arbitrum', 'https://arb1.arbitrum.io/rpc']],
   [421614, ['arbitrum-sepolia', 'https://sepolia-rollup.arbitrum.io/rpc']],
-  [127823, ['etherlink-shadownet-testnet', 'https://127823.rpc.thirdweb.com']],
+  [127823, [undefined, 'https://node.shadownet.etherlink.com']],
   [747474, ['katana', 'https://rpc.katana.network']],
   [5042002, ['arc-testnet', 'https://rpc.testnet.arc.network']],
   [42170, ['arbitrum-nova', 'https://arbitrum-nova.publicnode.com']],
   [43114, ['avalanche', 'https://avalanche-c-chain-rpc.publicnode.com']],
-  [5031, ['somnia-mainnet', 'https://api.infra.mainnet.somnia.network/']],
-  [50312, ['somnia-testnet', 'https://dream-rpc.somnia.network/']],
-  [10143, ['monad-testnet', 'https://testnet-rpc.monad.xyz']],
-  [168587773, ['blast-sepolia', 'https://sepolia.blast.io']],
-  [24101, ['incentiv-mainnet', 'https://rpc.incentiv.io']],
-  [28802, ['incentiv-testnet-v2', 'https://rpc.testnet.incentiv.io/']],
+  [5031, [undefined, 'https://api.infra.mainnet.somnia.network/']],
+  [50312, [undefined, 'https://dream-rpc.somnia.network/']],
+  [10143, [undefined, 'https://testnet-rpc.monad.xyz']],
+  [168587773, [undefined, 'https://sepolia.blast.io']],
+  [24101, ['incentiv', 'https://rpc.incentiv.io']],
+  [28802, [undefined, 'https://28802.rpc.thirdweb.com']],
   [43113, ['avalanche-testnet', 'https://avalanche-fuji-c-chain-rpc.publicnode.com']],
   [100, ['gnosis', 'https://gnosis-pokt.nodies.app']],
   [8453, ['base', 'https://base.drpc.org']],
   [84532, ['base-sepolia', 'https://base-sepolia-rpc.publicnode.com']],
   [19011, ['homeverse', 'https://rpc.mainnet.oasys.homeverse.games']],
   [40875, ['homeverse-testnet', 'https://rpc.testnet.oasys.homeverse.games']],
-  [660279, ['xai', 'https://xai-chain.net/rpc']], // not on sequence directory repo
-  [37714555429, ['xai-testnet', 'https://testnet-v2.xai-chain.net/rpc']], // not on sequence directory repo
-  [3776, ['astar-zkevm', 'https://rpc.startale.com/astar-zkevm']],
-  [6038361, ['astar-zkyoto', 'https://rpc.startale.com/zkyoto']],
-  [2730, ['xr-sepolia-testnet', 'https://xr-sepolia-testnet.rpc.caldera.xyz/http']], // not on sequence directory repo
-  [40, ['telos', 'https://1rpc.io/telos/evm']], // not on sequence directory repo
-  [41, ['telos-testnet', 'https://rpc.testnet.telos.net']],
-  [1946, ['minato', 'https://rpc.minato.soneium.org']], // not on sequence directory repo
-  [7668, ['rootnet', 'https://root.rootnet.live/archive']], // not on sequence directory repo
-  [8333, ['b3', 'https://mainnet-rpc.b3.fun']], // not on sequence directory repo
-  [1993, ['b3-testnet', 'https://sepolia.b3.fun']], // not on sequence directory repo
-  [13371, ['immutable', 'https://rpc.immutable.com']], // not on sequence directory repo
-  [33139, ['apechain', 'https://rpc.apechain.com']], // not on sequence directory repo
-  [81457, ['blast', 'https://blast-rpc.publicnode.com']], // not on sequence directory repo
-  [33111, ['curtis', 'https://rpc.curtis.apechain.com']], // not on sequence directory repo
-  [1482601649, ['green-giddy-denebola', 'https://mainnet.skalenodes.com/v1/green-giddy-denebola']], // not on sequence directory repo
-  [37084624, ['lanky-ill-funny-testnet', 'https://testnet.skalenodes.com/v1/lanky-ill-funny-testnet']], // not on sequence directory repo
-  [13473, ['immutable', 'https://rpc.immutable.com']], // not on sequence directory repo
-  [7672, ['porcini', 'https://porcini.rootnet.app/archive']], // not on sequence directory repo
-  [42793, ['etherlink', 'https://node.mainnet.etherlink.com']], // not on sequence directory repo
-  [128123, ['etherlink-ghostnet-testnet', 'https://rpc.ankr.com/etherlink_testnet']] // not on sequence directory repo
-  , [1284, ['moonbeam', 'https://moonbeam-rpc.publicnode.com']], // not on sequence directory repo
-  [1287, ['moonbeam-alpha', 'https://moonbase-alpha.drpc.org']], // not on sequence directory repo,
+  [660279, [undefined, 'https://xai-chain.net/rpc']],
+  [37714555429, [undefined, 'https://testnet-v2.xai-chain.net/rpc']],
+  [40, [undefined, 'https://1rpc.io/telos/evm']],
+  [41, [undefined, 'https://rpc.testnet.telos.net']],
+  [1946, [undefined, 'https://rpc.minato.soneium.org']],
+  [8333, [undefined, 'https://mainnet-rpc.b3.fun']],
+  [1993, [undefined, 'https://sepolia.b3.fun']],
+  [13371, [undefined, 'https://rpc.immutable.com']],
+  [33139, ['apechain', 'https://rpc.apechain.com']],
+  [81457, [undefined, 'https://blast-rpc.publicnode.com']],
+  [33111, [undefined, 'https://rpc.curtis.apechain.com']],
+  [1482601649, ['skale-nebula-gaming-hub', 'https://mainnet.skalenodes.com/v1/green-giddy-denebola']],
+  [37084624, ['skale-nebula-gaming-hub-testnet', 'https://testnet.skalenodes.com/v1/lanky-ill-funny-testnet']],
+  [13473, [undefined, 'https://rpc.testnet.immutable.com']],
+  [42793, ['etherlink', 'https://node.mainnet.etherlink.com']],
+  [1284, [undefined, 'https://moonbeam-rpc.publicnode.com']],
+  [1287, [undefined, 'https://moonbase-alpha.drpc.org']],
+  [6252, ['sandbox-testnet', 'https://sandbox-testnet.rpc.caldera.xyz/http']],
+  [80094, ['berachain', 'https://rpc.berachain.com']]
 ])
 
 // These are hardhat test networks
