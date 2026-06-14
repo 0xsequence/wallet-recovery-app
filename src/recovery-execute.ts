@@ -5,8 +5,8 @@ import {
   Signature as PrimitiveSignature,
 } from '@0xsequence/wallet-primitives'
 import { AbiFunction, Bytes, Hex } from 'ox'
-import { createPublicClient, http } from 'viem'
 import compareAddress from '~/utils/compareAddress'
+import { makeRpcClient } from '~/utils/rpcClient'
 import { arweaveReader } from '~/arweave-reader'
 import type { RecoverySignerMatch } from '~/hooks/use-validate-signer'
 import { networks } from '~/networks'
@@ -41,7 +41,7 @@ async function readStage2ImageHash(
     throw new Error('rpc_not_found')
   }
 
-  const client = createPublicClient({ transport: http(rpcUrl) })
+  const client = makeRpcClient(rpcUrl)
 
   let implementation: `0x${string}` | undefined
   try {
