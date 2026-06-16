@@ -1,10 +1,11 @@
 import compareAddress from '~/utils/compareAddress'
 import { NetworkType } from '@0xsequence/network'
-import { Address, createPublicClient, http, parseAbi, type PublicClient } from 'viem'
+import { Address, parseAbi } from 'viem'
 
 import { findRecoverySigner } from '~/hooks/use-validate-signer'
 import { networks } from '~/networks'
 import { resolveQueuedPayloadsFromTransactionInputs } from '~/recovery-queue'
+import { makeRpcClient } from '~/utils/rpcClient'
 import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 import { Store, observable } from '.'
@@ -126,7 +127,7 @@ export class QueuedPayloadsStore {
     }
 
     try {
-      const client: PublicClient = createPublicClient({ transport: http(rpcUrl, { retryCount: 1, timeout: 10_000 }) })
+      const client = makeRpcClient(rpcUrl)
 
       const total = await client.readContract({
         address: context.extension,

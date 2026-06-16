@@ -21,7 +21,7 @@
     "@0xsequence/indexer": "3.0.6",
     "@0xsequence/network": "2.3.41",
     "@0xsequence/provider": "2.3.41",
-    "@0xsequence/relayer": "^2.3.41",
+    "@0xsequence/relayer": "2.3.41",
     "@0xsequence/sessions": "2.3.41",
     "@0xsequence/signhub": "2.3.41",
     "@0xsequence/wallet-core": "3.0.6",

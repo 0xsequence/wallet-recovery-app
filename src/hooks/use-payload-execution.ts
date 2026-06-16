@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Constants } from '@0xsequence/wallet-primitives'
 import { AbiFunction } from 'ox'
-import { Address, createPublicClient, hexToBigInt, http, type PublicClient } from 'viem'
+import { Address, hexToBigInt } from 'viem'
 
 import type { ProviderDetail } from '~/components/wallet/externalprovider/SelectProvider'
 import { networks } from '~/networks'
+import { makeRpcClient } from '~/utils/rpcClient'
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
 import type { QueuedRecoveryPayload } from '~/types/recovery'
@@ -42,7 +43,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
           return
         }
 
-        const client: PublicClient = createPublicClient({ transport: http(rpcUrl) })
+        const client = makeRpcClient(rpcUrl)
         const result = await client.call({
           to: payload.wallet,
           data: AbiFunction.encodeData(Constants.READ_NONCE, [space]) as `0x${string}`,
@@ -67,7 +68,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
       return
     }
 
-    const client: PublicClient = createPublicClient({ transport: http(rpcUrl) })
+    const client = makeRpcClient(rpcUrl)
     let cancelled = false
 
     client
