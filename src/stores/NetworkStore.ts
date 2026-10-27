@@ -140,8 +140,21 @@ export class NetworkStore {
     this.networks.set(updatedNetworkConfigs)
 
     // When several signatures exist for the same payload (e.g. after a guard key rotation), use one that validates
-    const mainnet = updatedNetworkConfigs.find(network => network.chainId === ChainId.MAINNET && !network.disabled)
-    TRACKER_OPTIONS.validationProvider = mainnet ? new ethers.JsonRpcProvider(mainnet.rpcUrl) : undefined
+    // on the chain it was made for. Signatures without a chain id are checked on mainnet.
+    const providers = new Map<number, ethers.JsonRpcProvider>()
+    TRACKER_OPTIONS.validationProviders = (chainId: bigint) => {
+      const id = chainId === 0n ? ChainId.MAINNET : Number(chainId)
+      const network = updatedNetworkConfigs.find(network => network.chainId === id && !network.disabled)
+      if (!network) {
+        return undefined
+      }
+      let provider = providers.get(id)
+      if (!provider) {
+        provider = new ethers.JsonRpcProvider(network.rpcUrl, id, { staticNetwork: true })
+        providers.set(id, provider)
+      }
+      return provider
+    }
   }
 
   async isValidRpcUrl(rpcUrl: string) {
