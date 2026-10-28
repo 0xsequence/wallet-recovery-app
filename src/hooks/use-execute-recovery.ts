@@ -1,7 +1,10 @@
 import { Payload } from '@0xsequence/wallet-primitives'
 import { Address } from 'viem'
 
+import compareAddress from '~/utils/compareAddress'
+
 import { buildRecoveryExecuteTx } from '~/recovery-execute'
+
 import { findRecoverySigner } from './use-validate-signer'
 
 export type SendRecoveryTx = (
@@ -18,6 +21,7 @@ export type ExecuteRecoveryParams = {
   chainId: number
   sendTx: SendRecoveryTx
   recoveryPayloadId?: string
+  recoveryModule: Address
 }
 
 export async function executeRecovery({
@@ -27,15 +31,19 @@ export async function executeRecovery({
   chainId,
   sendTx,
   recoveryPayloadId,
+  recoveryModule
 }: ExecuteRecoveryParams) {
   const match = await findRecoverySigner(walletAddress, recoverySignerAddress)
+  if (!compareAddress(match.extensionAddress, recoveryModule)) {
+    throw new Error('Recovery configuration changed. Refresh the queue before executing.')
+  }
 
   const tx = await buildRecoveryExecuteTx({
     walletAddress,
     recoverySignerAddress,
     payload,
     chainId,
-    match,
+    match
   })
 
   return sendTx(tx.to, tx.data, chainId, recoveryPayloadId)
