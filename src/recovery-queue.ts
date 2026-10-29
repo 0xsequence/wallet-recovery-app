@@ -15,7 +15,7 @@ type QueuePayloadDecoded = [
   wallet: Address,
   signer: Address,
   payload: Payload.SolidityDecoded,
-  signature: Hex,
+  signature: Hex
 ]
 
 type DecodeQueuedPayloadParams = {
@@ -47,7 +47,7 @@ export function decodeQueuedPayloadInput({
   wallet,
   signer,
   payloadHash,
-  chainId,
+  chainId
 }: DecodeQueuedPayloadParams): Payload.Calls | undefined {
   try {
     if (!input.toLowerCase().startsWith(QUEUE_PAYLOAD_SELECTOR)) {
@@ -89,7 +89,7 @@ export async function resolveQueuedPayloadFromTransactionInput({
   signer,
   payloadHash,
   chainId,
-  queuedAt,
+  queuedAt
 }: Omit<QueuePayloadLogLookupParams, 'payloads'> & QueuedPayloadLookup): Promise<Payload.Calls | undefined> {
   const payloads = await resolveQueuedPayloadsFromTransactionInputs({
     client,
@@ -97,7 +97,7 @@ export async function resolveQueuedPayloadFromTransactionInput({
     wallet,
     signer,
     chainId,
-    payloads: [{ payloadHash, queuedAt }],
+    payloads: [{ payloadHash, queuedAt }]
   })
 
   return payloads.get(payloadHash.toLowerCase())
@@ -109,7 +109,7 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
   wallet,
   signer,
   chainId,
-  payloads,
+  payloads
 }: QueuePayloadLogLookupParams): Promise<Map<string, Payload.Calls>> {
   if (payloads.length === 0) {
     return new Map()
@@ -121,19 +121,21 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
   )
 
   const estimator = await createBlockEstimator(client)
-  const blockRanges = await Promise.all(
-    timestampWindows.map(([from, to]) => estimator.rangeFor(from, to))
-  )
+  const blockRanges = await Promise.all(timestampWindows.map(([from, to]) => estimator.rangeFor(from, to)))
 
   const ranges: { fromBlock: bigint; toBlock: bigint }[] = []
   for (const { fromBlock, toBlock } of blockRanges) {
     for (let cursor = fromBlock; cursor <= toBlock; cursor += GET_LOGS_CHUNK_SIZE) {
-      const chunkEnd = cursor + GET_LOGS_CHUNK_SIZE - 1n > toBlock ? toBlock : cursor + GET_LOGS_CHUNK_SIZE - 1n
+      const chunkEnd =
+        cursor + GET_LOGS_CHUNK_SIZE - 1n > toBlock ? toBlock : cursor + GET_LOGS_CHUNK_SIZE - 1n
       ranges.push({ fromBlock: cursor, toBlock: chunkEnd })
     }
   }
 
   const chunks = await Promise.all(ranges.map(range => getRawLogs(client, extension, range)))
+  if (chunks.some(chunk => chunk === undefined)) {
+    throw new Error('Recovery queue log lookup incomplete')
+  }
   const allLogs = chunks.flatMap(chunk => chunk ?? [])
 
   const result = new Map<string, Payload.Calls>()
@@ -143,11 +145,9 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
   // queue activity in the range. Dedupe the candidate transactions and fetch them in
   // parallel — one serialized round-trip per log would dominate the scan time.
   const uniqueTransactionHashes = [
-    ...new Set(allLogs.map(log => log.transactionHash).filter((hash): hash is Hex => hash !== null)),
+    ...new Set(allLogs.map(log => log.transactionHash).filter((hash): hash is Hex => hash !== null))
   ]
-  const transactions = await Promise.all(
-    uniqueTransactionHashes.map(hash => client.getTransaction({ hash }))
-  )
+  const transactions = await Promise.all(uniqueTransactionHashes.map(hash => client.getTransaction({ hash })))
 
   for (const transaction of transactions) {
     if (unresolvedPayloads.size === 0) {
@@ -160,7 +160,7 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
         wallet,
         signer,
         payloadHash: candidatePayloadHash,
-        chainId,
+        chainId
       })
 
       if (payload) {
@@ -179,38 +179,34 @@ async function getRawLogs(
   address: Address,
   {
     fromBlock,
-    toBlock,
+    toBlock
   }: {
     fromBlock: bigint
     toBlock: bigint
   }
 ): Promise<RpcLog[] | undefined> {
   try {
-    return await client.request({
+    return (await client.request({
       method: 'eth_getLogs',
       params: [
         {
           address,
           fromBlock: toHex(fromBlock),
-          toBlock: toHex(toBlock),
-        },
-      ],
-    }) as RpcLog[]
+          toBlock: toHex(toBlock)
+        }
+      ]
+    })) as RpcLog[]
   } catch (error) {
     console.warn('Unable to fetch recovery queue logs:', error)
     return undefined
   }
 }
 
-function mergeTimestampWindows(
-  queuedAtValues: bigint[],
-  windowSeconds: bigint,
-): Array<[bigint, bigint]> {
+function mergeTimestampWindows(queuedAtValues: bigint[], windowSeconds: bigint): Array<[bigint, bigint]> {
   const windows = queuedAtValues
-    .map<[bigint, bigint]>(queuedAt => [
-      queuedAt > windowSeconds ? queuedAt - windowSeconds : 0n,
-      queuedAt + windowSeconds,
-    ])
+    .map<
+      [bigint, bigint]
+    >(queuedAt => [queuedAt > windowSeconds ? queuedAt - windowSeconds : 0n, queuedAt + windowSeconds])
     .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
 
   const merged: Array<[bigint, bigint]> = []
@@ -247,9 +243,7 @@ async function createBlockEstimator(client: PublicClient): Promise<BlockEstimato
 
   const latestTimestamp = await timestampAt(latestNumber)
 
-  const sampleDistance = latestNumber > BLOCK_TIME_SAMPLE_DISTANCE
-    ? BLOCK_TIME_SAMPLE_DISTANCE
-    : latestNumber
+  const sampleDistance = latestNumber > BLOCK_TIME_SAMPLE_DISTANCE ? BLOCK_TIME_SAMPLE_DISTANCE : latestNumber
   const sampleNumber = latestNumber - sampleDistance
   const sampleTimestamp = sampleDistance === 0n ? latestTimestamp : await timestampAt(sampleNumber)
 
@@ -311,10 +305,9 @@ async function createBlockEstimator(client: PublicClient): Promise<BlockEstimato
       const fromExact = await blockAtOrBefore(fromTimestamp)
       const toExact = await blockAtOrBefore(toTimestamp)
       const fromBlock = fromExact > BLOCK_ESTIMATE_BUFFER ? fromExact - BLOCK_ESTIMATE_BUFFER : 0n
-      const toBlock = toExact + BLOCK_ESTIMATE_BUFFER > latestNumber
-        ? latestNumber
-        : toExact + BLOCK_ESTIMATE_BUFFER
+      const toBlock =
+        toExact + BLOCK_ESTIMATE_BUFFER > latestNumber ? latestNumber : toExact + BLOCK_ESTIMATE_BUFFER
       return { fromBlock, toBlock }
-    },
+    }
   }
 }

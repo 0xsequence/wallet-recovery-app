@@ -9,7 +9,7 @@ import { useAwaitReceipt } from './use-await-receipt'
 import { useObservable } from 'micro-observables'
 import { useStore } from '~/stores'
 import { WalletStore } from '~/stores/WalletStore'
-import { Address } from 'viem'
+import { Address, isAddress } from 'viem'
 import { AuthStore } from '~/stores/AuthStore'
 
 export function useCreateCalls() {
@@ -21,13 +21,18 @@ export function useCreateCalls() {
   useAwaitReceipt(txnId)
   const selectedExternalWalletAddress = useObservable(walletStore.selectedExternalWalletAddress)
 
-  async function createCalls(items: TokenRecord[], chainId: number, customAmount?: string): Promise<string | undefined> {
+  async function createCalls(items: TokenRecord[], chainId: number, customAmount?: string, recipient?: string): Promise<string | undefined> {
     if (!selectedExternalWalletAddress) {
       throw new Error('No external wallet address selected')
     }
 
     if (!accountAddress) {
       throw new Error('No account address found')
+    }
+
+    const to = recipient ?? selectedExternalWalletAddress
+    if (!isAddress(to)) {
+      throw new Error('Invalid recovery recipient')
     }
 
     const calls: Payload.Call[] = items.flatMap(item => {
@@ -39,7 +44,7 @@ export function useCreateCalls() {
       const result = createTransactionRequest(
         item,
         accountAddress as Address,
-        selectedExternalWalletAddress as Address,
+        to,
         amount
       )
 

@@ -2,13 +2,16 @@ import {
   Constants,
   Extensions,
   Payload,
-  Signature as PrimitiveSignature,
+  Signature as PrimitiveSignature
 } from '@0xsequence/wallet-primitives'
 import { AbiFunction, Bytes, Hex } from 'ox'
+
 import compareAddress from '~/utils/compareAddress'
 import { makeRpcClient } from '~/utils/rpcClient'
-import { arweaveReader } from '~/arweave-reader'
+
 import type { RecoverySignerMatch } from '~/hooks/use-validate-signer'
+
+import { arweaveReader } from '~/arweave-reader'
 import { networks } from '~/networks'
 
 export type BuildRecoveryExecuteParams = {
@@ -34,7 +37,7 @@ type ExecutionWalletState = {
 async function readStage2ImageHash(
   walletAddress: `0x${string}`,
   chainId: number,
-  match: RecoverySignerMatch,
+  match: RecoverySignerMatch
 ): Promise<`0x${string}` | undefined> {
   const rpcUrl = networks.find(network => network.chainId === chainId)?.rpcUrl
   if (!rpcUrl) {
@@ -44,17 +47,15 @@ async function readStage2ImageHash(
   const client = makeRpcClient(rpcUrl)
 
   let implementation: `0x${string}` | undefined
-  try {
+  {
     const result = await client.call({
       to: walletAddress,
-      data: AbiFunction.encodeData(Constants.GET_IMPLEMENTATION) as `0x${string}`,
+      data: AbiFunction.encodeData(Constants.GET_IMPLEMENTATION) as `0x${string}`
     })
 
     if (result.data && result.data.length >= 42) {
       implementation = `0x${result.data.slice(-40)}` as `0x${string}`
     }
-  } catch {
-    return undefined
   }
 
   if (!implementation || !compareAddress(implementation, match.deployContext.stage2)) {
@@ -63,7 +64,7 @@ async function readStage2ImageHash(
 
   const imageHash = await client.call({
     to: walletAddress,
-    data: AbiFunction.encodeData(Constants.IMAGE_HASH) as `0x${string}`,
+    data: AbiFunction.encodeData(Constants.IMAGE_HASH) as `0x${string}`
   })
 
   if (!imageHash.data || imageHash.data === ZERO_HASH) {
@@ -76,14 +77,11 @@ async function readStage2ImageHash(
 async function getExecutionWalletState(
   walletAddress: `0x${string}`,
   chainId: number,
-  match: RecoverySignerMatch,
+  match: RecoverySignerMatch
 ): Promise<ExecutionWalletState> {
-  const onChainImageHash = await readStage2ImageHash(walletAddress, chainId, match)
-    ?? match.deployImageHash
+  const onChainImageHash = (await readStage2ImageHash(walletAddress, chainId, match)) ?? match.deployImageHash
   const updates = await arweaveReader.getConfigurationUpdates(walletAddress, onChainImageHash)
-  const latestImageHash = updates.length > 0
-    ? updates[updates.length - 1].imageHash
-    : onChainImageHash
+  const latestImageHash = updates.length > 0 ? updates[updates.length - 1].imageHash : onChainImageHash
 
   const walletConfig = await arweaveReader.getConfiguration(latestImageHash)
   if (!walletConfig) {
@@ -92,7 +90,7 @@ async function getExecutionWalletState(
 
   return {
     walletConfig,
-    pendingUpdates: [...updates].reverse() as RecoverySignerMatch['pendingUpdates'],
+    pendingUpdates: [...updates].reverse() as RecoverySignerMatch['pendingUpdates']
   }
 }
 
@@ -101,7 +99,7 @@ export async function buildRecoveryExecuteTx({
   recoverySignerAddress,
   payload,
   chainId,
-  match,
+  match
 }: BuildRecoveryExecuteParams): Promise<RecoveryExecuteTx> {
   const executionState = await getExecutionWalletState(walletAddress, chainId, match)
   const genericTree = await arweaveReader.getTree(match.sapientImageHash)
@@ -113,39 +111,42 @@ export async function buildRecoveryExecuteTx({
   const trimmed = Extensions.Recovery.trimTopology(recoveryTree, recoverySignerAddress)
   const sapientSigData = Extensions.Recovery.encodeTopology(trimmed)
 
+  let matchedModule = false
   const filledTopology = PrimitiveSignature.fillLeaves(executionState.walletConfig.topology, leaf => {
     if (
       'imageHash' in leaf &&
       leaf.imageHash === match.sapientImageHash &&
       compareAddress(leaf.address, match.extensionAddress)
     ) {
+      matchedModule = true
       return {
         type: 'sapient_compact',
         address: match.extensionAddress,
-        data: Hex.fromBytes(sapientSigData),
+        data: Hex.fromBytes(sapientSigData)
       }
     }
     return undefined
   })
+  if (!matchedModule) {
+    throw new Error('Recovery configuration changed. Refresh the queue before executing.')
+  }
 
   const rawSignature: PrimitiveSignature.RawSignature = {
     noChainId: false,
     configuration: { ...executionState.walletConfig, topology: filledTopology },
-    suffix: executionState.pendingUpdates.length > 0
-      ? executionState.pendingUpdates.map(u => u.signature)
-      : undefined,
+    suffix:
+      executionState.pendingUpdates.length > 0
+        ? executionState.pendingUpdates.map(u => u.signature)
+        : undefined
   }
 
   const sigBytes = PrimitiveSignature.encodeSignature(rawSignature)
   const payloadBytes = Payload.encode(payload)
 
-  const data = AbiFunction.encodeData(Constants.EXECUTE, [
-    Bytes.toHex(payloadBytes),
-    Bytes.toHex(sigBytes),
-  ])
+  const data = AbiFunction.encodeData(Constants.EXECUTE, [Bytes.toHex(payloadBytes), Bytes.toHex(sigBytes)])
 
   return {
     to: walletAddress,
-    data: data as `0x${string}`,
+    data: data as `0x${string}`
   }
 }

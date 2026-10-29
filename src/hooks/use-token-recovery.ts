@@ -19,7 +19,8 @@ export function useTokenRecovery() {
 
   const handleEnqueueTokenPayload = async (
     token: TokenBalance,
-    amount?: string
+    amount?: string,
+    recipient?: string
   ): Promise<string | undefined> => {
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
@@ -41,14 +42,15 @@ export function useTokenRecovery() {
     }
 
     // Return the recoveryPayloadId so caller can track the transaction
-    const recoveryPayloadId = await createCalls([tokenRecord], tokenRecord.chainId, amountInSmallestUnit)
+    const recoveryPayloadId = await createCalls([tokenRecord], tokenRecord.chainId, amountInSmallestUnit, recipient)
 
     return recoveryPayloadId
   }
 
   const handleEnqueueCollectiblePayload = async (
     collectible: CollectibleInfo,
-    amount?: string
+    amount?: string,
+    recipient?: string
   ): Promise<string | undefined> => {
     if (!walletStore.selectedExternalProvider.get()) {
       console.warn('No external provider selected')
@@ -69,7 +71,7 @@ export function useTokenRecovery() {
       amountInSmallestUnit = amountBigInt.toString()
     }
 
-    const recoveryPayloadId = await createCalls([tokenRecord], tokenRecord.chainId, amountInSmallestUnit)
+    const recoveryPayloadId = await createCalls([tokenRecord], tokenRecord.chainId, amountInSmallestUnit, recipient)
 
     return recoveryPayloadId
   }

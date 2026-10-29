@@ -50,7 +50,7 @@ function WalletV3Recovery() {
   const { isV2Wallet } = useWalletInitialization()
   const { handleSignTxn, handleSignMsg, cancelRequest } = useTransactionSigning()
   const { handleEnqueueTokenPayload, handleEnqueueCollectiblePayload } = useTokenRecovery()
-  const { payloads: queuedPayloads, isLoading, refetch } = useQueuedPayloads()
+  const { payloads: queuedPayloads, isLoading, refetch, error } = useQueuedPayloads()
 
   // Modal states
   const [pendingSendToken, setPendingSendToken] = useState<TokenBalance | undefined>(undefined)
@@ -116,6 +116,7 @@ function WalletV3Recovery() {
           </div>
 
           <WalletRecoverySection
+            error={error}
             isV2Wallet={isV2Wallet}
             queuedPayloads={queuedPayloads}
             isLoading={isLoading}
@@ -148,9 +149,9 @@ function WalletV3Recovery() {
         isDismissible={isSendTokenModalDismissible}
         tokenBalance={pendingSendToken}
         onClose={handleCloseSendToken}
-        onRecover={async ({ amount }) => {
+        onRecover={async ({ amount, to }) => {
           if (amount && pendingSendToken) {
-            return await handleEnqueueTokenPayload(pendingSendToken, amount)
+            return await handleEnqueueTokenPayload(pendingSendToken, amount, to)
           }
           return undefined
         }}
@@ -162,9 +163,9 @@ function WalletV3Recovery() {
         isDismissible={isSendCollectibleModalDismissible}
         collectibleInfo={pendingSendCollectible}
         onClose={handleCloseSendCollectible}
-        onRecover={async ({ amount }) => {
+        onRecover={async ({ amount, to }) => {
           if (amount && pendingSendCollectible) {
-            return await handleEnqueueCollectiblePayload(pendingSendCollectible, amount)
+            return await handleEnqueueCollectiblePayload(pendingSendCollectible, amount, to)
           }
           return undefined
         }}
