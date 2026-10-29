@@ -20,9 +20,10 @@ type RecoveryQueueProps = {
   queuedPayloads: QueuedRecoveryPayload[]
   isLoading: boolean
   refetch: () => void
+  error?: string
 }
 
-function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProps) {
+function RecoveryQueue({ queuedPayloads, isLoading, refetch, error }: RecoveryQueueProps) {
   const [executedHidden, setExecutedHidden] = useState(true)
   const [selectedChain, setSelectedChain] = useState<string>('all')
 
@@ -94,6 +95,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
 
   return (
     <div className="flex flex-col gap-2">
+      {error && <p role="alert">{error}</p>}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Text variant="small" fontWeight="bold" color="text50" className="break-words">
           Recovery Payloads ({filteredPayloads.length}{' '}
@@ -146,7 +148,7 @@ function RecoveryQueue({ queuedPayloads, isLoading, refetch }: RecoveryQueueProp
         ) : filteredPayloads.length === 0 ? (
           <div className="flex flex-col">
             <Text variant="normal" fontWeight="medium" color="text50" className="text-center p-4">
-              {selectedChain === 'all'
+              {error ? 'Recovery queue could not be fully loaded.' : selectedChain === 'all'
                 ? 'No recovery payloads queued yet.'
                 : 'No recovery payloads found for the selected chain.'}
             </Text>

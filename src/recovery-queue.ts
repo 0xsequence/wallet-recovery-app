@@ -15,7 +15,7 @@ type QueuePayloadDecoded = [
   wallet: Address,
   signer: Address,
   payload: Payload.SolidityDecoded,
-  signature: Hex,
+  signature: Hex
 ]
 
 type DecodeQueuedPayloadParams = {
@@ -47,7 +47,7 @@ export function decodeQueuedPayloadInput({
   wallet,
   signer,
   payloadHash,
-  chainId,
+  chainId
 }: DecodeQueuedPayloadParams): Payload.Calls | undefined {
   try {
     if (!input.toLowerCase().startsWith(QUEUE_PAYLOAD_SELECTOR)) {
@@ -89,7 +89,7 @@ export async function resolveQueuedPayloadFromTransactionInput({
   signer,
   payloadHash,
   chainId,
-  queuedAt,
+  queuedAt
 }: Omit<QueuePayloadLogLookupParams, 'payloads'> & QueuedPayloadLookup): Promise<Payload.Calls | undefined> {
   const payloads = await resolveQueuedPayloadsFromTransactionInputs({
     client,
@@ -97,7 +97,7 @@ export async function resolveQueuedPayloadFromTransactionInput({
     wallet,
     signer,
     chainId,
-    payloads: [{ payloadHash, queuedAt }],
+    payloads: [{ payloadHash, queuedAt }]
   })
 
   return payloads.get(payloadHash.toLowerCase())
@@ -109,7 +109,7 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
   wallet,
   signer,
   chainId,
-  payloads,
+  payloads
 }: QueuePayloadLogLookupParams): Promise<Map<string, Payload.Calls>> {
   if (payloads.length === 0) {
     return new Map()
@@ -121,45 +121,51 @@ export async function resolveQueuedPayloadsFromTransactionInputs({
   )
 
   const estimator = await createBlockEstimator(client)
-  const blockRanges = timestampWindows.map(([from, to]) => estimator.rangeFor(from, to))
+  const blockRanges = await Promise.all(timestampWindows.map(([from, to]) => estimator.rangeFor(from, to)))
 
   const ranges: { fromBlock: bigint; toBlock: bigint }[] = []
   for (const { fromBlock, toBlock } of blockRanges) {
     for (let cursor = fromBlock; cursor <= toBlock; cursor += GET_LOGS_CHUNK_SIZE) {
-      const chunkEnd = cursor + GET_LOGS_CHUNK_SIZE - 1n > toBlock ? toBlock : cursor + GET_LOGS_CHUNK_SIZE - 1n
+      const chunkEnd =
+        cursor + GET_LOGS_CHUNK_SIZE - 1n > toBlock ? toBlock : cursor + GET_LOGS_CHUNK_SIZE - 1n
       ranges.push({ fromBlock: cursor, toBlock: chunkEnd })
     }
   }
 
   const chunks = await Promise.all(ranges.map(range => getRawLogs(client, extension, range)))
+  if (chunks.some(chunk => chunk === undefined)) {
+    throw new Error('Recovery queue log lookup incomplete')
+  }
   const allLogs = chunks.flatMap(chunk => chunk ?? [])
 
   const result = new Map<string, Payload.Calls>()
-  const seenTransactions = new Set<Hex>()
-  const unresolvedPayloads = new Map(
-    payloads.map(payload => [payload.payloadHash.toLowerCase(), payload.payloadHash])
-  )
+  const unresolvedPayloads = new Set(payloads.map(payload => payload.payloadHash.toLowerCase() as Hex))
 
-  for (const log of allLogs) {
-    if (!log.transactionHash || seenTransactions.has(log.transactionHash) || unresolvedPayloads.size === 0) {
-      continue
+  // eth_getLogs filters by extension address only, so allLogs spans every wallet's
+  // queue activity in the range. Dedupe the candidate transactions and fetch them in
+  // parallel — one serialized round-trip per log would dominate the scan time.
+  const uniqueTransactionHashes = [
+    ...new Set(allLogs.map(log => log.transactionHash).filter((hash): hash is Hex => hash !== null))
+  ]
+  const transactions = await Promise.all(uniqueTransactionHashes.map(hash => client.getTransaction({ hash })))
+
+  for (const transaction of transactions) {
+    if (unresolvedPayloads.size === 0) {
+      break
     }
 
-    seenTransactions.add(log.transactionHash)
-
-    const transaction = await client.getTransaction({ hash: log.transactionHash })
-    for (const candidatePayloadHash of [...unresolvedPayloads.values()]) {
+    for (const candidatePayloadHash of unresolvedPayloads) {
       const payload = decodeQueuedPayloadInput({
         input: transaction.input,
         wallet,
         signer,
         payloadHash: candidatePayloadHash,
-        chainId,
+        chainId
       })
 
       if (payload) {
-        result.set(candidatePayloadHash.toLowerCase(), payload)
-        unresolvedPayloads.delete(candidatePayloadHash.toLowerCase())
+        result.set(candidatePayloadHash, payload)
+        unresolvedPayloads.delete(candidatePayloadHash)
         break
       }
     }
@@ -173,38 +179,34 @@ async function getRawLogs(
   address: Address,
   {
     fromBlock,
-    toBlock,
+    toBlock
   }: {
     fromBlock: bigint
     toBlock: bigint
   }
 ): Promise<RpcLog[] | undefined> {
   try {
-    return await client.request({
+    return (await client.request({
       method: 'eth_getLogs',
       params: [
         {
           address,
           fromBlock: toHex(fromBlock),
-          toBlock: toHex(toBlock),
-        },
-      ],
-    }) as RpcLog[]
+          toBlock: toHex(toBlock)
+        }
+      ]
+    })) as RpcLog[]
   } catch (error) {
     console.warn('Unable to fetch recovery queue logs:', error)
     return undefined
   }
 }
 
-function mergeTimestampWindows(
-  queuedAtValues: bigint[],
-  windowSeconds: bigint,
-): Array<[bigint, bigint]> {
+function mergeTimestampWindows(queuedAtValues: bigint[], windowSeconds: bigint): Array<[bigint, bigint]> {
   const windows = queuedAtValues
-    .map<[bigint, bigint]>(queuedAt => [
-      queuedAt > windowSeconds ? queuedAt - windowSeconds : 0n,
-      queuedAt + windowSeconds,
-    ])
+    .map<
+      [bigint, bigint]
+    >(queuedAt => [queuedAt > windowSeconds ? queuedAt - windowSeconds : 0n, queuedAt + windowSeconds])
     .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
 
   const merged: Array<[bigint, bigint]> = []
@@ -222,48 +224,90 @@ function mergeTimestampWindows(
 }
 
 type BlockEstimator = {
-  latestNumber: bigint
-  rangeFor: (fromTimestamp: bigint, toTimestamp: bigint) => { fromBlock: bigint; toBlock: bigint }
+  rangeFor: (fromTimestamp: bigint, toTimestamp: bigint) => Promise<{ fromBlock: bigint; toBlock: bigint }>
 }
 
 async function createBlockEstimator(client: PublicClient): Promise<BlockEstimator> {
   const latestNumber = await client.getBlockNumber()
-  const latest = await client.getBlock({ blockNumber: latestNumber })
 
-  const sampleDistance = latestNumber > BLOCK_TIME_SAMPLE_DISTANCE
-    ? BLOCK_TIME_SAMPLE_DISTANCE
-    : latestNumber
+  const timestampCache = new Map<bigint, bigint>()
+  const timestampAt = async (blockNumber: bigint): Promise<bigint> => {
+    const cached = timestampCache.get(blockNumber)
+    if (cached !== undefined) {
+      return cached
+    }
+    const { timestamp } = await client.getBlock({ blockNumber })
+    timestampCache.set(blockNumber, timestamp)
+    return timestamp
+  }
+
+  const latestTimestamp = await timestampAt(latestNumber)
+
+  const sampleDistance = latestNumber > BLOCK_TIME_SAMPLE_DISTANCE ? BLOCK_TIME_SAMPLE_DISTANCE : latestNumber
   const sampleNumber = latestNumber - sampleDistance
-  const sample = sampleDistance === 0n
-    ? latest
-    : await client.getBlock({ blockNumber: sampleNumber })
+  const sampleTimestamp = sampleDistance === 0n ? latestTimestamp : await timestampAt(sampleNumber)
 
   const blockSpan = latestNumber - sampleNumber
-  const timeSpan = latest.timestamp > sample.timestamp ? latest.timestamp - sample.timestamp : 1n
+  const timeSpan = latestTimestamp > sampleTimestamp ? latestTimestamp - sampleTimestamp : 1n
   const secondsPerBlock = blockSpan > 0n ? timeSpan / blockSpan : 1n
   const divisor = secondsPerBlock > 0n ? secondsPerBlock : 1n
 
-  const estimate = (timestamp: bigint): bigint => {
-    if (timestamp >= latest.timestamp) {
-      return latestNumber
-    }
-    const blocksBack = (latest.timestamp - timestamp) / divisor
+  // Linear extrapolation only seeds the search. Block time drifts over long
+  // lookbacks, so the exact boundary is then found by galloping out from the
+  // seed until it brackets the target and binary searching the bracket.
+  const seedFor = (timestamp: bigint): bigint => {
+    const blocksBack = (latestTimestamp - timestamp) / divisor
     return blocksBack >= latestNumber ? 0n : latestNumber - blocksBack
   }
 
+  // Largest block number whose timestamp is <= target.
+  const blockAtOrBefore = async (target: bigint): Promise<bigint> => {
+    if (target >= latestTimestamp) {
+      return latestNumber
+    }
+
+    let lo = seedFor(target)
+    let hi = lo
+    let step = 1n
+    if ((await timestampAt(lo)) <= target) {
+      while (hi < latestNumber && (await timestampAt(hi)) <= target) {
+        lo = hi
+        hi = hi + step > latestNumber ? latestNumber : hi + step
+        step *= 2n
+      }
+    } else {
+      while (lo > 0n && (await timestampAt(lo)) > target) {
+        hi = lo
+        lo = lo > step ? lo - step : 0n
+        step *= 2n
+      }
+      if ((await timestampAt(lo)) > target) {
+        return 0n
+      }
+    }
+
+    while (hi - lo > 1n) {
+      const mid = (lo + hi) / 2n
+      if ((await timestampAt(mid)) <= target) {
+        lo = mid
+      } else {
+        hi = mid
+      }
+    }
+    return lo
+  }
+
   return {
-    latestNumber,
-    rangeFor: (fromTimestamp, toTimestamp) => {
-      if (latest.timestamp <= fromTimestamp) {
+    rangeFor: async (fromTimestamp, toTimestamp) => {
+      if (latestTimestamp <= fromTimestamp) {
         return { fromBlock: latestNumber, toBlock: latestNumber }
       }
-      const fromEstimate = estimate(fromTimestamp)
-      const toEstimate = estimate(toTimestamp)
-      const fromBlock = fromEstimate > BLOCK_ESTIMATE_BUFFER ? fromEstimate - BLOCK_ESTIMATE_BUFFER : 0n
-      const toBlock = toEstimate + BLOCK_ESTIMATE_BUFFER > latestNumber
-        ? latestNumber
-        : toEstimate + BLOCK_ESTIMATE_BUFFER
+      const fromExact = await blockAtOrBefore(fromTimestamp)
+      const toExact = await blockAtOrBefore(toTimestamp)
+      const fromBlock = fromExact > BLOCK_ESTIMATE_BUFFER ? fromExact - BLOCK_ESTIMATE_BUFFER : 0n
+      const toBlock =
+        toExact + BLOCK_ESTIMATE_BUFFER > latestNumber ? latestNumber : toExact + BLOCK_ESTIMATE_BUFFER
       return { fromBlock, toBlock }
-    },
+    }
   }
 }

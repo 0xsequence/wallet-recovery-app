@@ -44,6 +44,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 		hash,
 		status,
 		opStatus,
+		error,
 		handleExecuteRecovery
 	} = usePayloadExecution({
 		payload,
@@ -89,6 +90,7 @@ export function QueuePayloadItem({ payload, executedHidden = false }: { payload:
 					/>
 				</div>
 			</Card>
+			{error && <p role="alert">{error}</p>}
 
 			{canCheckBalance && !hasEnoughBalance && !isExecuted && (
 				<InsufficientBalanceMessage

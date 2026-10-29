@@ -1,11 +1,14 @@
-import compareAddress from '~/utils/compareAddress'
 import { NetworkType } from '@0xsequence/network'
-import { Address, createPublicClient, http, parseAbi, type PublicClient } from 'viem'
+import { Address, parseAbi } from 'viem'
+
+import { makeRpcClient } from '~/utils/rpcClient'
+
+import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 import { findRecoverySigner } from '~/hooks/use-validate-signer'
+
 import { networks } from '~/networks'
 import { resolveQueuedPayloadsFromTransactionInputs } from '~/recovery-queue'
-import type { QueuedRecoveryPayload } from '~/types/recovery'
 
 import { Store, observable } from '.'
 import { AuthStore } from './AuthStore'
@@ -13,7 +16,7 @@ import { AuthStore } from './AuthStore'
 const RECOVERY_EXTENSION_ABI = parseAbi([
   'function totalQueuedPayloads(address wallet, address signer) view returns (uint256)',
   'function queuedPayloadHashes(address wallet, address signer, uint256 index) view returns (bytes32)',
-  'function timestampForQueuedPayload(address wallet, address signer, bytes32 payloadHash) view returns (uint256)',
+  'function timestampForQueuedPayload(address wallet, address signer, bytes32 payloadHash) view returns (uint256)'
 ])
 
 type RecoveryContext = {
@@ -26,19 +29,20 @@ type RecoveryContext = {
 export class QueuedPayloadsStore {
   isLoading = observable(true)
   payloads = observable<QueuedRecoveryPayload[]>([])
+  error = observable<string | undefined>(undefined)
 
   private mainnetNetworks = networks.filter(network => network.type === NetworkType.MAINNET)
   private chains = this.mainnetNetworks
 
-  private recoveryContext: RecoveryContext | undefined
+  private requestId = 0
+  private unsubscribe: () => void
 
   constructor(private store: Store) {
     const authStore = this.store.get(AuthStore)
-    authStore.accountAddress.subscribe(address => {
+    this.unsubscribe = authStore.accountAddress.subscribe(address => {
       if (address) {
         this.fetchPayloads()
       } else {
-        this.recoveryContext = undefined
         this.clear()
       }
     })
@@ -52,10 +56,6 @@ export class QueuedPayloadsStore {
   }
 
   private async ensureRecoveryContext(wallet: Address): Promise<RecoveryContext | undefined> {
-    if (this.recoveryContext && compareAddress(this.recoveryContext.wallet, wallet)) {
-      return this.recoveryContext
-    }
-
     const authStore = this.store.get(AuthStore)
     const signerAddress = authStore.recoverySignerAddress.get() as Address | undefined
     if (!signerAddress) {
@@ -64,13 +64,12 @@ export class QueuedPayloadsStore {
 
     try {
       const match = await findRecoverySigner(wallet, signerAddress)
-      this.recoveryContext = {
+      return {
         wallet,
         signer: signerAddress,
         extension: match.extensionAddress,
-        requiredDeltaTime: match.leaf.requiredDeltaTime,
+        requiredDeltaTime: match.leaf.requiredDeltaTime
       }
-      return this.recoveryContext
     } catch (error) {
       console.error('Error resolving recovery context for queued payloads:', error)
       return undefined
@@ -78,7 +77,12 @@ export class QueuedPayloadsStore {
   }
 
   private async fetchPayloads() {
+    const requestId = ++this.requestId
     this.isLoading.set(true)
+    this.error.set(undefined)
+    // A refresh must re-read the signed configuration: migrating recovery
+    // modules does not change the wallet address or the recovery signer.
+    this.payloads.set([])
     const authStore = this.store.get(AuthStore)
     const accountAddress = authStore.accountAddress.get() as Address | undefined
 
@@ -87,10 +91,12 @@ export class QueuedPayloadsStore {
       return
     }
 
-    this.clearPayloadsForAddress(accountAddress)
-
     const context = await this.ensureRecoveryContext(accountAddress)
+    if (requestId !== this.requestId) {
+      return
+    }
     if (!context) {
+      this.error.set('Unable to load the recovery configuration. Refresh to retry.')
       this.isLoading.set(false)
       return
     }
@@ -103,16 +109,23 @@ export class QueuedPayloadsStore {
       const results = await Promise.allSettled(fetchPromises)
 
       const allPayloads = results
-        .filter((result): result is PromiseFulfilledResult<QueuedRecoveryPayload[]> =>
-          result.status === 'fulfilled'
+        .filter(
+          (result): result is PromiseFulfilledResult<QueuedRecoveryPayload[]> => result.status === 'fulfilled'
         )
         .flatMap(result => result.value)
 
-      this.addPayloads(allPayloads)
+      if (requestId === this.requestId) {
+        this.payloads.set(allPayloads)
+        if (results.some(result => result.status === 'rejected')) {
+          this.error.set('Some networks could not be checked. Refresh to retry.')
+        }
+      }
     } catch (error) {
       console.error('Error fetching queued payloads:', error)
     } finally {
-      this.isLoading.set(false)
+      if (requestId === this.requestId) {
+        this.isLoading.set(false)
+      }
     }
   }
 
@@ -126,13 +139,13 @@ export class QueuedPayloadsStore {
     }
 
     try {
-      const client: PublicClient = createPublicClient({ transport: http(rpcUrl, { retryCount: 1, timeout: 10_000 }) })
+      const client = makeRpcClient(rpcUrl)
 
       const total = await client.readContract({
         address: context.extension,
         abi: RECOVERY_EXTENSION_ABI,
         functionName: 'totalQueuedPayloads',
-        args: [context.wallet, context.signer],
+        args: [context.wallet, context.signer]
       })
 
       if (total === 0n) {
@@ -147,14 +160,14 @@ export class QueuedPayloadsStore {
             address: context.extension,
             abi: RECOVERY_EXTENSION_ABI,
             functionName: 'queuedPayloadHashes',
-            args: [context.wallet, context.signer, index],
+            args: [context.wallet, context.signer, index]
           })
 
           const timestamp = await client.readContract({
             address: context.extension,
             abi: RECOVERY_EXTENSION_ABI,
             functionName: 'timestampForQueuedPayload',
-            args: [context.wallet, context.signer, payloadHash],
+            args: [context.wallet, context.signer, payloadHash]
           })
 
           return { index, payloadHash, timestamp }
@@ -168,13 +181,13 @@ export class QueuedPayloadsStore {
         chainId,
         payloads: queuedPayloadMetadata.map(({ payloadHash, timestamp }) => ({
           payloadHash,
-          queuedAt: timestamp,
-        })),
+          queuedAt: timestamp
+        }))
       })
 
       const results: QueuedRecoveryPayload[] = queuedPayloadMetadata.map(metadata => {
         const payload = decodedPayloads.get(metadata.payloadHash.toLowerCase())
-        const id = `${metadata.index}-${context.signer}-${chainId}-${context.wallet}`
+        const id = `${context.extension}-${metadata.index}-${context.signer}-${chainId}-${context.wallet}`
 
         return {
           id,
@@ -186,34 +199,15 @@ export class QueuedPayloadsStore {
           startTimestamp: metadata.timestamp,
           endTimestamp: metadata.timestamp + context.requiredDeltaTime,
           payloadHash: metadata.payloadHash,
-          payload,
+          payload
         }
       })
 
       return results
     } catch (error) {
       console.error(`Error fetching payloads for chain ${chainId}:`, error)
-      return []
+      throw error
     }
-  }
-
-  private clearPayloadsForAddress(address: Address) {
-    const current = this.payloads.get()
-    const filtered = current.filter(
-      payload => !compareAddress(payload.wallet, address)
-    )
-    this.payloads.set(filtered)
-  }
-
-  private addPayloads(newPayloads: QueuedRecoveryPayload[]) {
-    if (newPayloads.length === 0) {return}
-
-    const current = this.payloads.get()
-    const merged = [...current, ...newPayloads]
-
-    const unique = [...new Map(merged.map(item => [item.id, item])).values()]
-
-    this.payloads.set(unique)
   }
 
   refetch = () => {
@@ -221,7 +215,14 @@ export class QueuedPayloadsStore {
   }
 
   clear() {
+    ++this.requestId
     this.payloads.set([])
+    this.error.set(undefined)
     this.isLoading.set(false)
+  }
+
+  destroyStore() {
+    this.unsubscribe()
+    this.clear()
   }
 }

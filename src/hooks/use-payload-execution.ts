@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react'
 import { Constants } from '@0xsequence/wallet-primitives'
 import { AbiFunction } from 'ox'
-import { Address, createPublicClient, hexToBigInt, http, type PublicClient } from 'viem'
+import { useEffect, useState } from 'react'
+import { Address, hexToBigInt } from 'viem'
 
-import type { ProviderDetail } from '~/components/wallet/externalprovider/SelectProvider'
-import { networks } from '~/networks'
+import { makeRpcClient } from '~/utils/rpcClient'
+
+import type { QueuedRecoveryPayload } from '~/types/recovery'
+
 import { useObservable, useStore } from '~/stores'
 import { AuthStore } from '~/stores/AuthStore'
-import type { QueuedRecoveryPayload } from '~/types/recovery'
-import { useWalletRecovery } from './wallet-recovery-context'
+
+import type { ProviderDetail } from '~/components/wallet/externalprovider/SelectProvider'
+
+import { networks } from '~/networks'
+
 import { executeRecovery } from './use-execute-recovery'
+import { useWalletRecovery } from './wallet-recovery-context'
 
 interface UsePayloadExecutionParams {
   payload: QueuedRecoveryPayload
@@ -20,7 +26,9 @@ type ExecStatus = 'idle' | 'pending' | 'final'
 type OpStatus = null | 'confirmed' | 'failed'
 
 export function usePayloadExecution({ payload, selectedExternalProvider }: UsePayloadExecutionParams) {
-  const { handle: { sendRecoveryPayload } } = useWalletRecovery()
+  const {
+    handle: { sendRecoveryPayload }
+  } = useWalletRecovery()
   const authStore = useStore(AuthStore)
   const recoverySignerAddress = useObservable(authStore.recoverySignerAddress)
 
@@ -29,6 +37,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
   const [hash, setHash] = useState<`0x${string}` | null>(null)
   const [status, setStatus] = useState<ExecStatus>('idle')
   const [opStatus, setOpStatus] = useState<OpStatus>(null)
+  const [error, setError] = useState<string>()
 
   const rpcUrl = networks.find(n => n.chainId === payload.chainId)?.rpcUrl
 
@@ -42,10 +51,10 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
           return
         }
 
-        const client: PublicClient = createPublicClient({ transport: http(rpcUrl) })
+        const client = makeRpcClient(rpcUrl)
         const result = await client.call({
           to: payload.wallet,
-          data: AbiFunction.encodeData(Constants.READ_NONCE, [space]) as `0x${string}`,
+          data: AbiFunction.encodeData(Constants.READ_NONCE, [space]) as `0x${string}`
         })
 
         if (!result.data) {
@@ -67,7 +76,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
       return
     }
 
-    const client: PublicClient = createPublicClient({ transport: http(rpcUrl) })
+    const client = makeRpcClient(rpcUrl)
     let cancelled = false
 
     client
@@ -107,6 +116,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
     setStatus('idle')
     setOpStatus(null)
     setHash(null)
+    setError(undefined)
 
     try {
       console.log('[use-payload-execution] queued payload from store', {
@@ -118,7 +128,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
         onChainPayloadHash: payload.payloadHash,
         startTimestamp: String(payload.startTimestamp),
         endTimestamp: String(payload.endTimestamp),
-        payloadRaw: payload.payload,
+        payloadRaw: payload.payload
       })
 
       const result = await executeRecovery({
@@ -128,6 +138,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
         chainId: payload.chainId,
         sendTx: sendRecoveryPayload,
         recoveryPayloadId: payload.id,
+        recoveryModule: payload.recoveryModule
       })
 
       if (result?.hash) {
@@ -137,6 +148,11 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
       }
     } catch (error) {
       console.error('Error executing recovery:', error)
+      setError(
+        error instanceof Error && error.message.startsWith('Recovery configuration changed.')
+          ? error.message
+          : 'Unable to execute recovery. Check your connection and refresh the queue before retrying.'
+      )
       setIsPending(false)
     }
   }
@@ -153,6 +169,7 @@ export function usePayloadExecution({ payload, selectedExternalProvider }: UsePa
     hash,
     status: status === 'idle' ? undefined : status,
     opStatus,
-    handleExecuteRecovery,
+    error,
+    handleExecuteRecovery
   }
 }

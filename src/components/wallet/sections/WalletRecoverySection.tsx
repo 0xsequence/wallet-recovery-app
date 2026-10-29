@@ -6,13 +6,15 @@ interface WalletRecoverySectionProps {
   queuedPayloads: QueuedRecoveryPayload[]
   isLoading: boolean
   refetch: () => void
+  error?: string
 }
 
 export function WalletRecoverySection({
   isV2Wallet,
   queuedPayloads,
   isLoading,
-  refetch
+  refetch,
+  error
 }: WalletRecoverySectionProps) {
   // Don't show recovery queue for V2 wallets
   if (isV2Wallet) {
@@ -21,6 +23,7 @@ export function WalletRecoverySection({
 
   return (
     <RecoveryQueue
+      error={error}
       queuedPayloads={queuedPayloads}
       isLoading={isLoading}
       refetch={refetch}
