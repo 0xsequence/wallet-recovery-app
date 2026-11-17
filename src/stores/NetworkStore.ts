@@ -1,4 +1,4 @@
-import { NetworkConfig, networks } from '@0xsequence/network'
+import { ChainId, NetworkConfig, networks } from '@0xsequence/network'
 import { LocalRelayer } from '@0xsequence/relayer'
 import { ethers, isError } from 'ethers'
 import { WritableObservable } from 'micro-observables'
@@ -138,6 +138,23 @@ export class NetworkStore {
     this.userAdditionNetworkChainIds.set(this.local.networksUserAdditions.get()?.map(n => n.chainId) ?? [])
 
     this.networks.set(updatedNetworkConfigs)
+
+    // When several signatures exist for the same payload (e.g. after a guard key rotation), use one that validates
+    // on the chain it was made for. Signatures without a chain id are checked on mainnet.
+    const providers = new Map<number, ethers.JsonRpcProvider>()
+    TRACKER_OPTIONS.validationProviders = (chainId: bigint) => {
+      const id = chainId === 0n ? ChainId.MAINNET : Number(chainId)
+      const network = updatedNetworkConfigs.find(network => network.chainId === id && !network.disabled)
+      if (!network) {
+        return undefined
+      }
+      let provider = providers.get(id)
+      if (!provider) {
+        provider = new ethers.JsonRpcProvider(network.rpcUrl, id, { staticNetwork: true })
+        providers.set(id, provider)
+      }
+      return provider
+    }
   }
 
   async isValidRpcUrl(rpcUrl: string) {
