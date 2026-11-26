@@ -3,6 +3,9 @@ on:
     branches:
       - '**'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,10 +13,12 @@ jobs:
 
     steps:
       - name: git-checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           version: 10
           run_install: true
@@ -27,9 +32,45 @@ jobs:
       - name: Touch CNAME
         run: echo "recovery.sequence.app" > ./dist/CNAME
 
-      - name: Deploy to GitHub Pages
+      - name: Upload build
         if: github.ref == 'refs/heads/master'
-        uses: s0/git-publish-subdir-action@develop
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  # Deploys in its own job so the write token never shares a runner with
+  # dependency installs or the build.
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    name: Deploy to GitHub Pages
+    permissions:
+      contents: write
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+
+    steps:
+      # Checked out only so the publish action can read the source commit
+      # for its message.
+      - name: git-checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        uses: s0/git-publish-subdir-action@ac113f6bfe8896e85a373534242c949a7ea74c98 # develop @ 2025-02-13
         env:
           REPO: self
           BRANCH: gh-pages
